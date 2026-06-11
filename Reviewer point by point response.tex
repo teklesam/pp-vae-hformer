@@ -1,0 +1,482 @@
+% ============================================================
+%  EXAMINER STRATEGY GUIDE
+%  PP-VAE MPhil Dissertation — USN 4730
+%  For Overleaf: compile as standalone or include in main.tex appendix
+% ============================================================
+
+\documentclass[12pt, a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{libertine}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{mdframed}
+
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{warnyellow}{RGB}{200,150,0}
+\definecolor{okgreen}{RGB}{0,120,60}
+\definecolor{critred}{RGB}{180,30,30}
+
+\title{\textbf{\color{darkblue}Distinction-Level Strategy Guide}\\
+\large Pathology-Preserving VAE Dissertation — USN 4730\\
+Cambridge MPhil Population Health Sciences}
+\date{Confidential working document}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Potential Examiner Criticisms}
+% ============================================================
+
+\noindent The following criticisms represent every substantive objection
+a Cambridge examiner is likely to raise. Each is ranked by probability
+of occurrence (H/M/L) and severity if unaddressed (H/M/L).
+
+\begin{longtable}{p{0.5\linewidth} p{0.08\linewidth} p{0.08\linewidth}}
+\toprule
+\textbf{Criticism} & \textbf{Prob.} & \textbf{Sev.} \\
+\midrule
+\endhead
+
+\textbf{C1: Resolution triviality.}
+``28×28 images are so small that any deep learning model
+will reconstruct them adequately. The results are an artefact
+of the easy benchmark, not evidence of a methodological advance.''
+& H & H \\
+
+\addlinespace
+\textbf{C2: Baseline VAE outperforms PP-VAE on PSNR.}
+``If the proposed model achieves lower PSNR than the simpler
+baseline, the extra complexity is unjustified.''
+& H & H \\
+
+\addlinespace
+\textbf{C3: No radiologist validation.}
+``PSNR and SSIM do not measure diagnostic utility. Without a
+reader study, clinical claims are unsupported.''
+& H & M \\
+
+\addlinespace
+\textbf{C4: Loss weight selection is arbitrary.}
+``The lambda values appear to have been tuned post-hoc to
+maximise performance, biasing the ablation results.''
+& H & M \\
+
+\addlinespace
+\textbf{C5: Perceptual loss domain mismatch.}
+``VGG-16 features trained on ImageNet are inappropriate
+for greyscale 28×28 medical images.''
+& M & M \\
+
+\addlinespace
+\textbf{C6: No comparison to diffusion models.}
+``The current SOTA is DDPM-based. Without that comparison
+the work's positioning is incomplete.''
+& M & M \\
+
+\addlinespace
+\textbf{C7: Single-dataset evaluation.}
+``Results on PneumoniaMNIST cannot be generalised to any
+clinical imaging setting.''
+& H & M \\
+
+\addlinespace
+\textbf{C8: Statistical testing on 624 images is underpowered
+for subgroup analyses.}
+& M & L \\
+
+\addlinespace
+\textbf{C9: Novelty is incremental.}
+``Combining existing loss terms is engineering, not science.''
+& M & H \\
+
+\addlinespace
+\textbf{C10: Calibration metrics not validated.}
+``ECE is defined for classification; its use for pixel-wise
+reconstruction uncertainty is non-standard.''
+& M & M \\
+
+\addlinespace
+\textbf{C11: Class imbalance not addressed.}
+``73\% pneumonia may inflate aggregate metrics on the
+majority class.''
+& M & L \\
+
+\addlinespace
+\textbf{C12: Simulated degradation is not clinically validated.}
+``The Poisson-Gaussian model is theoretical; real LDCT
+physics include additional artefacts.''
+& M & M \\
+
+\addlinespace
+\textbf{C13: Reproducibility not demonstrated.}
+``Results require independent reproduction before claims
+can be accepted.''
+& L & M \\
+
+\addlinespace
+\textbf{C14: Lack of interpretability beyond t-SNE/UMAP.}
+``Visualisations do not constitute mechanistic understanding.''
+& L & L \\
+
+\bottomrule
+\end{longtable}
+
+% ============================================================
+\section{Evidence Required to Neutralise Each Criticism}
+% ============================================================
+
+\begin{description}[style=nextline, leftmargin=0pt]
+
+\item[\color{critred}C1 — Resolution triviality]
+\textit{Pre-empt in Section 3.2.2 (Dataset Justification):}
+(a) Cite sharpXR (Abolade et al. 2025) showing that essential
+anatomical features — cardiac silhouette width, lung field
+opacification, costophrenic angle blunting — are distinguishable
+at 28×28 in a clinical workflow analogue.
+(b) Frame explicitly as ``architectural validation'': the goal is
+to characterise the relative contribution of loss terms under
+controlled conditions, not to deploy.
+(c) Show that class-discriminative features (used in downstream
+classification) are preserved after reconstruction — if a ResNet
+trained on clean images and fine-tuned on reconstructed images
+achieves similar AUC, anatomical content is preserved.
+
+\item[\color{critred}C2 — Baseline VAE beats PP-VAE on PSNR]
+\textit{Address in Sections 4.3.1 and 5.1.1:}
+(a) Explain the PSNR–SSIM trade-off: MSE-optimised models
+regress to the conditional mean, yielding artificially high PSNR
+but blurred structure. PP-VAE's constraints suppress mean regression,
+reducing PSNR while improving SSIM and perceptual fidelity.
+(b) Show that SSIM improvement is statistically significant and
+clinically more meaningful for radiograph interpretation.
+(c) Include a difference map demonstrating that baseline VAE's
+higher PSNR comes from blurring pathological texture, not
+preserving it.
+(d) If a perceptual metric (LPIPS) was computed, show PP-VAE wins.
+
+\item[\color{critred}C3 — No radiologist validation]
+\textit{Address in Sections 5.4 and 5.6:}
+(a) Acknowledge explicitly as the primary limitation.
+(b) Cite precedent: major VAE reconstruction papers (Ehrhardt
+\& Wilms 2022; Zhao \& Huang 2025) similarly rely on computational
+metrics in their initial publications.
+(c) Propose a concrete reader study protocol as Future Work (F2).
+(d) Note that MedMNIST classification labels provide a weak proxy:
+if reconstructions from PP-VAE support downstream classification
+at least as well as baseline VAE, diagnostic content is preserved.
+
+\item[\color{critred}C4 — Arbitrary loss weights]
+\textit{Address in Sections 3.6.7 and Appendix B:}
+(a) Document the weight selection procedure: grid search or random
+search over a pre-defined range on validation set only.
+(b) Show sensitivity analysis (Section 4.6.1) demonstrating
+that performance is stable across a range of lambda values
+— the result is not critically dependent on exact values.
+(c) Fix weights before test set evaluation and report that the
+test set was accessed once only.
+
+\item[\color{critred}C5 — Perceptual loss domain mismatch]
+\textit{Address in Section 3.6.5:}
+(a) Cite Johnson et al. (2016) and Dosovitskiy \& Brox (2016)
+showing that early VGG layers capture orientation, frequency, and
+texture statistics that transfer across domains.
+(b) Use only early VGG layers (relu1\_2, relu2\_2) which capture
+edge and texture, not semantic content.
+(c) If feasible, compare against a medical-imaging-specific feature
+extractor (e.g., features from a ResNet trained on ChestX-ray14)
+— include as a sensitivity arm or note as future work.
+
+\item[\color{critred}C6 — No diffusion comparison]
+\textit{Address in Sections 2.3.3 and 5.4:}
+(a) Explicitly justify exclusion in Methods: DDPM inference
+requires O(T) steps (T~1000); inference latency is clinically
+impractical on CPU-only hardware targeted for LMIC deployment.
+(b) Reference compute budget as constraint; note this is also
+a limitation acknowledged in sharpXR.
+(c) Frame PP-VAE as the ``deployable'' point of the
+quality–compute–uncertainty frontier, not the perceptual quality
+maximiser.
+
+\item[\color{critred}C7 — Single-dataset evaluation]
+\textit{Address in Section 5.7 (Generalisability):}
+(a) Acknowledge as a primary limitation.
+(b) Argue that PneumoniaMNIST is the appropriate benchmark
+for paediatric CXR proof-of-concept (peer-reviewed, widely used).
+(c) Describe MIMIC-CXR / CheXpert validation as the immediate
+next step.
+
+\item[\color{critred}C8 — Subgroup power]
+\textit{Address in Section 3.8:}
+Report post-hoc power analysis. If power is low for subgroups,
+acknowledge and interpret subgroup results as exploratory.
+
+\item[\color{critred}C9 — Incremental novelty]
+\textit{Address in Sections 1.6 and 5.2:}
+(a) Novelty claim is the \textit{combination and systematic ablation}
+in the paediatric CXR context: no prior work has done this.
+(b) The five constraint design with KL annealing is a coherent
+methodological package, not ad-hoc combination.
+(c) The reproducible benchmark pipeline is itself a contribution
+to the field.
+
+\item[\color{critred}C10 — Calibration metric non-standard]
+\textit{Address in Sections 3.7.3 and 5.1.4:}
+(a) Define the calibration metric precisely: pixel-level uncertainty
+vs. reconstruction error bins — analogous to classification ECE.
+(b) Cite Kendall \& Gal (2017) and Ovadia et al. (2019) for the
+framework of evaluating model uncertainty against empirical error.
+(c) Acknowledge the non-standard adaptation and describe it as
+an exploratory analysis.
+
+\item[\color{critred}C11 — Class imbalance]
+\textit{Address in Section 3.2.1 and Appendix D:}
+Report all aggregate metrics separately for Pneumonia and Normal.
+Show that improvements are consistent across both classes.
+
+\item[\color{critred}C12 — Simulated degradation]
+\textit{Address in Sections 2.2 and 5.6:}
+(a) Cite Foi et al. (2008) R²>0.99 validation.
+(b) Cite Lee et al. (2018) clinical LDCT validation of the
+Poisson-Gaussian model.
+(c) Acknowledge the sinogram-domain physics gap as a limitation.
+
+\item[\color{critred}C13 — Reproducibility]
+\textit{Address via Appendix F (Checklist) and G (Code):}
+Fixed seeds, public data, public code, full hyperparameter table.
+Follow Pineau et al. (2021) ML Reproducibility Checklist.
+
+\item[\color{critred}C14 — Interpretability beyond visualisation]
+\textit{Address in Section 4.4:}
+Supplement t-SNE/UMAP with quantitative metrics (silhouette score,
+Davies-Bouldin) and latent traversal analysis demonstrating
+continuous, smooth latent structure.
+
+\end{description}
+
+% ============================================================
+\section{Missing Analyses That Would Increase Marks}
+% ============================================================
+
+\noindent Ranked by expected mark impact (1 = highest):
+
+\begin{enumerate}
+
+\item \textbf{Downstream classification experiment.}
+Train a small classifier on (a) clean images, (b) baseline VAE
+reconstructions, (c) PP-VAE reconstructions. Compare AUC for
+pneumonia detection. If PP-VAE reconstructions enable classification
+AUC closer to the clean-image upper bound, this is the strongest
+possible argument for pathology preservation. Impact: converts
+the dissertation from a ``reconstruction quality'' paper to a
+``diagnostic utility'' paper. \textit{Feasible in <1 day of compute.}
+
+\item \textbf{LPIPS (Learned Perceptual Image Patch Similarity) metric.}
+pip install lpips. This metric was designed specifically to
+correlate with human perceptual judgement. Including it directly
+addresses Criticism C2 (PSNR vs. SSIM trade-off) and provides
+a peer-reviewed third metric beyond PSNR/SSIM.
+\textit{Feasible in <2 hours.}
+
+\item \textbf{Monte Carlo uncertainty visualisation.}
+Sample z 30 times for each test image from the PP-VAE encoder
+posterior. Compute pixel-wise variance across 30 reconstructions.
+Visualise as an uncertainty map. Compare with decoder variance.
+Provides evidence of meaningful probabilistic output.
+\textit{Feasible in <1 day.}
+
+\item \textbf{KL annealing ablation.}
+Explicitly compare: (a) no annealing, (b) linear annealing,
+(c) cyclical annealing. If you already ran this, report it.
+This directly addresses the ``posterior collapse'' concern and
+demonstrates understanding of VAE training dynamics.
+
+\item \textbf{Latent space interpolation figure.}
+Take 5 pairs of test images (2 Pneumonia, 2 Normal, 1 cross-class).
+Decode 7 equally-spaced interpolated latent codes between each pair.
+Show 5×7 grid. A smooth, clinically plausible interpolation is
+strong qualitative evidence for a well-structured latent space.
+\textit{Feasible in <2 hours.}
+
+\item \textbf{Subgroup stratified results.}
+Report PSNR/SSIM separately for Pneumonia vs. Normal across
+all ablation arms. Show that PP-VAE improves specifically on
+pathological cases. This is the ``pathology-preserving'' claim
+made concrete.
+
+\item \textbf{Error histogram analysis.}
+Plot the distribution (not just mean) of per-image PSNR and SSIM
+for baseline VAE and PP-VAE. Show that PP-VAE reduces the
+left tail (badly reconstructed images) even if mean PSNR is lower.
+This is a clinically more meaningful metric — worst-case failures
+matter most in diagnostic imaging.
+
+\item \textbf{Silhouette score as a function of training epoch.}
+Track cluster separation over training for CAE, VAE, and PP-VAE.
+Shows that PP-VAE achieves earlier and higher latent separation.
+Strong evidence for richer representational learning.
+
+\item \textbf{Computational efficiency table.}
+Report: parameters per model, training time per epoch, inference
+time per image, memory footprint. Contextualises PP-VAE for
+deployment — relevant for examiner interested in clinical translation.
+
+\item \textbf{Failure mode taxonomy.}
+Classify failure cases into categories: (a) catastrophic (anatomy
+corrupted), (b) moderate (texture wrong), (c) minor (noise
+residual). Show counts per category per model. Demonstrates
+methodological rigour in error analysis.
+
+\end{enumerate}
+
+% ============================================================
+\section{Figures Most Likely to Impress Examiners}
+% ============================================================
+
+\noindent Ranked by expected examiner impact:
+
+\begin{enumerate}
+
+\item \textbf{The Six-Panel Reconstruction Figure.}
+Columns: degraded input $\mid$ CAE $\mid$ baseline VAE $\mid$ PP-VAE $\mid$ clean ground truth.
+Rows: Pneumonia case, Normal case, and the worst-case failure for PP-VAE.
+This is the dissertation's centrepiece. Examiners will spend the most
+time here. Ensure high visual quality; use \texttt{imshow} with
+correct greyscale normalisation.
+
+\item \textbf{The Ablation Bar Chart.}
+Side-by-side horizontal bars for PSNR and SSIM, one bar per ablation arm,
+colour-coded by which constraints are active. Add significance brackets.
+Communicates the systematic nature of the experiment at a glance.
+
+\item \textbf{Latent Space t-SNE Triptych.}
+Three panels (CAE $\mid$ VAE $\mid$ PP-VAE) with identical colour coding
+(red = Pneumonia, blue = Normal). Shows progression from chaotic to
+structured latent space. Quantitative silhouette scores in panel titles.
+
+\item \textbf{Uncertainty Map on a Pathological Case.}
+Left: degraded input. Centre: PP-VAE reconstruction. Right: uncertainty
+map (decoder variance). High uncertainty should co-localise with the
+consolidation region. This is the single most compelling clinical argument
+for probabilistic reconstruction.
+
+\item \textbf{KL Annealing and Convergence Figure.}
+Two-panel: (a) KL loss trajectory across epochs for all VAE arms,
+(b) reconstruction loss (MSE) trajectory. Shows that annealing resolves
+posterior collapse and that PP-VAE converges stably.
+
+\item \textbf{Degradation Level Performance Curve.}
+PSNR (y) vs. $\eta$ (x) with one line per model. PP-VAE should show
+particular advantage at low $\eta$ (extreme dose reduction). This
+directly supports the clinical argument.
+
+\item \textbf{Latent Traversal Grid.}
+$5 \times 7$ grid of decoded images as latent codes interpolate between
+image pairs. Smooth transitions demonstrate a continuous, well-organised
+prior. Caption should name the anatomical features that transition smoothly.
+
+\item \textbf{Residual Error Maps.}
+Three panels: (a) degraded $-$ clean, (b) baseline VAE $-$ clean,
+(c) PP-VAE $-$ clean. Using a diverging colourmap (blue = underestimate,
+red = overestimate). Shows that PP-VAE's errors are systematically
+smaller in anatomically important regions.
+
+\item \textbf{Downstream Classification AUC Comparison.}
+If analysis \#1 above is run: ROC curves for pneumonia detection
+on clean / VAE-reconstructed / PP-VAE-reconstructed images.
+Demonstrates diagnostic utility directly.
+
+\item \textbf{Four-Phase Pipeline Figure.}
+A clean, professionally typeset diagram of the experimental pipeline
+(Phase 1 data $\rightarrow$ Phase 2 architecture $\rightarrow$
+Phase 3 training $\rightarrow$ Phase 4 evaluation). More polished
+than the research protocol version. Use TikZ or draw.io export.
+
+\end{enumerate}
+
+% ============================================================
+\section{Narrative Arc: How the Dissertation Tells a Scientific Story}
+% ============================================================
+
+\begin{mdframed}[linecolor=darkblue, linewidth=2pt]
+\textbf{The Through-Line:}
+A child needs a chest X-ray. The radiation that keeps the image sharp
+enough to read also increases lifetime cancer risk. We cannot solve this
+with hardware alone. The question this dissertation asks is: \textit{given
+an image that is already too noisy to read safely, can a probabilistic
+deep learning model reconstruct what the clinician needs to see — without
+inventing pathology that was never there?}
+\end{mdframed}
+
+\bigskip
+
+\noindent\textbf{Chapter 1} opens with the patient. The radiation burden
+is quantified in lives (attributable cancers per 10,000 exposures).
+The gap between what existing DL reconstruction offers and what it fails
+to guarantee — pathological fidelity, calibrated uncertainty — is the
+wound in the literature that PP-VAE is designed to heal.
+
+\bigskip
+
+\noindent\textbf{Chapter 2} traces the intellectual lineage. The examiner
+should finish reading and think: ``every section of this review was
+pointing toward exactly this design.'' The review is not a catalogue;
+it is a funnel. Classical denoising established the importance of structure.
+Supervised CNNs solved reconstruction but created hallucination risk.
+GANs improved perception but destroyed probabilistic interpretability.
+Diffusion models achieved the best quality but at undeployable computational
+cost. VAEs are the natural home for a deployable, probabilistic,
+structurally-aware model. PP-VAE's five constraints are the synthesis
+of everything that preceded them.
+
+\bigskip
+
+\noindent\textbf{Chapter 3} is transparent and reproducible. Every design
+choice is justified — not just stated. The ablation design is pre-specified.
+The statistical analysis plan is declared before results are shown.
+The examiner must be able to re-run the experiment from Chapter 3 alone.
+
+\bigskip
+
+\noindent\textbf{Chapter 4} presents a scientific hierarchy. First, validate
+the input (degradation pipeline produces clinically realistic noise).
+Second, confirm models converge (training curves; no posterior collapse).
+Third, report reconstruction (the headline PSNR/SSIM/MAE numbers).
+Fourth, explain why it works (latent space; ablation). Fifth, characterise
+what we still cannot explain (error analysis; failure cases). The chapter
+ends having answered every objective from Chapter 1.
+
+\bigskip
+
+\noindent\textbf{Chapter 5} earns the distinction mark. It does not
+simply restate results. It explains \textit{why} PP-VAE's PSNR is lower
+than baseline VAE and why this is the expected and correct outcome of
+structure-preserving constraints. It situates the work honestly: this is
+a proof-of-concept on a benchmark dataset. It names every limitation before
+the examiner can raise it. It proposes a future reader study that would
+convert the computational finding into clinical evidence.
+
+\bigskip
+
+\noindent\textbf{Chapter 6} closes the loop. The last paragraph returns to
+the child in the clinic. It does not overclaim. It states precisely what
+is now known that was not known before, and what remains to be shown before
+this model could be placed in a radiologist's workflow.
+
+\bigskip
+
+\noindent\textbf{The tone throughout}: confident but not arrogant. The work
+is original, systematically conducted, and honestly reported. Every claim
+is supported by evidence. Every limitation is acknowledged before
+it can be weaponised. The examiner should finish reading thinking:
+\textit{this candidate understands not just what they did, but why it
+matters and what its boundaries are.} That is the distinction mindset.
+
+\end{document}

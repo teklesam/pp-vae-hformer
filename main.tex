@@ -1,0 +1,2619 @@
+% ============================================================
+%  PP-VAE MPhil Dissertation — Overleaf-Ready LaTeX Skeleton
+%  Student USN: 4730
+%  Programme: MPhil Population Health Sciences (Health Data Science)
+%  University of Cambridge | MRC Biostatistics Unit
+%  Supervisor: Dr Kyriakos Flouris
+%  ============================================================
+
+\documentclass[12pt, a4paper, twoside, openright]{book}
+
+% ── Packages ────────────────────────────────────────────────
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm,
+            inner=3.2cm, outer=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{libertine}            % Cambridge-style serif
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{textgreek} % for Unicode Greek letters like β
+\doublespacing                    % Cambridge regulations
+
+\usepackage{amsmath, amssymb, bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage[hyphens]{url}
+\usepackage[colorlinks=true,
+            linkcolor=darkblue,
+            citecolor=darkblue,
+            urlcolor=darkblue]{hyperref}
+\usepackage{natbib}               % Vancouver-style (numbered)
+\usepackage{chngcntr}
+\usepackage{pdflscape}
+\usepackage{appendix}
+\usepackage{pdfpages}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{siunitx}
+\usepackage{acronym}
+\usepackage{emptypage}
+\usepackage{afterpage}
+
+
+
+% ── Colours ─────────────────────────────────────────────────
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{cambridgeblue}{RGB}{163,193,173}
+
+% ── Page Style ──────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\nouppercase{\leftmark}}
+\fancyhead[RO]{\nouppercase{\rightmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Chapter Title Format ────────────────────────────────────
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{darkblue}}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+
+% ── Figure/Table Counters ───────────────────────────────────
+\counterwithin{figure}{chapter}
+\counterwithin{table}{chapter}
+
+% ── Placeholder Commands ────────────────────────────────────
+\newcommand{\figplaceholder}[2][width=0.85\textwidth]{%
+  \begin{figure}[H]
+    \centering
+    \fbox{\begin{minipage}{0.85\textwidth}
+      \centering\vspace{1.5cm}
+      \textbf{[FIGURE PLACEHOLDER]}\\[0.5em]
+      \textit{#2}
+      \vspace{1.5cm}
+    \end{minipage}}
+    \caption{#2}
+    \label{fig:#2}
+  \end{figure}}
+
+\newcommand{\tabplaceholder}[1]{%
+  \begin{table}[H]
+    \centering
+    \fbox{\begin{minipage}{0.85\textwidth}
+      \centering\vspace{0.8cm}
+      \textbf{[TABLE PLACEHOLDER]}\\[0.5em]
+      \textit{#1}
+      \vspace{0.8cm}
+    \end{minipage}}
+    \caption{#1}
+    \label{tab:#1}
+  \end{table}}
+
+% ── Equation Reference Helper ───────────────────────────────
+% Usage: \eq{label}{description}
+\newcommand{\eqplaceholder}[1]{%
+  \begin{equation}
+    \underbrace{\quad\quad\quad\quad\quad\quad}_{\text{#1}}
+    \label{eq:#1}
+  \end{equation}}
+
+% ============================================================
+%  DOCUMENT
+% ============================================================
+\begin{document}
+
+% ── FRONT MATTER ────────────────────────────────────────────
+\frontmatter
+\pagenumbering{roman}
+
+% ────────────────────────────────────────────────────────────
+%  TITLE PAGE
+% ────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\Large University of Cambridge}\\[0.3em]
+  {\large MRC Biostatistics Unit}\\[0.3em]
+  {\large MPhil in Population Health Sciences (Health Data Science)}\\[2.5cm]
+
+  {\Huge\bfseries\color{darkblue}
+    Pathology-Preserving Variational Autoencoder\\[0.4em]
+    for Paediatric Chest Radiograph Enhancement:\\[0.4em]
+    A Probabilistic Loss Framework for\\[0.4em]
+    Clinically Faithful Low-Dose Reconstruction
+  }\\[2.5cm]
+
+  {\large\bfseries Student USN: 4730}\\[0.5em]
+  {\large Supervisor: Dr Kyriakos Flouris}\\[2cm]
+
+  {\large A dissertation submitted in partial fulfilment of the requirements\\
+  for the degree of Master of Philosophy in\\
+  Population Health Sciences (Health Data Science)}\\[1.5cm]
+
+  {\large \today}\\[1cm]
+  {\large Word Count: [INSERT FINAL WORD COUNT]}
+
+  \vfill
+  \includegraphics[width=4cm]{cambridge_logo}   % Add logo to Overleaf project
+\end{titlepage}
+
+% ────────────────────────────────────────────────────────────
+%  DECLARATION
+% ────────────────────────────────────────────────────────────
+\chapter*{Declaration}
+\addcontentsline{toc}{chapter}{Declaration}
+
+This dissertation is the result of my own work and includes nothing which is the outcome of work done in collaboration, except where specifically indicated. It has not been previously submitted for any degree or other qualification at this or any other University.
+
+The total word count of this dissertation is [INSERT WORD COUNT], which is within the limit stipulated by the MPhil Population Health Sciences regulations.
+
+\vspace{2cm}
+\noindent\textbf{Signature:} \rule{6cm}{0.4pt}\\[0.5em]
+\textbf{Date:} \rule{6cm}{0.4pt}
+
+\newpage
+
+% ────────────────────────────────────────────────────────────
+%  ABSTRACT
+% ────────────────────────────────────────────────────────────
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+% WRITING GUIDANCE:
+% 300 words maximum. Structure:
+%   Background (2-3 sentences): paediatric radiation burden; limitations of
+%     existing deep learning reconstruction approaches.
+%   Objective (1 sentence): introduce the PP-VAE and its five constraint
+%     techniques as a solution to pathology hallucination.
+%   Methods (3-4 sentences): PneumoniaMNIST dataset; Poisson-Gaussian
+%     degradation model; architecture; five ablation arms.
+%   Results (3-4 sentences): report PSNR/SSIM for baseline VAE and PP-VAE;
+%     key ablation winner; latent space separation; calibration improvement.
+%   Conclusion (2 sentences): clinical significance; generalisability statement.
+%
+% KEY NUMBERS TO INSERT (from notebook):
+%   Baseline VAE: PSNR 25.02 dB, SSIM 0.8676
+%   PP-VAE (full): PSNR 24.24 dB, SSIM 0.8375
+%   [Insert winning ablation arm metrics here]
+%   [Insert KL divergence / latent separation metric here]
+
+[ABSTRACT TEXT — TO BE WRITTEN LAST]
+
+\newpage
+
+% ────────────────────────────────────────────────────────────
+%  ACKNOWLEDGEMENTS
+% ────────────────────────────────────────────────────────────
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+
+% Acknowledge: Dr Kyriakos Flouris (supervision and direction);
+% MRC Biostatistics Unit (computational and academic environment);
+% Mastercard Foundation Scholarship (funding enabling this research);
+% Guangzhou Women and Children's Medical Center / MedMNIST consortium
+%   (open data);
+% Cambridge E-labs / SPARk 2.0 (translational inspiration);
+% any other institutional support.
+
+[ACKNOWLEDGEMENTS TEXT]
+
+\newpage
+
+% ────────────────────────────────────────────────────────────
+%  TABLE OF CONTENTS / LISTS
+% ────────────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+\newpage
+\listoftables
+\addcontentsline{toc}{chapter}{List of Tables}
+\newpage
+
+% ────────────────────────────────────────────────────────────
+%  LIST OF ABBREVIATIONS
+% ────────────────────────────────────────────────────────────
+\chapter*{List of Abbreviations}
+\addcontentsline{toc}{chapter}{List of Abbreviations}
+
+\begin{acronym}[PPVAE]
+  \acro{AE}{Autoencoder}
+  \acro{CAE}{Convolutional Autoencoder}
+  \acro{VAE}{Variational Autoencoder}
+  \acro{PP-VAE}{Pathology-Preserving Variational Autoencoder}
+  \acro{ELBO}{Evidence Lower BOund}
+  \acro{KL}{Kullback-Leibler (divergence)}
+  \acro{MSE}{Mean Squared Error}
+  \acro{MAE}{Mean Absolute Error}
+  \acro{PSNR}{Peak Signal-to-Noise Ratio}
+  \acro{SSIM}{Structural Similarity Index Measure}
+  \acro{CT}{Computed Tomography}
+  \acro{CXR}{Chest X-Ray / Chest Radiograph}
+  \acro{DL}{Deep Learning}
+  \acro{CNN}{Convolutional Neural Network}
+  \acro{VGG}{Visual Geometry Group (network)}
+  \acro{ReLU}{Rectified Linear Unit}
+  \acro{tSNE}{t-distributed Stochastic Neighbour Embedding}
+  \acro{UMAP}{Uniform Manifold Approximation and Projection}
+  \acro{PCA}{Principal Component Analysis}
+  \acro{GPU}{Graphics Processing Unit}
+  \acro{Adam}{Adaptive Moment Estimation (optimiser)}
+  \acro{LDCT}{Low-Dose Computed Tomography}
+  \acro{SNR}{Signal-to-Noise Ratio}
+  \acro{TV}{Total Variation}
+  \acro{GAN}{Generative Adversarial Network}
+  \acro{DDPM}{Denoising Diffusion Probabilistic Model}
+  \acro{NLL}{Negative Log-Likelihood}
+  \acro{ECE}{Expected Calibration Error}
+  \acro{ROC}{Receiver Operating Characteristic}
+  \acro{AUC}{Area Under the Curve}
+\end{acronym}
+
+\newpage
+
+% ============================================================
+%  MAIN MATTER
+% ============================================================
+\mainmatter
+\pagenumbering{arabic}
+% ============================================================
+%  CHAPTER 1 — INTRODUCTION  (v2 — with Frequency Loss Integration)
+%  PP-VAE MPhil Dissertation | USN 4730 | MRC Biostatistics Unit, Cambridge
+%  Supervisor: Dr Kyriakos Flouris
+%
+%  CHANGES FROM v1:
+%  • Section 1.2 — new sub-section 1.2.1 explaining spatial frequency
+%    from first principles for a non-specialist reader
+%  • Section 1.3.2 — spectral bias added as a CNN limitation
+%  • Section 1.3.5 — F-Principle connection to VAE blur error strengthened
+%  • Section 1.4   — Gap 4 (Spectral Bias / Frequency Domain) added
+%  • Section 1.5   — Objective 2 updated to include frequency-domain term
+%  • Section 1.6   — L_Freq added as sixth PP-VAE loss component
+%  NEW CITATIONS (from attached frequency-domain review):
+%    xu_frequency_2020, rahaman_spectral_2019, jiang_focal_2021,
+%    wang_high-frequency_2020, durall_watch_2020
+% ============================================================
+
+\chapter{Introduction}
+\label{chap:intro}
+
+% ============================================================
+\section{Clinical Context: Radiation Burden in Paediatric Imaging}
+\label{sec:intro:clinical}
+% ============================================================
+
+The utilisation of diagnostic medical imaging has expanded exponentially over the last several
+decades, establishing itself as an indispensable pillar of modern clinical decision-making
+\cite{smith-bindman_trends_2019}. Among the multitude of available diagnostic modalities, the
+chest radiograph (CXR) remains the most frequently performed imaging investigation globally,
+serving as the primary investigative tool for evaluating suspected respiratory pathology,
+cardiopulmonary abnormalities, and thoracic traumatic injuries
+\cite{international_commission_on_radiological_protection_2007_2007}. Despite its immense
+clinical utility, the fundamental physical mechanism underlying radiographic imaging---the
+transmission of ionising radiation through biological tissue---carries an inherent, unavoidable
+risk of cellular and genetic harm \cite{national_research_council_health_2006}. This is a matter
+of profound clinical concern in paediatric medicine. Children present a unique radiobiological and
+epidemiological profile that renders them significantly more susceptible to the oncogenic effects
+of ionising radiation compared to adult cohorts, necessitating stringent clinical oversight and
+technological innovation to mitigate these risks \cite{pearce_radiation_2012, mathews_cancer_2013}.
+
+The biological mechanisms underpinning radiation-induced cellular damage are rooted in the
+disruption of genomic integrity at the molecular level. When living tissue is exposed to ionising
+radiation, energy is transferred via two primary pathways: direct and indirect effects
+\cite{jackson_dna-damage_2009}. Direct effects involve the immediate ionisation of the DNA
+macromolecule itself, inducing physical strand breaks. However, because water constitutes
+approximately 75--80\,\% of the chemical composition of a living cell, the vast majority of
+radiation-induced damage is mediated through indirect radiolytic action
+\cite{jackson_dna-damage_2009}. The interaction of X-ray photons with intracellular water
+molecules induces the radiolysis of water ($\mathrm{H_2O \rightarrow H_2O^+ + e^-}$),
+initiating a cascade of reactions that rapidly generate highly reactive oxygen species---most
+notably the hydroxyl radical ($\mathrm{OH^{\bullet}}$) and free aqueous electrons
+\cite{national_research_council_health_2006}. These reactive species diffuse rapidly across
+short intracellular distances, indiscriminately attacking the sugar-phosphate backbone and
+nucleotide bases of the DNA double helix \cite{jackson_dna-damage_2009}.
+
+While biological systems possess highly conserved, sophisticated DNA repair mechanisms,
+their fidelity is not absolute. Single-strand breaks and minor base modifications are generally
+repaired with high precision by endogenous Base Excision Repair and Nucleotide Excision
+Repair pathways \cite{jackson_dna-damage_2009}. Conversely, double-strand breaks
+(DSBs)---where both strands of the DNA helix are severed in close spatial proximity---represent
+critical, highly lethal cellular lesions \cite{jackson_dna-damage_2009}. The cellular response to
+DSBs relies on Homologous Recombination and Non-Homologous End Joining
+\cite{jackson_dna-damage_2009}. If these repair mechanisms are overwhelmed by high-density
+ionisation events, or if they execute an erroneous repair, the resulting structural alterations can
+bypass regulatory cell-cycle checkpoints---including the critical $p^{53}$ tumour suppressor
+pathway \cite{jackson_dna-damage_2009}. The failure to induce apoptosis in these damaged
+cells permits the propagation of genetic mutations, chromosomal aberrations, and translocations
+during subsequent mitotic divisions. Over time, accumulation of these uncorrected genomic
+aberrations within critical oncogenes or tumour suppressor genes can trigger malignant
+transformation, ultimately leading to radiation-induced carcinogenesis
+\cite{national_research_council_health_2006}.
+
+Paediatric patients are disproportionately vulnerable to these stochastic, mutation-driven effects
+due to a combination of physiological and temporal factors \cite{pearce_radiation_2012}.
+Firstly, the developmental nature of paediatric physiology means their tissues contain a
+significantly higher proportion of undifferentiated, rapidly dividing progenitor cells
+\cite{national_research_council_health_2006}. According to the classical principles of
+radiobiology, cells are most sensitive to radiation-induced damage during the mitotic phases of
+the cell cycle; therefore, the high mitotic index of paediatric tissue inherently amplifies
+radiosensitivity \cite{national_research_council_health_2006}. For instance, the infant thyroid
+gland is estimated to be up to nine times more sensitive to radiation exposure than the adult
+thyroid, owing to its higher proportion of dividing follicular cells
+\cite{national_research_council_health_2006}. Secondly, children possess a significantly longer
+post-exposure life expectancy \cite{pearce_radiation_2012}. Radiation-induced solid tumours
+typically exhibit a prolonged latency period---often spanning decades from the initial exposure to
+clinical manifestation \cite{national_research_council_health_2006}. The extended lifespan of a
+paediatric patient provides an expansive temporal window during which sub-lethal,
+radiation-induced genetic mutations can undergo clonal expansion and oncogenic transformation
+\cite{pearce_radiation_2012}.
+
+The quantification of this radiation risk is governed by the Linear No-Threshold (LNT)
+hypothesis, a conceptual framework endorsed by the International Commission on Radiological
+Protection (ICRP) and the Biological Effects of Ionizing Radiation (BEIR VII) committee
+\cite{international_commission_on_radiological_protection_2007_2007,
+national_research_council_health_2006}. The LNT model postulates that the risk of
+radiation-induced mutagenesis and subsequent cancer scales linearly with the accumulated
+effective dose, explicitly asserting that there is no safe lower threshold below which the
+biological risk is definitively zero
+\cite{international_commission_on_radiological_protection_2007_2007}. While the effective
+dose of a single paediatric chest radiograph is relatively small---ranging from approximately
+0.007\,mSv for a neonate to 0.033\,mSv for an older adolescent, broadly comparable to a
+few days of natural background radiation---the cumulative biological burden across a patient's
+lifespan can become clinically significant \cite{hiles_effective_2023}. This is particularly
+pertinent for critically ill children who require frequent, longitudinal radiographic monitoring,
+including those with congenital heart disease, cystic fibrosis, neonates in intensive care units,
+and children with pulmonary tuberculosis \cite{johnson_cumulative_2014}.
+
+Recent large-scale epidemiological studies have provided robust, quantitative validation of the
+oncogenic risks associated with low-dose medical radiation. A seminal retrospective cohort study
+by Pearce et al.\ \cite{pearce_radiation_2012}, published in \textit{The Lancet}, analysed data
+from over 175,000 patients who underwent computed tomography (CT) imaging before the age
+of 22. The study demonstrated that cumulative early-life exposure to diagnostic radiation
+significantly increased the risk of developing leukaemia and central nervous system tumours.
+Specifically, Pearce et al.\ calculated a relative risk of 3.18 for leukaemia in children receiving
+cumulative bone marrow doses exceeding 30\,mGy, and a relative risk of 2.82 for brain tumours
+in children receiving cumulative brain doses exceeding 50\,mGy \cite{pearce_radiation_2012}.
+
+More recently, the landmark European EPI-CT consortium has profoundly updated the
+contemporary understanding of low-dose paediatric exposure. Tracking 948,174 paediatric and
+young adult patients across nine European nations, the EPI-CT findings provided statistically
+irrefutable evidence of a linear dose-response relationship for both central nervous system
+malignancies and haematological cancers. Hauptmann et al.\
+\cite{hauptmann_brain_2023}, publishing in \textit{The Lancet Oncology}, reported an excess
+relative risk of 1.27 per 100\,mGy for all brain cancers, noting that the mean cumulative brain
+dose among those who developed malignancies was 76.0\,mGy. Concurrently, Bosch de Basea
+Gomez et al.\ \cite{bosch_de_basea_gomez_risk_2023}, publishing in \textit{Nature Medicine},
+calculated an excess relative risk of 1.96 (95\,\% CI: 1.10--3.12) per 100\,mGy for all
+haematological malignancies, with measurably increased risks observed at active bone marrow
+doses as low as 15--30\,mGy. A 2025 systematic update of the epidemiological evidence base
+confirms that these findings represent the scientific consensus, cementing the reality that even
+low-dose diagnostic imaging directly contributes to oncogenic incidence in children
+\cite{meulepas_cancer_2025}.
+
+In response to this evidence, global radiological frameworks are now governed by the ALARA
+(As Low As Reasonably Achievable) principle
+\cite{international_commission_on_radiological_protection_2007_2007}. Professional
+initiatives---most notably the \textit{Image Gently} campaign launched by the Alliance for
+Radiation Safety in Pediatric Imaging---aggressively advocate for the customisation of imaging
+parameters, urging practitioners to ``child-size'' the radiation dose to prevent unnecessary
+biological burden \cite{strauss_image_2009}. Regulatory and professional bodies, including the
+ICRP, have established strict Diagnostic Reference Levels (DRLs) for paediatric radiography,
+mandating that imaging must be strictly justified and technically optimised to deliver the absolute
+minimum photon fluence required for a diagnostic image
+\cite{international_commission_on_radiological_protection_2007_2007}.
+
+However, the clinical mandate to aggressively lower the radiation dose inevitably precipitates
+a severe degradation in the physical quality of the resulting radiograph. This creates a
+fundamental physical and diagnostic paradox: protecting the paediatric patient from stochastic
+radiation harm via dose reduction simultaneously increases the risk of immediate diagnostic
+harm due to noise-corrupted imagery. Solving this dichotomy requires a deep understanding
+of the physics of image acquisition and the deployment of advanced computational
+reconstruction methods---the central subject of this dissertation.
+
+% ============================================================
+\section{The Image Quality--Dose Trade-Off}
+\label{sec:intro:tradeoff}
+% ============================================================
+
+The acquisition of a digital medical radiograph relies on the transmission of a carefully
+calibrated X-ray beam through the patient's anatomy onto a digital receptor---typically a
+flat-panel detector or a computed radiography imaging plate \cite{borges_noise_2020}. As
+the X-ray photons traverse the patient's body, they undergo differential attenuation---primarily
+through photoelectric absorption and Compton scattering---depending on the density and
+effective atomic number of the biological tissues encountered
+\cite{national_research_council_health_2006}. Dense structures like bone heavily attenuate the
+beam, while air-filled spaces like the lungs permit high photon transmission. The spatial
+distribution of unattenuated photons striking the detector generates the characteristic contrast
+of the resultant radiological image. Critically, the quality of this image is inextricably linked to
+the absolute number of photons (the photon fluence) reaching the detector array
+\cite{borges_noise_2020}.
+
+Reducing the radiation dose to adhere to ALARA principles is practically achieved by
+modifying X-ray console parameters---specifically by lowering the tube current-time product
+(mAs) or the peak kilovoltage (kVp) \cite{borges_noise_2020}. Lowering the mAs
+proportionally decreases the number of X-ray photons emitted by the tube, while lowering the
+kVp reduces beam penetrability, further diminishing the number of photons that successfully reach the detector. This reduction in the raw signal precipitates a sharp, non-linear increase in relative image noise, severely degrading diagnostic utility.
+
+In the domain of digital radiography, the noise profile is highly complex. Unlike natural
+photographic images, where noise is often assumed to be uniform, additive, and
+signal-independent, radiographic noise is highly non-stationary and strictly signal-dependent
+\cite{foi_practical_2008}. It is optimally characterised by a \textit{mixed Poisson-Gaussian
+distribution model} \cite{foi_practical_2008, borges_noise_2020}. If $y(x)$ represents the
+underlying, true attenuated signal intensity at a discrete spatial pixel coordinate $x$, the
+actually measured, noisy pixel intensity $z(x)$ is modelled as \cite{foi_practical_2008}:
+
+\begin{equation}
+\label{eq:intro:noise}
+z(x) = y(x) + \eta_P(y(x)) + \eta_G(x)
+\end{equation}
+
+The noise is decomposed into two physically distinct phenomena. The first term,
+$\eta_P(y(x))$, represents quantum mottle or \textit{Poisson noise}: the discrete, stochastic
+nature of individual photon arrivals at detector elements follows a Poisson counting process,
+such that the variance of the quantum noise is strictly proportional to the expected signal mean
+\cite{foi_practical_2008}. The second term, $\eta_G(x)$, represents the background
+electronic noise introduced by the detector's read-out circuitry, thermal fluctuations, and
+analog-to-digital conversion---modelled as Additive White Gaussian Noise (AWGN) with a
+mean of zero and a constant variance, independent of the photon signal
+\cite{foi_practical_2008}. Consequently, the total noise variance $\sigma^2$ at any pixel $y$
+is an affine function of the expected pixel intensity \cite{foi_practical_2008, borges_noise_2020}:
+
+\begin{equation}
+\label{eq:intro:variance}
+\sigma^2(y) = \alpha y + \beta
+\end{equation}
+
+where $\alpha$ is a scaling parameter inversely related to the quantum efficiency and detector
+gain, and $\beta$ represents the constant variance of the background electronic noise floor
+\cite{foi_practical_2008}. Under standard imaging conditions, the Poisson component dominates.
+However, as the radiation dose is aggressively lowered for paediatric patients, the absolute
+signal $y(x)$ drops dramatically. The image enters a state of \textit{photon starvation}: the
+statistical fluctuations of the sparse Poisson process become highly visible, and the constant
+electronic noise floor $\beta$ begins to overwhelm the signal \cite{foi_practical_2008}.
+
+% ─────────────────────────────────────────────────────────────
+\subsection{Understanding Spatial Frequency in a Medical Image}
+\label{sec:intro:tradeoff:frequency}
+% ─────────────────────────────────────────────────────────────
+
+Before examining the clinical consequences of low-dose noise, it is essential to introduce a
+concept that underpins the entire subsequent argument: \textit{spatial frequency}. This term
+has a precise mathematical meaning but can be understood intuitively without any physics or
+mathematics background.
+
+\textbf{An everyday analogy.} Think of a song. The deep, slow bass notes that give the music
+its overall structure are its \textit{low-frequency} sounds. The sharp, crisp treble sounds---the
+snap of a snare drum or the shimmer of a cymbal---are its \textit{high-frequency} sounds. Both
+coexist in the same recording. A chest radiograph works in exactly the same way, except that
+the ``sound'' we are measuring is the brightness of each pixel as your eye moves across the
+image.
+
+\textbf{Low-frequency content} in an image refers to regions where brightness changes slowly
+and gradually. The broad, dark expanse of a healthy lung field is an example: moving from
+one side to the other, the grey level changes only gradually. Low frequencies convey the
+large-scale structure---the overall shape of the heart, the general boundary between lungs and
+chest wall---but carry very little fine detail.
+
+\textbf{High-frequency content} refers to regions where brightness changes very rapidly over a
+very short distance. Every sharp edge in the image---the crisp white line where the diaphragm
+meets the dark lung, the fine white threads of branching blood vessels---corresponds to a
+rapid, sudden change in brightness. These rapid changes are the image's high-frequency
+components.
+
+Mathematically, any image can be decomposed into a weighted sum of these frequency
+components using the \textit{Fourier transform}: a well-established mathematical operation
+that asks, ``What mixture of gradual waves and rapid oscillations, when overlaid, would
+reconstruct exactly this image?'' \cite{rahaman_spectral_2019}. This decomposition is called
+the image's \textit{frequency spectrum}, and the specific pattern of bright and dark regions at
+each frequency is called the \textit{phase spectrum}.
+
+\textbf{Why low-dose noise lives in the high-frequency range.} When a sparse Poisson
+process deposits photons randomly onto the detector, the resulting speckle pattern creates
+rapid, irregular pixel-to-pixel brightness fluctuations---the signature of high-frequency noise
+\cite{foi_practical_2008}. Critically, however, the most diagnostically important pathological
+features in a chest radiograph also exist in the high-frequency range: the sharp margin of a
+consolidating pneumonia, the razor-thin pleural line of a pneumothorax, and the fine
+interstitial reticulations of viral infection are all defined by rapid brightness changes at short
+spatial scales \cite{wang_high-frequency_2020}. This creates the fundamental denoising
+dilemma: low-dose noise and clinically vital pathology overlap almost completely in the
+high-frequency region of the image spectrum. Any algorithm that simply suppresses high
+frequencies will remove both the noise and the diagnosis simultaneously.
+
+This frequency-domain perspective is not merely a conceptual aid. It is central to
+understanding why every existing class of reconstruction algorithm fails in a predictable and
+mathematically consistent way---and why the proposed PP-VAE requires an explicit
+frequency-domain constraint to succeed where its predecessors do not.
+
+% ─────────────────────────────────────────────────────────────
+
+The clinical impact of the physical degradation caused by noise is quantified using the
+Signal-to-Noise Ratio (SNR) and the Contrast-to-Noise Ratio (CNR). While SNR provides a
+global measure of signal strength relative to background fluctuations, CNR is far more
+clinically relevant, as it evaluates the detectability of a specific anatomical structure against
+its immediate surrounding background, factoring in both the inherent contrast difference and
+the local noise variance \cite{rose_sensitivity_1948}. According to the classical Rose Model
+of human visual perception---a foundational theorem in medical physics---a targeted feature
+must possess a CNR of at least 5.0 to be reliably distinguished from background noise by a
+human observer \cite{rose_sensitivity_1948}.
+
+In the context of low-dose paediatric chest radiography, this theoretical threshold becomes a
+tangible clinical danger. A chest radiograph is inherently a high-contrast environment (bone
+against air), but the critical pathological features are frequently low-contrast phenomena.
+Examples include early-stage pneumonic consolidation (alveolar exudate only slightly denser
+than aerated lung), subtle interstitial opacities characteristic of viral pneumonitis, or the fine
+visceral pleural line indicative of a life-threatening pneumothorax. As the dose is reduced and
+noise variance $\sigma^2(y)$ surges, the CNR of these subtle pathological features drops
+precipitously below the Rose criterion threshold of 5.0 \cite{rose_sensitivity_1948}. The
+noise obscures high-frequency structural edges and destroys low-contrast gradients, directly
+increasing the risk of false-negative interpretations (missing a subtle pneumonia) or
+false-positive interpretations (misinterpreting clustered quantum mottle as a lung nodule)
+\cite{bhadra_hallucinations_2021}.
+
+Therefore, the ability to safely image children at ultra-low doses is entirely bottlenecked by
+the physical limits of detector hardware. Overcoming the image quality-dose trade-off via
+post-acquisition computational enhancement has become a critical frontier in health data
+science. If the Poisson-Gaussian noise can be mathematically isolated and suppressed
+without destroying the underlying subtle anatomical signal, the diagnostic utility of
+ultra-low-dose radiography can be salvaged, bridging the gap between ALARA safety
+mandates and clinical efficacy.
+
+% ============================================================
+\section{Existing Approaches and Their Limitations}
+\label{sec:intro:existing}
+% ============================================================
+
+The pursuit of algorithmic solutions to mitigate image degradation has driven extensive
+research over the past three decades \cite{willemink_preparing_2020}. Methodologies have
+evolved from classical, hand-crafted statistical filters to highly complex, data-driven deep
+learning architectures. However, while each generation of algorithms has offered progressive
+improvements in SNR, they have consistently struggled with the unique and unforgiving
+challenges posed by medical image pathology.
+
+% ─────────────────────────────────────────────────────
+\subsection{Traditional Computational Methods}
+\label{sec:intro:existing:classical}
+% ─────────────────────────────────────────────────────
+
+Classical image enhancement approaches attempt to reconstruct the true signal by exploiting
+the presumed statistical properties of the noise or by relying on mathematical priors
+regarding human anatomy.
+
+Spatial filtering techniques such as Non-Local Means (NLM) estimate the uncorrupted signal
+by averaging over non-local image patches that share similar structural properties
+\cite{buades_non-local_2005}. Total Variation (TV) regularisation operates on the prior
+assumption that a natural medical image consists of piecewise-constant regions separated
+by sharp boundaries; it seeks to denoise the image by penalising the $L_1$ norm of the image
+gradient \cite{rudin_nonlinear_1992}. Wavelet-based denoising represents a further classical
+pillar, wherein the image is transformed into a multi-resolution frequency domain;
+high-frequency noise coefficients are isolated and subjected to hard or soft thresholding
+before the image is reconstructed via an inverse transformation \cite{donoho_ideal_1994}.
+
+To handle the complex Poisson-Gaussian noise profile inherent to digital radiographs, these
+traditional methods rely on Variance Stabilising Transformations (VSTs). The most robust of
+these is the Generalised Anscombe Transform (GAT) \cite{makitalo_optimal_2013}. The GAT
+mathematically maps the signal-dependent Poisson-Gaussian noise into a signal-independent,
+homoscedastic Gaussian distribution with unit variance, defined as:
+
+\begin{equation}
+\label{eq:intro:gat}
+I_{\mathrm{GAT}}(m,n) = \frac{2}{\alpha}\sqrt{\alpha \cdot I(m,n) + \frac{3}{8}\alpha^2 + \beta}
+\end{equation}
+
+Once the data is transformed into a Gaussian domain, efficient AWGN algorithms such as
+Block-Matching and 3D filtering (BM3D) can be deployed \cite{dabov_image_2007}. Following
+noise removal, an inverse GAT is applied to return the image to its original intensity space
+\cite{makitalo_optimal_2013}.
+
+\textbf{Limitations of Traditional Methods:} While mathematically robust, classical techniques
+possess fundamental flaws when applied to low-dose medical imaging. Primarily, they lack
+the semantic intelligence required to differentiate between high-frequency quantum noise and
+high-frequency anatomical structures (e.g., micro-calcifications, fine pulmonary vasculature,
+or interstitial reticulations). Consequently, TV, NLM, and wavelet methods invariably suffer
+from severe over-smoothing, erasing subtle diagnostic features alongside the noise
+\cite{rudin_nonlinear_1992, buades_non-local_2005}. Furthermore, the efficacy of the GAT is
+heavily reliant on the precise prior estimation of the detector-specific $\alpha$ and $\beta$
+parameters, a task that is computationally brittle and practically difficult to maintain across
+diverse, dynamic clinical imaging environments \cite{borges_noise_2020}. Additionally, the
+inverse GAT introduces mathematical bias errors at very low photon counts, degrading
+contrast \cite{makitalo_optimal_2013}. Crucially, none of these methods offer uncertainty
+quantification, a requirement for safe algorithmic deployment in clinical settings.
+
+% ─────────────────────────────────────────────────────
+\subsection{Deep Learning: Supervised Convolutional Neural Networks}
+\label{sec:intro:existing:cnn}
+% ─────────────────────────────────────────────────────
+
+The advent of deep learning has fundamentally disrupted medical image reconstruction,
+shifting the paradigm from hand-crafted statistical models to data-driven, learned
+representations. Early and highly successful approaches utilised supervised Convolutional
+Neural Networks (CNNs)---such as the U-Net \cite{ronneberger_u-net_2015}, ResNet variants
+\cite{he_deep_2016}, and DnCNN \cite{zhang_beyond_2017}---applied to the low-dose denoising
+problem, with RED-CNN representing the first high-impact CNN architecture specifically
+designed for low-dose CT reconstruction \cite{chen_low-dose_2017}.
+
+These architectures establish a direct, non-linear functional mapping from a degraded
+low-dose input to a high-quality, clean target image. They are trained on paired datasets
+using standard pixel-wise objective functions---most commonly Mean Squared Error ($L_2$
+norm) or Mean Absolute Error ($L_1$ norm). Due to their immense parameterised capacity,
+CNNs are exceptionally efficient at suppressing global noise patterns and restoring overall
+image structure \cite{chen_low-dose_2017}.
+
+\textbf{Limitations of Supervised CNNs:} The fundamental limitation of standard CNNs lies in
+their reliance on pixel-wise loss functions \cite{zhao_loss_2017}. When a network is trained to
+minimise the $L_2$ loss across a dataset, it learns to output the statistical conditional mean of
+all plausible clean images corresponding to the noisy input---a phenomenon known as
+``regression to the mean'' \cite{zhao_loss_2017}. This mathematically eliminates high-frequency
+texture and structural variance. The resulting reconstructions, while devoid of noise,
+frequently appear artificially smooth, blurry, or exhibit a ``plastic'' texture
+\cite{chen_low-dose_2017, willemink_evolution_2019}.
+
+A deeper, less obvious cause of this blurring is the \textit{spectral bias} of neural networks,
+also known as the \textit{Frequency Principle} \cite{rahaman_spectral_2019,
+xu_frequency_2020}. This is a mathematically proven property of all gradient-based neural
+network training: networks learn low-frequency patterns (the broad, gradual structures)
+first and fastest, while high-frequency patterns (the fine edges and textures) are learnt very
+slowly---and often imperfectly---even given unlimited training time
+\cite{rahaman_spectral_2019, xu_frequency_2020}. To use the musical analogy introduced
+earlier: a CNN first hears and reproduces the deep bass notes of an image, taking far longer
+to learn the sharp treble details that define diagnostic pathology. For medical image
+reconstruction, this means the overall shape of the lungs is restored quickly, while the fine
+margins of a consolidating pneumonia---precisely the high-frequency features that matter most
+clinically---are systematically under-recovered \cite{wang_high-frequency_2020}. In
+paediatric chest radiography, this over-smoothing actively conceals pathology, rendering the
+image diagnostically inadequate. Furthermore, deterministic CNNs provide no calibrated
+uncertainty output; clinicians are forced to trust the enhanced image blindly, which is
+unacceptable in safety-critical paediatric imaging.
+
+% ─────────────────────────────────────────────────────
+\subsection{Deep Learning: Generative Adversarial Networks}
+\label{sec:intro:existing:gan}
+% ─────────────────────────────────────────────────────
+
+To counteract the blurring effects inherent to MSE-trained CNNs, researchers turned to
+Generative Adversarial Networks (GANs) \cite{goodfellow_generative_2014}---applied to
+low-dose imaging via architectures such as pix2pix \cite{isola_image--image_2017},
+CycleGAN \cite{zhu_unpaired_2017}, and the WGAN-VGG framework \cite{yang_low-dose_2018}.
+GAN frameworks introduce a dual-network architecture: a generator that reconstructs the
+image, and a discriminator network trained on real, pristine radiographs, which penalises
+generator outputs that do not match the perceptual statistical distribution of high-quality
+images. This adversarial loss forces the generator to synthesise high-frequency textures,
+resulting in visually striking, sharp, and perceptually realistic images
+\cite{wolterink_generative_2017}.
+
+\textbf{Limitations of GANs:} While GANs excel at generating realistic textures, they are
+notoriously unconstrained and structurally unstable. A critical and highly documented safety
+hazard in GAN-based medical reconstruction is the phenomenon of \textit{hallucination}---the
+generation of synthetically plausible but anatomically false structures
+\cite{bhadra_hallucinations_2021}. Because the generator is incentivised solely to fool the
+discriminator, it may hallucinate non-existent pathology (e.g., generating a false lung nodule
+to match a learned texture distribution) or maliciously conceal real, subtle abnormalities
+\cite{bhadra_hallucinations_2021}. Bhadra et al.\ \cite{bhadra_hallucinations_2021}
+demonstrated that an inaccurate learned prior in these deep networks forces the
+manifestation of false structural properties, a phenomenon they termed the ``hallucination
+map.'' Compounding this, empirical studies of GAN-generated images demonstrate that,
+despite appearing visually sharp to human observers, their frequency spectrum is
+measurably distorted relative to real images: the generator systematically produces incorrect
+spectral power distributions, particularly in the high-frequency bands that correspond to fine
+anatomical detail \cite{durall_watch_2020}. In a clinical context, where algorithmic outputs
+dictate patient management, the risk of hallucinated findings renders pure GAN frameworks
+clinically unsafe and medico-legally indefensible \cite{bhadra_hallucinations_2021}. A further
+fatal flaw is \textit{mode collapse}: rather than learning the true data distribution, the
+generator may converge to a small set of outputs that consistently fool the discriminator,
+producing an identical radiograph regardless of patient-specific anatomy
+\cite{goodfellow_generative_2014}.
+
+% ─────────────────────────────────────────────────────
+\subsection{Deep Learning: Diffusion Models}
+\label{sec:intro:existing:diffusion}
+% ─────────────────────────────────────────────────────
+
+Currently representing the state-of-the-art in generative modelling, Denoising Diffusion
+Probabilistic Models (DDPMs) have been rapidly adapted for medical image reconstruction
+\cite{ho_denoising_2020, song_score-based_2021}. Diffusion models learn to generate data
+by iteratively reversing a Markovian diffusion process, gradually denoising a pure Gaussian
+noise matrix into a structured image guided by complex latent representations
+\cite{ho_denoising_2020}.
+
+\textbf{Limitations of Diffusion Models:} Despite their unprecedented generative quality,
+diffusion models present significant barriers to clinical deployment
+\cite{kazerouni_diffusion_2023}. Firstly, the iterative inference process is computationally
+exorbitant---requiring between 100 and 1,000 sequential forward passes---fundamentally
+limiting real-time clinical application. More critically, diffusion models are highly susceptible
+to dataset bias and prior dominance. Medical datasets inherently contain vastly more healthy
+scans than diseased ones. Consequently, if a DDPM is trained predominantly on healthy
+anatomy, the strong diffusion prior will forcibly denoise a pathological input image back
+towards a healthy counterfactual, actively scrubbing out disease features (such as subtle
+pneumonia or cardiomegaly) to conform to the learned distribution of normal radiographs
+\cite{kazerouni_diffusion_2023}. This ``hallucination of health'' phenomenon is the inverse of
+the GAN hallucination problem but is equally dangerous in the paediatric setting where the
+detection of subtle pathology is the primary clinical objective.
+
+% ─────────────────────────────────────────────────────
+\subsection{Deep Learning: Variational Autoencoders}
+\label{sec:intro:existing:vae}
+% ─────────────────────────────────────────────────────
+
+The Variational Autoencoder (VAE) offers a mathematically principled, probabilistic alternative
+to both deterministic CNNs and adversarial GANs \cite{kingma_auto-encoding_2014}. Rather
+than learning a rigid deterministic mapping, the VAE encoder maps the input $x$ to a
+posterior probability distribution $q_\phi(z|x)$ in a lower-dimensional latent space $z$,
+and the decoder reconstructs the image from samples drawn from this distribution, governed
+by a prior $p(z)$ \cite{kingma_auto-encoding_2014, kingma_introduction_2019}. This
+probabilistic formulation is highly advantageous for medical imaging: by sampling the latent
+space multiple times for a given input, clinicians can compute pixel-wise \textit{epistemic
+uncertainty maps} that highlight regions of low algorithmic confidence, providing a crucial
+safety signal absent from all deterministic competitors \cite{kendall_what_2017}.
+
+\textbf{Limitations of Standard VAEs:} Historically, the clinical translation of VAEs for image
+reconstruction has been blocked by severe inherent blurriness---often referred to as the
+``blur error'' \cite{bredell_explicitly_2023}. This degradation is not a failure of network
+capacity but a direct mathematical consequence of the standard Evidence Lower Bound
+(ELBO) objective function. The ELBO is derived assuming a factorised Gaussian likelihood
+for the decoder output: $p_\theta(x|z) = \mathcal{N}(x; \hat{x}_\theta(z), \sigma^2 I)$
+\cite{bredell_explicitly_2023}. Because the covariance matrix is assumed to be a scaled
+identity matrix $(\sigma^2 I)$, the likelihood calculation simplifies into an unweighted MSE
+loss. This is deeply problematic for two mutually reinforcing reasons. First, as established
+for CNNs above, MSE is dominated by low-frequency components and systematically ignores
+fine, high-frequency spatial covariances \cite{zhao_loss_2017}. Second, the spectral bias
+of the network's gradient dynamics further amplifies this effect: because neural networks
+inherently learn low-frequency patterns first and high-frequency patterns last, a VAE trained
+with MSE loss will settle into a solution that accurately reconstructs the broad shapes of the
+lungs but fails to recover the sharp, high-frequency edges and textures that carry
+diagnostic information \cite{xu_frequency_2020, bredell_explicitly_2023}. The result is a
+mathematically predictable blur that is not random error but a structured, frequency-selective
+failure to learn the high-frequency clinical content of the radiograph. Consequently, standard
+VAEs generate highly blurred images, rendering them incapable of preserving the sharp
+edges and subtle textural features required for paediatric chest radiograph interpretation.
+
+A further critical limitation is \textit{posterior collapse}: the KL divergence penalty within the
+ELBO objective can become too dominant, forcing the approximate posterior $q_\phi(z|x)$ to
+perfectly match the prior $p(z)$ for every input, collapsing the latent representation to carry
+zero patient-specific information \cite{lucas_dont_2019}. In a clinical denoising task, a
+collapsed VAE reconstructs a generic average radiograph entirely divorced from the specific
+patient's true anatomy.
+
+Table~\ref{tab:intro:comparison} provides a comparative synthesis of these five methodological
+families across the dimensions most relevant to paediatric clinical deployment.
+
+\begin{landscape}
+\begin{table}[H]
+  \centering
+  \caption{Comparative analysis of existing medical image enhancement approaches across
+  clinically relevant axes. The PP-VAE is designed to address all identified deficiencies,
+  including the frequency-domain limitation absent from all existing probabilistic frameworks.}
+  \label{tab:intro:comparison}
+  \small
+  \begin{tabularx}{\linewidth}{p{2.5cm} p{2.2cm} X X p{1.3cm} p{1.2cm} p{1.2cm}}
+    \toprule
+    \textbf{Method Class} &
+    \textbf{Examples} &
+    \textbf{Core Strengths} &
+    \textbf{Critical Limitations} &
+    \textbf{Pathol.\ Preserv.} &
+    \textbf{UQ?} &
+    \textbf{Paed.\ Focus?} \\
+    \midrule
+    Traditional Signal Processing
+      \cite{rudin_nonlinear_1992, buades_non-local_2005, dabov_image_2007, makitalo_optimal_2013}
+    & BM3D, TV, Wavelet, NLM, GAT
+    & Deterministic; requires no training data; statistically well-understood.
+    & Severe over-smoothing; cannot distinguish high-frequency noise from high-frequency pathology; brittle $\alpha$, $\beta$ estimation \cite{borges_noise_2020}.
+    & Poor & No & Limited \\
+    \midrule
+    Supervised CNNs
+      \cite{ronneberger_u-net_2015, chen_low-dose_2017, zhang_beyond_2017}
+    & U-Net, ResNet, DnCNN
+    & Fast inference; excellent global noise suppression; stable training.
+    & MSE loss causes regression to mean; spectral bias (\textit{F-Principle}) causes systematic under-recovery of high-frequency pathological details \cite{rahaman_spectral_2019, xu_frequency_2020}; no uncertainty.
+    & Moderate & No & Moderate \\
+    \midrule
+    Generative Adversarial Networks
+      \cite{goodfellow_generative_2014, wolterink_generative_2017, yang_low-dose_2018}
+    & CycleGAN, pix2pix, WGAN-VGG
+    & High perceptual fidelity; synthesises sharp edges and realistic textures.
+    & Mode collapse; hallucination of clinical features \cite{bhadra_hallucinations_2021}; distorted spectral power distribution \cite{durall_watch_2020}.
+    & Unreliable & No & Limited \\
+    \midrule
+    Diffusion Models
+      \cite{ho_denoising_2020, song_score-based_2021, kazerouni_diffusion_2023}
+    & DDPM, Latent Diffusion
+    & State-of-the-art generative quality; principled probabilistic framework.
+    & Prohibitive computational cost; prior collapse (``healing'' of pathology).
+    & Poor & Yes (ensemble) & Limited \\
+    \midrule
+    Standard VAEs
+      \cite{kingma_auto-encoding_2014, bredell_explicitly_2023}
+    & Convolutional VAE
+    & Probabilistic; continuous latent space; native uncertainty quantification.
+    & Blur error from factorised Gaussian likelihood + spectral bias causes systematic high-frequency failure \cite{xu_frequency_2020, bredell_explicitly_2023}; posterior collapse risk \cite{lucas_dont_2019}.
+    & Moderate & Yes & Limited \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+\end{landscape}
+
+% ============================================================
+\section{Critical Analysis of Literature, Research Motivation, and Gap Identification}
+\label{sec:intro:gap}
+% ============================================================
+
+The overarching challenge revealed by the existing literature is an irreconcilable tension
+between perceptual realism and structural, pathological fidelity. A systematic review of
+current medical image reconstruction frameworks exposes a perilous clinical reality:
+algorithms optimised purely for visual appeal---such as GANs and unconstrained diffusion
+models---jeopardise patient safety by hallucinating non-existent anatomy
+\cite{bhadra_hallucinations_2021}, whilst algorithms optimised for absolute pixel-wise error
+(CNNs and standard VAEs) compromise diagnosis by over-smoothing and obliterating subtle
+disease \cite{zhao_loss_2017, bredell_explicitly_2023}.
+
+The concept of hallucination in tomographic and radiographic reconstruction is currently the
+subject of intense critical scrutiny within the medical physics and health data science
+communities. As Bhadra et al.\ \cite{bhadra_hallucinations_2021} meticulously demonstrated
+using formal mathematical analysis, an inaccurate learned prior in deep generative networks
+forces the algorithmic manifestation of false structural properties, yielding a quantifiable
+``hallucination map.'' In a clinical setting, an algorithm hallucinating a pulmonary nodule
+where none exists---or, conversely, hallucinating healthy lung tissue over a developing
+pneumothorax---carries disastrous medico-legal and diagnostic implications. Similarly, Kc
+et al.\ \cite{kc_sfrc_2024} highlighted that while deep learning outputs may appear visually
+appealing to human observers, the absence of robust, pathology-preserving mathematical
+constraints inevitably leads to the synthesis of spurious edge details undetectable by
+standard pixel-fidelity metrics.
+
+Conversely, the probabilistic and interpretable nature of the VAE provides an optimal
+theoretical foundation for safe medical deployment, primarily because it avoids the
+adversarial instability of GANs and offers natural uncertainty quantification
+\cite{kingma_introduction_2019}. However, as previously established, its clinical translation
+has been blocked by the blur error \cite{bredell_explicitly_2023}.
+
+Recent breakthrough literature presented at the International Conference on Learning
+Representations (ICLR) 2023 by Bredell, Flouris et al.\ \cite{bredell_explicitly_2023}
+fundamentally redefined the mathematical boundaries of VAE reconstruction. Bredell et al.\
+identified that standard VAEs fail to capture high frequencies because the assumed identity
+covariance matrix in the Gaussian likelihood fails to map spatial frequency correlations. They
+proposed explicitly minimising the blur error by assuming an image-specific blurring kernel in
+the frequency domain, mathematically framing the reconstruction via Wiener deconvolution.
+By utilising a block-circulant covariance matrix, their formulation allows the VAE to retain its
+mathematical connection to ELBO likelihood maximisation while forcing the network to
+explicitly penalise blurry generations in the Fourier domain.
+
+Despite these profound theoretical advancements, a distinct and critical research gap remains.
+
+\textbf{Gap 1: Lack of Paediatric Specificity and Pathology Focus.} Existing evaluations of
+advanced VAEs---including the blur-minimising formulations by Bredell et al.---focus largely
+on high-resolution natural image datasets (e.g., CelebA \cite{liu_deep_2015}) or clean,
+high-contrast adult MRI slices. These studies bypass the uniquely challenging domain of the
+paediatric chest X-ray, which is characterised by distinct anatomical proportions, high
+dynamic range, and severe Poisson-Gaussian noise corruption \cite{yang_medmnist_2023}.
+Furthermore, while minimising global blur is a significant step forward, preserving specific
+diagnostic pathology---such as the faint, hazy opacities of a viral pneumonia---requires more
+than frequency-domain sharpening alone. It requires a dedicated, multi-constraint objective
+function that simultaneously addresses spatial accuracy, edge retention, and perceptual
+intelligence.
+
+\textbf{Gap 2: Absence of Multi-Constraint Regularisation in Probabilistic Frameworks.}
+Current literature lacks VAE reconstruction frameworks explicitly designed and constrained to
+preserve pathology. The field relies heavily on single-metric loss functions. A framework
+combining structural similarity objectives, perceptual feature matching, pixel-wise fidelity,
+and spatial edge preservation within a stochastic ELBO envelope remains largely unexplored
+for paediatric thoracic imaging.
+
+\textbf{Gap 3: Uncertainty Quantification as a Clinical Requisite.} While VAEs naturally
+support uncertainty quantification, very few studies leverage this capability to provide
+clinically actionable pixel-level confidence maps alongside the reconstructed radiograph
+\cite{kendall_what_2017}. In deterministic models, clinicians are forced to blindly trust the enhanced image. Providing a spatial map of epistemic uncertainty is a necessary step to bridge the gap between algorithm design and clinical trust.
+
+\textbf{Gap 4: Absence of Explicit Frequency-Domain Regularisation.} Although the spectral bias of neural networks is a rigorously proven, universal property of gradient-based training \cite{rahaman_spectral_2019, xu_frequency_2020}, no existing VAE framework designed for paediatric radiograph enhancement includes an explicit loss penalty thatdirectly targets discrepancies in the frequency spectrum of the reconstructed image. The practical consequence is that all existing reconstruction algorithms---regardless of their spatial-domain constraints---implicitly permit systematic errors in the high-frequency content of the output. As demonstrated by Durall et al.\ \cite{durall_watch_2020}, even visually convincing deep neural network outputs can contain measurable, clinically significant distortions in their spectral power distribution when examined in the frequency domain. These distortions occur specifically in the high-frequency range that carries the fine diagnostic detail of paediatric pathology. A loss function that operates directly in the Fourier domain---computing how different the frequency composition of the reconstruction is from the target---provides the only mechanism to directly and explicitly correct this systematic spectral error. Without such a constraint, the high-frequency clinical content that spectral bias neglects will remain under-recovered, regardless of how well the spatial-domain losses perform.
+Table~\ref{tab:intro:gaps} synthesises these identified gaps, their evidence base, clinical consequences, and the proposed framework's solutions.
+
+\begin{table}[H]
+  \centering
+  \caption{Gap synthesis in medical image enhancement. Each identified limitation maps to a
+  specific design decision in the proposed PP-VAE framework.}
+  \label{tab:intro:gaps}
+  \small
+  \begin{tabularx}{\textwidth}{p{2.4cm} p{3.2cm} p{4.4cm} p{4.8cm}}
+    \toprule
+    \textbf{Identified Limitation} &
+    \textbf{Evidence Base} &
+    \textbf{Clinical Consequence} &
+    \textbf{Proposed Solution (PP-VAE)} \\
+    \midrule
+    Hallucination of anatomical structures
+    & \cite{bhadra_hallucinations_2021, kc_sfrc_2024}
+    & False-positive diagnoses; erroneous surgical or therapeutic interventions.
+    & Avoid pure adversarial objectives; rely on constrained, regularised probabilistic decoders (VAE). \\
+    \midrule
+    Loss of subtle pathology (over-smoothing)
+    & \cite{bredell_explicitly_2023, zhao_loss_2017}
+    & False-negative interpretations; failure to detect early-stage pneumonia or interstitial disease.
+    & Integrate edge-preservation ($\mathcal{L}_\mathrm{Edge}$) and structural similarity ($\mathcal{L}_\mathrm{SSIM}$) constraints directly into the VAE loss. \\
+    \midrule
+    Blur-induced error in VAE latent modelling
+    & \cite{bredell_explicitly_2023}
+    & Concealment of sharp anatomical margins; degraded diagnostic feature extraction.
+    & Reformulate VAE reconstruction loss incorporating spatial and frequency-domain penalties without violating the ELBO. \\
+    \midrule
+    Lack of paediatric CXR specificity
+    & \cite{kermany_identifying_2018, yang_medmnist_2023, strauss_image_2009}
+    & Models generalise poorly to the unique anatomy, pathology, and low-dose constraints of children.
+    & Train and validate exclusively on PneumoniaMNIST \cite{yang_medmnist_2023}. \\
+    \midrule
+    Absence of uncertainty quantification
+    & \cite{kendall_what_2017, ovadia_can_2019}
+    & Clinicians cannot ascertain algorithmic confidence, leading to over-reliance or blind distrust.
+    & Exploit the VAE stochastic latent space $q_\phi(z|x)$ to generate pixel-level epistemic uncertainty maps. \\
+    \midrule
+    \textbf{Absence of explicit frequency-domain regularisation}
+    & \textbf{\cite{rahaman_spectral_2019, xu_frequency_2020, durall_watch_2020}}
+    & \textbf{Systematic under-recovery of high-frequency pathological detail due to spectral bias; visually plausible but spectrally distorted reconstructions.}
+    & \textbf{Add a Focal Frequency Loss term ($\mathcal{L}_\mathrm{Freq}$) that directly penalises discrepancies in the image frequency spectrum \cite{jiang_focal_2021}.} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+% ============================================================
+\section{Research Aims and Objectives}
+\label{sec:intro:aims}
+% ============================================================
+
+The overarching aim of this dissertation is to directly address the highlighted clinical,
+physical, and engineering gaps by designing, implementing, and rigorously validating a novel
+Pathology-Preserving Variational Autoencoder (PP-VAE). This framework is specifically
+engineered to enhance simulated low-dose paediatric chest radiographs, recovering
+high-fidelity diagnostic images whilst mathematically suppressing the twin risks of structural
+hallucination and over-smoothing. To achieve this primary aim, the research is structured
+around the following specific scientific objectives:
+
+\begin{enumerate}
+  \item \textbf{Degradation Modelling:} To formulate and apply a mathematically rigorous
+        Poisson-Gaussian degradation pipeline that accurately simulates realistic low-dose
+        quantum and electronic noise profiles characteristic of paediatric chest radiography
+        under ALARA protocols.
+
+  \item \textbf{Architecture and Objective Design:} To construct a novel PP-VAE framework
+        driven by a composite, multi-constraint loss function. This objective seeks to
+        explicitly balance probabilistic latent regularisation (KL divergence) with pixel
+        fidelity, high-frequency edge retention, perceptual structural similarity, and an
+        explicit frequency-domain spectral fidelity penalty---the latter directly counteracting
+        the spectral bias of gradient-based neural network training
+        \cite{rahaman_spectral_2019, xu_frequency_2020}.
+
+  \item \textbf{Pathology Preservation Validation:} To train the proposed model on a
+        benchmark paediatric chest radiograph dataset (PneumoniaMNIST
+        \cite{kermany_identifying_2018, yang_medmnist_2023}) and quantitatively assess its
+        capacity to preserve critical diagnostic features (e.g., pneumonia consolidations)
+        compared to traditional deterministic convolutional baseline architectures.
+
+  \item \textbf{Uncertainty Quantification:} To exploit the probabilistic nature of the VAE's
+        latent space to compute and evaluate pixel-wise uncertainty maps, providing a
+        measurable, visual index of structural reliability to support safer clinical
+        interpretation \cite{kendall_what_2017}.
+\end{enumerate}
+
+% ============================================================
+\section{Contributions of This Work}
+\label{sec:intro:contributions}
+% ============================================================
+
+The proposed PP-VAE represents a substantial methodological deviation from standard
+medical image denoising networks. While a traditional VAE optimises the standard
+ELBO---comprising an unweighted pixel-wise reconstruction loss (MSE) and a
+Kullback-Leibler (KL) divergence regularisation term \cite{kingma_auto-encoding_2014}---the
+PP-VAE introduces a highly orchestrated, multi-constraint objective function that forces the
+gradient descent optimisation to navigate a heavily regularised loss landscape penalising
+clinical infidelity.
+
+The composite loss framework incorporates the following six distinct components:
+
+\begin{description}
+
+  \item[Pixel Reconstruction Fidelity ($\mathcal{L}_\mathrm{MSE}$):] Calculates squared
+  intensity differences between the predicted and target images, providing the foundational
+  global intensity mapping and establishing macro-anatomical correctness
+  \cite{zhao_loss_2017}. This is the standard loss function shared with all conventional CNN
+  architectures.
+
+  \item[Edge-Preservation Constraints ($\mathcal{L}_\mathrm{Edge}$):] Utilises differentiable
+  spatial gradient operators (Sobel/Laplacian, implemented via Kornia
+  \cite{riba_kornia_2020}) to heavily penalise discrepancies in high-frequency spatial
+  gradient domains, mathematically ensuring that sharp clinical boundaries---the diaphragm
+  margin, cardiac silhouette, and consolidation borders---are rigidly maintained rather than
+  smoothed away \cite{canny_computational_1986}.
+
+  \item[Structural Similarity Objective ($\mathcal{L}_\mathrm{SSIM}$):] Evaluates local
+  dependencies, inter-pixel covariances, and structural integrity via a differentiable SSIM
+  formulation \cite{wang_image_2004, zhao_loss_2017}. Unlike MSE, which assumes pixel
+  independence, SSIM aligns the network's output with human visual perception models,
+  penalising structural distortions that alter the diagnostic pattern of the radiograph.
+
+  \item[Perceptual Fidelity Loss ($\mathcal{L}_\mathrm{Perceptual}$):] Extracted via the
+  hidden feature layers of a pre-trained VGG-16 network \cite{simonyan_very_2015},
+  following Johnson et al.\ \cite{johnson_perceptual_2016}. This feature-level matching forces
+  the VAE to preserve the spatial correlation characteristics of the input pathology, ensuring
+  realistic textural synthesis without the hallucination risk of adversarial training.
+
+  \item[Probabilistic Latent Regularisation ($\mathcal{L}_\mathrm{KL}$):] Evaluates the
+  Kullback-Leibler divergence \cite{kullback_information_1951} between the learned posterior
+  $q_\phi(z|x)$ and a standard Gaussian prior $p(z)$, ensuring the latent space remains
+  continuous and well-behaved. This probabilistic bottleneck enables the generative sampling
+  required for epistemic uncertainty quantification---a strict requirement for deployment in
+  safety-critical medical environments \cite{kendall_what_2017}.
+
+  \item[Frequency Domain Spectral Loss ($\mathcal{L}_\mathrm{Freq}$):] \textit{This is the
+  novel sixth constraint, introduced to directly counteract the spectral bias of the neural
+  network.} Returning to the musical analogy introduced in Section~\ref{sec:intro:tradeoff:frequency}:
+  the five loss terms described above all operate in what is called the \textit{spatial domain}---they
+  look at individual pixel values, local edges, or overall structural patterns, just as a musician
+  might listen to the overall sound of a piece. The frequency loss, by contrast, decomposes
+  both the target and the reconstructed image into their constituent frequency components
+  using the Fourier transform, and then penalises the network specifically for getting any of
+  those frequencies wrong \cite{jiang_focal_2021}.
+
+  More precisely, the loss computes the 2D Discrete Fourier Transform of both images and
+  compares their frequency spectra component by component. Crucially, it does not treat all
+  frequencies equally. Instead, it automatically places the \textit{highest penalty} on
+  whichever frequency bands the network is currently reconstructing most poorly. In practice,
+  because spectral bias means the network always starts by neglecting the high-frequency
+  bands \cite{xu_frequency_2020, rahaman_spectral_2019}, the frequency loss will
+  concentrate extra gradient signal precisely on those high-frequency components---the
+  sharp edges and fine textures of pneumonic consolidation---forcing the network to attend to
+  them rather than accepting the blurred low-frequency approximation that minimising MSE
+  alone would allow.
+
+  Formally, the Focal Frequency Loss (FFL) is defined as \cite{jiang_focal_2021}:
+
+  \begin{equation}
+  \label{eq:intro:freq}
+  \mathcal{L}_\mathrm{Freq} = \frac{1}{MN}
+  \sum_{u=0}^{M-1}\sum_{v=0}^{N-1}
+  w(u,v)\,\bigl|\mathcal{F}(\hat{x})(u,v) - \mathcal{F}(x)(u,v)\bigr|^2
+  \end{equation}
+
+  where $\mathcal{F}$ denotes the 2D Discrete Fourier Transform, $M \times N$ is the image
+  resolution, $(u, v)$ are coordinates in the frequency domain (each representing a different
+  spatial frequency), $\hat{x}$ is the reconstructed image, $x$ is the clean target, and
+  $w(u,v)$ is an adaptive weight for each frequency band that increases when the network
+  is performing poorly at that frequency \cite{jiang_focal_2021}. The term
+  $|\mathcal{F}(\hat{x})(u,v) - \mathcal{F}(x)(u,v)|^2$ is simply the squared difference
+  between the frequency spectra of the two images at each frequency coordinate. The entire
+  expression is then the weighted average of these errors across the full spectrum.
+
+  This constraint is the first explicit frequency-domain penalty applied within a multi-constraint
+  VAE framework for paediatric chest radiograph enhancement, directly addressing Gap 4
+  identified in Section~\ref{sec:intro:gap}. It is differentiable via the standard PyTorch
+  \texttt{torch.fft.fft2} function, adding negligible computational overhead to the training
+  loop.
+
+\end{description}
+
+The complete composite loss function is therefore:
+
+\begin{equation}
+\label{eq:intro:totalloss}
+\mathcal{L}_\mathrm{total} =
+\mathcal{L}_\mathrm{MSE}
++ \beta\,\mathcal{L}_\mathrm{KL}
++ \lambda_1\,\mathcal{L}_\mathrm{Edge}
++ \lambda_2\,\mathcal{L}_\mathrm{Perceptual}
++ \lambda_3\,\mathcal{L}_\mathrm{SSIM}
++ \lambda_4\,\mathcal{L}_\mathrm{Freq}
+\end{equation}
+
+where $\beta$ and $\lambda_{1\text{--}4}$ are scalar weighting hyperparameters tuned via
+systematic ablation, as detailed in Chapter 3.
+
+To robustly test this framework against the clinical demographic most in need of dose
+reduction, the research exclusively leverages the PneumoniaMNIST dataset
+\cite{yang_medmnist_2023}. Derived from Kermany et al.'s \cite{kermany_identifying_2018}
+seminal work published in \textit{Cell}, PneumoniaMNIST provides a highly validated,
+large-scale ($n{=}5{,}856$) benchmarking environment specifically consisting of paediatric
+chest X-rays (patients aged 1--5 years), labelled for binary classification (normal vs.\
+pneumonia)---an ideal substrate to test whether an enhancement algorithm truly preserves
+subtle respiratory pathology under heavy noise degradation.
+
+By orchestrating these six mathematical constraints and validating on a dedicated paediatric
+dataset, this dissertation proposes a method that bridges the gap between the rigid statistical
+guarantees of classical signal processing and the powerful yet volatile generative capabilities
+of modern deep learning. The PP-VAE is positioned to support safer, ultra-low-dose clinical
+imaging for children without sacrificing diagnostic integrity.
+
+% ============================================================
+\section{Dissertation Roadmap}
+\label{sec:intro:roadmap}
+% ============================================================
+
+To systematically address the research objectives and comprehensively detail the
+development of the PP-VAE, this dissertation is structured as follows:
+
+\begin{itemize}
+  \item \textbf{Chapter 2 (Literature Review):} Expands significantly upon the concepts
+        introduced in this chapter, providing an exhaustive, systematic review of radiation
+        physics, the evolution of deep learning reconstruction techniques, and the
+        mathematical foundations of Variational Autoencoders and loss function
+        engineering---including a dedicated section on the frequency domain, the Frequency
+        Principle (spectral bias), and the theoretical justification for the Focal Frequency Loss
+        as the PP-VAE's sixth constraint \cite{xu_frequency_2020, rahaman_spectral_2019,
+        jiang_focal_2021}.
+
+  \item \textbf{Chapter 3 (Methods):} Details the rigorous experimental pipeline: the
+        parameterisation of the Poisson-Gaussian degradation model, the architectural
+        topology of the baseline and proposed PP-VAE networks, the mathematical derivation
+        of the composite six-term loss function, the systematic ablation study design, and the
+        statistical evaluation framework deployed.
+
+  \item \textbf{Chapter 4 (Results):} Presents the quantitative and qualitative findings of
+        the study, benchmarking the PP-VAE against standard convolutional autoencoders
+        (CAEs) and baseline VAEs. Includes deep latent space analyses (t-SNE/UMAP
+        projections \cite{van_der_maaten_visualizing_2008, mcinnes_umap_2018}), calibration
+        metrics across multiple degradation severities, and ablation results that isolate the
+        specific contribution of $\mathcal{L}_\mathrm{Freq}$.
+
+  \item \textbf{Chapter 5 (Discussion):} Interprets the principal findings within the context
+        of the existing literature, discussing clinical relevance, theoretical significance, and
+        identifying the limitations of the proposed framework.
+
+  \item \textbf{Chapter 6 (Conclusion):} Summarises the scientific contributions, directly
+        answers the research aims and objectives, and outlines concrete avenues for future
+        research and prospective clinical translation.
+\end{itemize}
+
+
+% ============================================================
+% CHAPTER 3 — METHODS
+% ============================================================
+\chapter{Methods}
+\label{chap:methods}
+
+\section{Study Design Overview}
+\label{sec:methods:overview}
+
+This study was structured as a controlled computational experiment designed to evaluate the
+capacity of a novel multi-constraint Variational Autoencoder to recover diagnostic image
+quality from simulated low-dose paediatric chest radiographs. Because paired degraded and
+clean images were generated from the same source data, the ground truth was known
+exactly for every observation, enabling rigorous quantitative evaluation without the ambiguity
+inherent to real acquisition studies. The experimental pipeline proceeded through four
+sequential phases.
+
+In Phase 1, the PneumoniaMNIST dataset was acquired via the medmnist Python library and
+a Poisson-Gaussian noise model was applied to generate paired (degraded, clean) training
+samples across a pre-specified grid of dose-level parameters. In Phase 2, three model
+architectures were implemented: a deterministic Convolutional Autoencoder (CAE), a
+Baseline Variational Autoencoder (VAE), and the proposed Pathology-Preserving
+Variational Autoencoder (PP-VAE). In Phase 3, a systematic ablation study was conducted
+across eight experimental arms, each activating a distinct subset of the composite loss
+function, to isolate the contribution of individual constraints. In Phase 4, the trained models
+were evaluated on a held-out test set using quantitative reconstruction metrics, latent space
+quality indices, calibration measures, and formal statistical testing.
+
+All four phases were implemented as modular, reusable Python functions organised into a
+structured codebase (\texttt{src/data}, \texttt{src/models}, \texttt{src/losses}, \texttt{src/training}, \texttt{src/evaluation}), with a single Jupyter notebook serving as the orchestration interface. This separation of logic from presentation ensures full reproducibility: every experiment can be re-run from the command line via \texttt{scripts/run\_ablation.py} without the notebook environment.
+
+% FIGURE PLACEHOLDER
+\figplaceholder{Four-phase experimental pipeline: (1) data acquisition and degradation simulation, (2) architecture implementation (CAE, VAE, PP-VAE), (3) systematic ablation training across eight experimental arms, (4) quantitative and qualitative evaluation.}
+
+% ============================================================
+\section{Dataset}
+\label{sec:methods:dataset}
+
+\subsection{PneumoniaMNIST}
+\label{sec:methods:dataset:pneu}
+
+The PneumoniaMNIST dataset, acquired via the medmnist Python library v2.3.0
+\cite{yang_medmnist_2023}, was used as the exclusive training and evaluation substrate.
+PneumoniaMNIST is derived from the original paediatric chest radiograph collection assembled
+by Kermany et al.\ \cite{kermany_identifying_2018} at the Guangzhou Women and
+Children's Medical Centre, China. The collection comprises 5,856 Anterior-Posterior (AP)\footnote{Anterior-Posterior (AP) means the X-ray beam travels from the front of your chest to the back.} chest
+radiographs acquired from paediatric patients aged one to five years, pre-processed to
+greyscale and resized to a standardised resolution of 28$\times$28 pixels. Each image is
+assigned a binary diagnostic label: Pneumonia ($n = 4{,}273$; bacterial or viral) or Normal
+($n = 1{,}583$), yielding a class imbalance of approximately 73\% pneumonia to 27\% normal.
+
+The dataset is pre-partitioned into three non-overlapping splits: a training set
+($n = 4{,}708$), a validation set ($n = 524$), and a held-out test set ($n = 624$). These
+official splits were used unchanged across all experimental arms, ensuring that every arm
+was trained and evaluated on an identical patient partition. Images were loaded as
+single-channel float tensors normalised to the range $[0, 1]$ via the \texttt{ToTensor()}
+transform from torchvision, applied uniformly without any contrast normalisation or
+histogram equalisation that could confound the degradation simulation. No augmentation
+beyond the identity was applied to the validation or test sets.
+
+As this study used a pre-existing, publicly available benchmark dataset with no new data
+collection, no new patient recruitment, and no direct clinical interaction, no additional ethical
+approval was required beyond that already granted for the original Kermany et al.\
+collection \cite{kermany_identifying_2018}. The class imbalance between pneumonia and
+normal cases is acknowledged as a potential confound in the subgroup analyses reported in
+Chapter 3 (Resutls section (Link it)) and is addressed in the discussion.
+
+% TABLE PLACEHOLDER
+\tabplaceholder{PneumoniaMNIST dataset characteristics: split sizes, class distribution
+(Normal vs.\ Pneumonia), percentage imbalance, and MedMNIST library version.}
+
+\subsection{Justification of Dataset Choice}
+\label{sec:methods:dataset:justification}
+
+The 28$\times$28 pixel resolution of PneumoniaMNIST warrants explicit justification, as it
+departs substantially from the full-resolution clinical imaging environment. Three
+considerations motivate this choice for an architectural proof-of-concept study.
+
+First, although PneumoniaMNIST images are substantially downsampled from their original clinical resolution, prior benchmarking studies have shown that deep-learning models can still achieve high classification performance on the 28×28 dataset\cite{}. The MedMNIST v2 benchmark reported strong baseline results across multiple architectures, suggesting that sufficient discriminative information for pneumonia classification might be retained despite aggressive image compression. Nevertheless, the dataset is intended primarily as a lightweight benchmark for rapid prototyping and educational research rather than a direct surrogate for clinical-resolution chest radiography. \cite{yang_medmnist_2023, Yang_2021, }
+
+Second, the reduced spatial dimensionality enables a computationally tractable yet scientifically informative ablation framework \cite{yang_medmnist_2023, Yang_2021}. The study evaluates eight experimental arms across multiple latent-space and loss-weight configurations, an undertaking that would be considerably more resource-intensive at clinical image resolutions. By facilitating rapid hypothesis testing and architectural iteration, the 28×28 benchmark serves as an efficient proof-of-concept environment in which core model behaviours can be characterised before subsequent scaling and validation on higher-resolution datasets\cite{tan_efficientnet_2019, he_rethinking_2019}.
+
+
+Third, the primary scientific contribution of this work is the proposed composite loss framework rather than optimisation for a specific image resolution. The PP-VAE architecture and its constituent loss functions are
+formulated independently of image size and can therefore be implemented on higher-resolution inputs without modification \cite{kingma_autoencoding_2014,higgins_beta_2017}.
+Consequently, the present study should be interpreted as an architecture-level evaluation of a multi-constraint training objective within a controlled benchmark setting \cite{yang_medmnist_2023}, rather than as a clinical-performance assessment of full-resolution radiograph reconstruction.
+
+% ============================================================
+\section{Degradation Simulation}
+\label{sec:methods:degradation}
+
+\subsection{Poisson-Gaussian Noise Model}
+\label{sec:methods:degradation:poisson}
+
+A physically principled Poisson-Gaussian degradation model was applied to all clean images
+prior to model input, following the standard formulation established by Foi et al.\
+\cite{foi_practical_2008} and subsequently applied in low-dose CT and digital radiography
+reconstruction literature \cite{lee_deep_2018, borges_noise_2020}. The measured noisy
+pixel intensity $\tilde{x}$ at pixel position $i$ is defined as:
+
+\begin{equation}
+\label{eq:methods:poisson_gaussian}
+\tilde{x}_i = \frac{1}{\eta}\,\mathrm{Poisson}(\eta \cdot x_i) + \mathcal{N}(0,\,\sigma^2)
+\end{equation}
+
+where $x_i \in [0,1]$ is the normalised clean pixel intensity, $\eta > 0$ is the peak photon
+count parameter acting as a proxy for radiation dose, and $\sigma > 0$ is the standard
+deviation of additive Gaussian electronic noise from the detector's read-out circuitry. The
+noise model thus decomposes into two physically distinct components: a signal-dependent
+Poisson term modelling quantum mottle (photon counting stochasticity), and a
+signal-independent Gaussian term modelling constant detector read-out noise.
+
+The resulting total noise variance at intensity $y$ is a straight-line function of the expected signal
+\cite{foi_practical_2008, borges_noise_2020}:
+\begin{equation}
+\label{eq:methods:noise_variance}
+\sigma^2_{\mathrm{total}}(y) = \frac{y}{\eta} + \sigma^2
+\end{equation}
+
+Foi et al.\ \cite{foi_practical_2008} validated this parametric form against real CCD sensor
+data, reporting $R^2 > 0.99$ across a range of photon flux levels.
+
+In implementation, the Poisson term was approximated via a Gaussian with the same mean
+and variance as the Poisson distribution, using the scaled-noise identity:
+\begin{equation}
+\label{eq:methods:poisson_approx}
+\frac{1}{\eta}\,\mathrm{Poisson}(\eta \cdot x_i)
+  \;\approx\; x_i + \sqrt{\frac{x_i}{\eta}}\;\varepsilon_P, \quad \varepsilon_P \sim \mathcal{N}(0,1)
+\end{equation}
+
+This approximation is valid when $\eta \cdot x_i \gg 1$, a condition satisfied for all dose
+levels and intensities used in this study except at extreme photon starvation
+($\eta = 50$, $x_i \approx 0$). At such extreme values, the approximation introduces a small
+positive bias, consistent with the practical implementation described by Foi et al.\
+\cite{foi_practical_2008}. The final degraded image was clipped to $[0,1]$ to suppress
+unphysical negative intensities arising from the Gaussian noise tail.
+
+The degradation was implemented as a PyTorch \texttt{nn.Module} (\texttt{Poisson-Gaussian Degradation}) to enable seamless integration into the DataLoader
+pipeline and ensure identical paired samples across all experimental arms. Parameters $\eta$
+and $\sigma$ accept either scalar values (fixed degradation) or 2-tuples for uniform random
+sampling per batch (dose augmentation), providing flexibility for sensitivity sweeps without
+code duplication.
+
+\paragraph{Clinical dose correspondence.}
+The approximate clinical interpretations of the $\eta$ values used in this study are as
+follows: $\eta = 50$ corresponds to ultra-low-dose conditions (approximately 10--20\% of
+standard reference dose), $\eta = 100$ to low-dose ($\sim$30--40\%), $\eta = 200$ to
+reduced-dose ($\sim$60--70\%), and $\eta = 300$ to near-standard-dose conditions. These
+mappings are order-of-magnitude clinical approximations rather than calibrated dose
+measurements, as the PneumoniaMNIST images are already reconstructed diagnostic images
+rather than raw detector data. The primary ablation study used the single most challenging
+degradation setting ($\eta = 50$, $\sigma = 0.10$) to maximise the discriminative power
+between experimental arms.
+
+\subsection{Contrast-Reduction Degradation}
+\label{sec:methods:degradation:contrast}
+
+A secondary linear contrast-reduction model was implemented for auxiliary architecture
+sanity-check experiments:
+\begin{equation}
+\label{eq:methods:contrast_degradation}
+x_{\mathrm{deg}} = \alpha\,(x - \mu) + \mu + \mathcal{N}(0,\,\sigma^2)
+\end{equation}
+
+where $\mu$ is the per-image mean intensity and $\alpha \sim \mathrm{Uniform}(\alpha_{\min},\, 1)$
+is a contrast reduction factor sampled randomly per image. This simplified model does not
+capture the signal-dependent noise physics of real radiography and was used only to verify
+that model architectures behaved sensibly under an alternative degradation regime.
+
+\subsection{Degradation Parameter Grid}
+\label{sec:methods:degradation:grid}
+
+For the degradation-severity sensitivity analysis (Section~\ref{sec:methods:training:ablation}),
+a systematic grid of four dose levels was evaluated, defined by the
+\texttt{DegradationPipeline} class:
+
+% TABLE PLACEHOLDER
+\tabplaceholder{Degradation parameter grid: $\eta$ and $\sigma$ values, approximate clinical
+dose-level label, and mean SNR (dB) at pixel intensity $y = 0.5$ and $y = 0.3$, computed
+from Equation~\ref{eq:methods:noise_variance}.}
+
+% FIGURE PLACEHOLDER
+\figplaceholder{Poisson-Gaussian degradation pipeline: representative paediatric chest
+radiograph (Normal and Pneumonia) rendered at $\eta \in \{50, 100, 200, 300\}$ alongside
+the clean ground truth. The progressive loss of fine structural detail and increase in
+quantum mottle as $\eta$ decreases is visually apparent.}
+
+% ============================================================
+\section{Model Architectures}
+\label{sec:methods:architecture}
+
+\subsection{Shared Encoder-Decoder Backbone}
+\label{sec:methods:architecture:backbone}
+
+All three model families (CAE, VAE, PP-VAE) share the same convolutional backbone to
+ensure that observed differences in reconstruction performance are attributable exclusively
+to the training objective rather than to architectural capacity differences. The encoder
+consists of two convolutional blocks operating on the single-channel $28\times28$ input:
+
+\begin{equation}
+\label{eq:methods:encoder}
+h = \mathrm{MaxPool}_2\bigl(\mathrm{ReLU}(\mathrm{Conv}_{32})\bigr) \;\to\;
+    \mathrm{MaxPool}_2\bigl(\mathrm{ReLU}(\mathrm{Conv}_{64})\bigr) \;\to\;
+    \mathrm{Flatten} \;\to\; \mathrm{FC}_{z_\mathrm{dim}}
+\end{equation}
+
+The first convolutional block applies a $3\times3$ convolution with 32 filters and padding 1,
+followed by ReLU activation and $2\times2$ max-pooling, reducing the spatial dimensions
+from $28\times28$ to $14\times14$. The second block applies a $3\times3$ convolution with
+64 filters under identical settings, followed by a further $2\times2$ max-pool, yielding a
+feature map of shape $64\times7\times7 = 3{,}136$ elements. A fully connected layer then
+projects this flattened representation to the latent dimension $z_\mathrm{dim}$.
+
+The decoder mirrors this structure using transposed convolutions:
+\begin{equation}
+\label{eq:methods:decoder}
+\mathrm{FC}_{3136} \;\to\; \mathrm{Reshape}_{(64,7,7)} \;\to\;
+    \mathrm{ReLU}(\mathrm{ConvT}_{32}) \;\to\;
+    \mathrm{Sigmoid}(\mathrm{ConvT}_{1})
+\end{equation}
+
+Each \texttt{ConvTranspose2d} layer uses a $2\times2$ kernel with stride 2, doubling the
+spatial resolution at each stage. The final Sigmoid activation constrains the output to
+$[0,1]$, matching the normalised intensity range of the input images.
+
+% FIGURE PLACEHOLDER
+\figplaceholder{Shared encoder-decoder backbone. Encoder (left): two convolutional
+max-pool blocks projecting $1\times28\times28$ to a $z_\mathrm{dim}$-dimensional vector.
+Decoder (right): fully-connected projection followed by two transposed-convolution upsampling
+blocks restoring $1\times28\times28$. The probabilistic bottleneck (VAE/PP-VAE only) is
+highlighted in the centre.}
+
+% TABLE PLACEHOLDER
+\tabplaceholder{Layer-by-layer architecture specifications: operation, input shape, output
+shape, number of trainable parameters, and activation function for each layer of the
+shared encoder-decoder backbone at $z_\mathrm{dim} = 64$.}
+
+\subsection{Baseline Convolutional Autoencoder}
+\label{sec:methods:architecture:cae}
+
+The Convolutional Autoencoder (CAE) implements a deterministic mapping $x \to z \to \hat{x}$
+using the shared backbone. The encoder produces a single latent vector $z = f_\phi(x)$ and
+the decoder reconstructs $\hat{x} = g_\theta(z)$ without any probabilistic component. The
+CAE is trained exclusively with mean-squared-error loss and is designated Arm 0 in the
+ablation study. It provides the non-probabilistic lower bound against which all VAE-family
+models are compared, and allows the contribution of the probabilistic bottleneck itself to be
+isolated.
+
+\subsection{Baseline Variational Autoencoder}
+\label{sec:methods:architecture:vae}
+
+The Baseline VAE replaces the deterministic encoder with a probabilistic encoder that maps
+each input $x$ to the parameters of a diagonal Gaussian posterior distribution
+$q_\phi(z|x) = \mathcal{N}(\mu_z, \mathrm{diag}(\sigma^2_z))$ in the latent space. The
+encoder is augmented with two parallel fully-connected output heads:
+\begin{equation}
+\label{eq:methods:vae_encoder}
+\mu_z = \mathrm{FC}_{\mu}(h), \qquad \log\sigma^2_z = \mathrm{FC}_{\sigma}(h)
+\end{equation}
+
+where $h$ is the flattened feature map from the shared convolutional backbone.
+
+Latent samples are drawn using the reparameterisation trick of Kingma \& Welling
+\cite{kingma_auto-encoding_2014}, which enables gradients to flow through the stochastic
+sampling operation by expressing the sample as a deterministic transformation of an
+auxiliary noise variable:
+\begin{equation}
+\label{eq:methods:reparam}
+z = \mu_z + \varepsilon \cdot \exp\!\Bigl(\tfrac{1}{2}\log\sigma^2_z\Bigr),
+\qquad \varepsilon \sim \mathcal{N}(0, \mathbf{I})
+\end{equation}
+
+During evaluation, the deterministic mean $z = \mu_z$ is used for all reconstruction quality
+metric computation (PSNR, SSIM, MAE), consistent with standard VAE evaluation practice
+\cite{kingma_auto-encoding_2014}. During uncertainty quantification, the training-mode
+reparameterisation is reactivated and $n = 50$ stochastic forward passes are executed per
+image to generate pixel-level uncertainty maps. The decoder is identical to the CAE decoder.
+
+The Baseline VAE is trained on the standard Evidence Lower Bound (ELBO):
+\begin{equation}
+\label{eq:methods:elbo}
+\mathcal{L}_\mathrm{ELBO} = \mathcal{L}_\mathrm{MSE} + \beta\,\mathcal{L}_\mathrm{KL}
+\end{equation}
+
+and constitutes Arm 1 of the ablation study.
+
+\subsection{Proposed Pathology-Preserving VAE (PP-VAE)}
+\label{sec:methods:architecture:ppvae}
+
+The PP-VAE employs the identical encoder-decoder backbone and probabilistic bottleneck as
+the Baseline VAE. The architecture is deliberately unchanged: so that to evaluate the
+PP-VAE entirely in its composite training objective, which augments the ELBO with four
+additional loss constraints designed to address specific failure modes identified in the
+literature review. This design decision ensures that any observed improvement in
+reconstruction quality is attributable to the training signal rather than to increased model
+capacity. The PP-VAE is designated Arm 7 (full composite loss) in the ablation study.
+
+% ============================================================
+\section{Loss Function Design}
+\label{sec:methods:loss}
+
+\subsection{Composite Loss Framework}
+\label{sec:methods:loss:composite}
+
+The full PP-VAE training objective is a weighted sum of six distinct loss terms:
+\begin{equation}
+\label{eq:methods:total_loss}
+\mathcal{L}_\mathrm{total} =
+    \mathcal{L}_\mathrm{MSE}
+    + \beta\,\mathcal{L}_\mathrm{KL}
+    + \lambda_1\,\mathcal{L}_\mathrm{Edge}
+    + \lambda_2\,\mathcal{L}_\mathrm{Perceptual}
+    + \lambda_3\,\mathcal{L}_\mathrm{SSIM}
+    + \lambda_4\,\mathcal{L}_\mathrm{Freq}
+\end{equation}
+
+where $\beta$ and $\lambda_{1\text{--}4}$ are scalar weighting hyperparameters. The scalar
+multipliers are specified in \texttt{AblationLossConfig} dataclass instances, one per
+experimental arm, and are passed to the \texttt{PPVAELoss} composite loss module at
+construction time. The modular implementation means that each arm's active term set is
+fully defined by a configuration object, and any future variant can be created by modifying
+that configuration without altering the model or training code.
+
+\subsection{Pixel-Wise Reconstruction Loss}
+\label{sec:methods:loss:mse}
+
+The pixel-wise mean-squared-error loss provides the foundational reconstruction error term:
+\begin{equation}
+\label{eq:methods:mse}
+\mathcal{L}_\mathrm{MSE} = \frac{1}{N} \sum_{i=1}^{N} \bigl(\hat{x}_i - x_i\bigr)^2
+\end{equation}
+
+where $N$ is the total number of pixels in the batch, $\hat{x}_i$ is the reconstructed intensity,
+and $x_i$ is the clean ground-truth intensity. Under the Gaussian likelihood assumption of the
+ELBO, $\mathcal{L}_\mathrm{MSE}$ corresponds to the negative log-likelihood
+$-\log p_\theta(x|z)$ evaluated under $p_\theta(x|z) = \mathcal{N}(x;\hat{x}_\theta(z), \sigma^2\mathbf{I})$
+\cite{kingma_auto-encoding_2014, zhao_loss_2017}. Its well-documented limitation---that
+minimising MSE yields the conditional mean prediction, systematically erasing high-frequency
+variance \cite{zhao_loss_2017}---motivates the four auxiliary constraints detailed below.
+
+\subsection{KL Divergence Regularisation}
+\label{sec:methods:loss:kl}
+
+The KL divergence penalty regularises the posterior $q_\phi(z|x)$ towards the standard
+Gaussian prior $p(z) = \mathcal{N}(0, \mathbf{I})$, ensuring that the latent space remains
+continuous and well-structured for generative sampling and uncertainty estimation. For a
+diagonal Gaussian posterior, this has the analytical closed form \cite{kingma_auto-encoding_2014}:
+\begin{equation}
+\label{eq:methods:kl}
+\mathcal{L}_\mathrm{KL} =
+    -\frac{1}{2} \sum_{j=1}^{z_\mathrm{dim}}
+    \Bigl(1 + \log\sigma^2_{z,j} - \mu^2_{z,j} - \sigma^2_{z,j}\Bigr)
+\end{equation}
+
+averaged over the batch. The KL weight $\beta$ is controlled dynamically by the annealing
+scheduler described in Section~\ref{sec:methods:training:annealing}. Posterior collapse---the
+degenerate case where $q_\phi(z|x) \to p(z)$ for all inputs, rendering the latent code
+uninformative \cite{lucas_dont_2019}---is actively prevented by this annealing strategy.
+
+\subsection{Edge-Preservation Loss}
+\label{sec:methods:loss:edge}
+
+The edge-preservation loss penalises discrepancies between the spatial gradient maps of
+the reconstruction and the clean target:
+\begin{equation}
+\label{eq:methods:edge}
+\mathcal{L}_\mathrm{Edge} = \frac{1}{N}\sum_{i=1}^{N}
+    \bigl|\nabla\hat{x}_i - \nabla x_i\bigr|_1
+\end{equation}
+
+where $\nabla(\cdot)$ denotes the spatial gradient operator and $|\cdot|_1$ denotes the
+element-wise L1 norm summed over gradient directions. The gradient maps were computed
+using the differentiable Sobel operator provided by Kornia \cite{riba_kornia_2020},
+specifically the \texttt{$kornia.filters.spatial\_gradient$} function in Sobel mode with
+order 1. This function returns directional gradient responses $G_x$ and $G_y$ for each
+pixel; both components are included in the loss computation, which the implementation
+falls back to a finite-difference approximation if Kornia is unavailable.
+
+The L1 norm was chosen over the L2 norm because it is more robust to outlier edge pixels,
+which are common at the sharp, high-contrast boundaries of pneumonic consolidation in
+low-contrast radiographs. This robustness property is consistent with the Total Variation
+regularisation literature \cite{rudin_nonlinear_1992}. By directly penalising gradient
+discrepancies, $\mathcal{L}_\mathrm{Edge}$ forces the optimiser to preserve the sharp
+clinical boundaries---the diaphragm margin, cardiac silhouette, and consolidation
+borders---that are most vulnerable to over-smoothing under MSE-dominated training.
+
+\subsection{Perceptual Fidelity Loss}
+\label{sec:methods:loss:perceptual}
+
+Following the perceptual loss framework of Johnson et al.\ \cite{johnson_perceptual_2016},
+the perceptual fidelity loss matches the intermediate feature representations of the
+reconstruction to those of the clean target under a fixed, pre-trained feature extractor:
+\begin{equation}
+\label{eq:methods:perceptual}
+\mathcal{L}_\mathrm{Perceptual} =
+    \sum_{\ell \in \mathcal{L}} \bigl\|\phi_\ell(\hat{x}) - \phi_\ell(x)\bigr\|_2^2
+\end{equation}
+
+where $\phi_\ell(\cdot)$ denotes the activation map at the $\ell$-th layer of a VGG-16
+network \cite{simonyan_very_2015} pre-trained on ImageNet. Feature maps were extracted
+from three layers: \texttt{relu1\_2} (low-level edge and colour gradients), \texttt{relu2\_2}
+(oriented textures), and \texttt{relu3\_3} (mid-level texture patterns). These shallow-to-mid
+layers were selected because they capture generic spatial frequency statistics---Gabor-like
+filter responses, orientation selectivity, and texture patterns---that are domain-agnostic and
+transfer across natural and medical image distributions
+\cite{johnson_perceptual_2016, gatys_image_2016}.
+
+To accommodate the single-channel greyscale input of PneumoniaMNIST, images were
+broadcast to three identical channels before feature extraction. All VGG-16 weights were
+frozen; no domain adaptation or fine-tuning was performed, consistent with the standard
+implementation of perceptual loss. The VGG-16 sub-network was truncated at the maximum
+required layer to avoid unnecessary computation.
+
+\subsection{Structural Similarity Loss}
+\label{sec:methods:loss:ssim}
+
+The structural similarity loss is defined as:
+\begin{equation}
+\label{eq:methods:ssim_loss}
+\mathcal{L}_\mathrm{SSIM} = 1 - \mathrm{SSIM}(\hat{x},\, x)
+\end{equation}
+
+where SSIM is the Structural Similarity Index of Wang et al.\ \cite{wang_image_2004},
+evaluated via a differentiable sliding-window implementation using a Gaussian-weighted
+$11\times11$ kernel ($\sigma_k = 1.5$), consistent with the original specification:
+\begin{equation}
+\label{eq:methods:ssim}
+\mathrm{SSIM}(\hat{x},\,x) =
+    \frac{(2\mu_{\hat{x}}\mu_x + C_1)(2\sigma_{\hat{x}x} + C_2)}
+         {(\mu_{\hat{x}}^2 + \mu_x^2 + C_1)(\sigma_{\hat{x}}^2 + \sigma_x^2 + C_2)}
+\end{equation}
+
+where $\mu$ denotes local luminance, $\sigma^2$ local variance, $\sigma_{\hat{x}x}$
+local covariance, and $C_1 = 0.01^2$, $C_2 = 0.03^2$ are numerical stability constants
+\cite{wang_image_2004}. The structural similarity index evaluates luminance, contrast, and
+structural correlation jointly, providing information orthogonal to MSE: whereas MSE
+assumes pixel independence, SSIM explicitly models local inter-pixel dependencies and
+aligns the loss with perceptual distortion models \cite{zhao_loss_2017}. Range: $[-1, 1]$,
+with $\mathcal{L}_\mathrm{SSIM} = 0$ indicating perfect structural match.
+
+\subsection{Focal Frequency Loss}
+\label{sec:methods:loss:freq}
+
+The Focal Frequency Loss (FFL) is the novel fifth constraint of the PP-VAE, introduced
+specifically to counteract the spectral bias (Frequency Principle) of gradient-based
+neural network training identified in the literature review (Section~\ref{sec:intro:gap},
+Gap 4). While all four preceding loss terms operate in the spatial domain, the FFL
+operates directly in the Fourier frequency domain, providing a complementary and
+orthogonal training signal.
+
+The FFL was first proposed by Jiang et al.\ \cite{jiang_focal_2021} and is here applied,
+for the first time, within a multi-constraint VAE framework for paediatric chest radiograph
+enhancement. It is defined as:
+\begin{equation}
+\label{eq:methods:ffl}
+\mathcal{L}_\mathrm{Freq} = \frac{1}{MN}
+    \sum_{u=0}^{M-1}\sum_{v=0}^{N-1}
+    w(u,v)\,\bigl|\mathcal{F}(\hat{x})(u,v) - \mathcal{F}(x)(u,v)\bigr|^2
+\end{equation}
+
+where $\mathcal{F}(\cdot)$ denotes the 2D Discrete Fourier Transform, $M \times N$ is the
+image resolution, $(u,v)$ are frequency-domain coordinates, and $w(u,v)$ is an adaptive
+per-frequency weight. In implementation, the zero-frequency component was shifted to the
+centre of the spectrum (\texttt{torch.fft.fftshift}) and both the real and imaginary
+components of the complex Fourier representation were included in the squared-difference
+computation, as prescribed by Jiang et al.\ \cite{jiang_focal_2021}.
+
+\paragraph{Adaptive weighting.}
+The weight matrix $w(u,v)$ is updated each forward pass from the current per-frequency
+reconstruction error:
+\begin{equation}
+\label{eq:methods:ffl_weights}
+w(u,v) = \Bigl[\bigl|\mathcal{F}(\hat{x})(u,v) - \mathcal{F}(x)(u,v)\bigr|^2\Bigr]^\alpha
+\end{equation}
+
+with the optional batch-average $w(u,v) = \frac{1}{B}\sum_b w_b(u,v)$ reducing variance
+in the weight estimates. The exponent $\alpha = 1.0$ was used throughout, giving linear
+emphasis proportional to the current reconstruction error at each frequency. Because spectral
+bias guarantees that the network neglects high-frequency components in early training
+\cite{rahaman_spectral_2019, xu_frequency_2020}, $w(u,v)$ concentrates extra gradient
+pressure on the high-frequency quadrants automatically, without manual specification of which
+frequencies require attention. As training progresses and high-frequency reconstruction
+improves, the weights self-adapt towards a more uniform distribution.
+
+\paragraph{Differentiability and computational cost.}
+The FFL is fully differentiable via \texttt{torch.fft.fft2}, 
+which is supported natively in
+PyTorch $\geq 1.7$. The computational complexity of the 2D FFT is $\mathcal{O}(MN \log MN)$
+per batch, which at $28\times28$ input resolution contributes negligible overhead
+($< 1\%$ of total forward-pass time) relative to the convolutional backbone and the VGG-16
+perceptual feature extraction.
+
+The FFL is isolated as Arm 5 in the ablation study (ELBO + $\mathcal{L}_\mathrm{Freq}$
+only) to directly quantify its individual contribution to reconstruction quality, independent
+of the spatial-domain constraints.
+
+\subsection{Hyperparameter Weighting and Loss Configuration}
+\label{sec:methods:loss:weights}
+
+Each ablation arm is fully specified by an \texttt{AblationLossConfig} dataclass that defines
+which loss terms are active and their scalar weights. The initial scalar weights were set
+based on two considerations: order-of-magnitude matching between loss terms to prevent
+any single term from dominating the gradient, and alignment with published recommendations
+where available. Specifically, the KL weight was set via the annealing schedule (see
+Section~\ref{sec:methods:training:annealing}); the edge weight $\lambda_1 = 1.0$ was set at
+unit scale consistent with the L1 normalisation in Equation~\ref{eq:methods:edge};
+the perceptual weight $\lambda_2 = 0.1$ was scaled down because VGG feature map
+magnitudes are typically one order larger than pixel-space losses
+\cite{johnson_perceptual_2016}; the SSIM weight $\lambda_3 = 1.0$ matches the $[0,1]$
+output range of the SSIM index; and the frequency weight $\lambda_4 = 1.0$ was initialised
+at unit scale following Jiang et al.\ \cite{jiang_focal_2021}.
+
+Sensitivity to the frequency loss weight ($\lambda_4 \in \{0.01, 0.1, 0.5, 1.0, 2.0, 5.0\}$)
+was evaluated in a dedicated sweep reported in Section~\ref{sec:results:sensitivity:weights}.
+
+% TABLE PLACEHOLDER
+\tabplaceholder{Loss function hyperparameters: active terms and scalar weights ($\beta$,
+$\lambda_{1\text{--}4}$) for each of the eight experimental arms, with justification for initial
+values.}
+
+% ============================================================
+\section{Training Procedure}
+\label{sec:methods:training}
+
+\subsection{Optimiser and Learning Rate Schedule}
+\label{sec:methods:training:optim}
+
+All models were trained using the Adam optimiser \cite{kingma_adam_2015} with momentum
+parameters $\beta_1 = 0.9$, $\beta_2 = 0.999$, a weight decay of zero, and an initial
+learning rate of $1 \times 10^{-3}$. Adam was selected for its well-established convergence
+properties on sparse gradients and its suitability for the non-stationary loss landscape
+created by the composite multi-term objective and the KL annealing schedule.
+
+The learning rate was adapted using a \texttt{ReduceLROnPlateau} schedule
+monitoring the validation total loss, with a reduction factor of 0.5 applied after 5 epochs
+of no improvement (patience = 5) and a minimum learning rate floor of $1 \times 10^{-6}$.
+This schedule is more conservative than cosine annealing and was preferred because it
+responds directly to actual validation plateau events rather than a fixed epoch budget,
+which is more appropriate given the variable convergence speed of different ablation arms.
+
+Training was conducted with a batch size of 128 for a maximum of 100 epochs, with early
+stopping applied when the validation total loss showed no improvement for 15 consecutive
+epochs (patience = 15, minimum delta = $10^{-5}$). These hyperparameters were held
+constant across all experimental arms to prevent confounding.
+
+% TABLE PLACEHOLDER
+\tabplaceholder{Complete training hyperparameter configuration: optimiser, learning rate,
+momentum parameters, batch size, maximum epochs, LR scheduler settings, early stopping
+patience, and KL annealing parameters.}
+
+\subsection{KL Annealing Schedule}
+\label{sec:methods:training:annealing}
+
+To prevent posterior collapse in the early stages of VAE training, a linear KL warm-up
+schedule was applied. The KL weight $\beta$ was ramped linearly from 0 to $\beta_\mathrm{target} = 1.0$
+over the first 20 epochs of training:
+\begin{equation}
+\label{eq:methods:kl_anneal}
+\beta(e) = \min\!\Bigl(1,\;\frac{e}{e_\mathrm{warmup}}\Bigr) \cdot \beta_\mathrm{target},
+\qquad e_\mathrm{warmup} = 20
+\end{equation}
+
+where $e$ is the current epoch index (zero-indexed). During the warm-up phase, the ELBO
+is dominated by the reconstruction term, allowing the encoder to first establish a
+semantically meaningful mapping before the regularisation pressure of the KL divergence
+builds gradually. This approach follows the recommendation of Lucas et al.\
+\cite{lucas_dont_2019}, who demonstrated that premature KL enforcement is the primary
+cause of posterior collapse in convolutional VAEs.
+
+The alternative cyclical annealing schedule proposed by Fu et al.\ \cite{fu_cyclical_2019},
+which periodically resets $\beta$ to re-escape local collapse attractors, was evaluated in
+preliminary experiments but did not yield improvement over linear warm-up for the
+28$\times$28 PneumoniaMNIST scale and was not adopted for the main ablation study. The
+\texttt{KLAnnealingScheduler} class computes $\beta(e)$ at the start of each epoch and
+updates the \texttt{PPVAELoss.set\_beta()} method, which propagates the new weight
+to the KL term in the composite loss.
+
+% FIGURE PLACEHOLDER
+\figplaceholder{KL annealing schedule: $\beta$ as a function of training epoch, showing the
+linear ramp from 0 to 1.0 over epochs 0--20 and the constant phase thereafter.}
+
+\subsection{DataLoader and Paired Sample Construction}
+\label{sec:methods:training:dataloader}
+
+A critical design requirement is that every experimental arm trains and evaluates on identical
+paired (clean, degraded) samples. This was enforced by implementing the
+\texttt{PneumoniaMNISTDataset} wrapper to apply the degradation function inside the
+\texttt{\_\_getitem\_\_} method, yielding (clean, degraded, label) triplets per sample.
+Because PyTorch DataLoader workers share the random seed through the worker
+initialisation function, and because the degradation function uses \texttt{torch.randn\_like}
+seeded by the global seed fixture, paired sample consistency is guaranteed across arms.
+
+The \texttt{get\_dataloaders()} factory function constructs separate DataLoader instances
+for all three splits. Shuffling was applied only to the training split. The validation and test
+splits were evaluated in a fixed order to ensure that per-image metric arrays are directly
+comparable across arms during statistical testing.
+
+\subsection{Ablation Study Design}
+\label{sec:methods:training:ablation}
+
+The ablation study systematically activates individual and combined loss constraints to
+isolate their contributions to reconstruction performance. Eight experimental arms were
+defined, each fully specified by an \texttt{AblationLossConfig} instance:
+
+% TABLE PLACEHOLDER
+\tabplaceholder{Ablation study design matrix: for each of the eight experimental arms,
+indicates which loss components are active ($\bullet$) and which are inactive (---), along
+with the corresponding model type (CAE vs.\ VAE/PP-VAE).}
+
+Specifically: Arm 0 uses the CAE with MSE only, establishing the non-probabilistic
+baseline. Arm 1 adds the probabilistic bottleneck and KL divergence (ELBO), establishing
+the standard VAE baseline. Arms 2, 3, 4, and 5 each add a single auxiliary constraint
+(Edge, Perceptual, SSIM, and Focal Frequency respectively) to the ELBO, enabling the
+independent contribution of each to be quantified. Arm 6 combines Edge and Perceptual
+losses without SSIM or Freq, testing the spatial-domain pair. Arm 7 (PP-VAE full) activates
+all six terms simultaneously and constitutes the primary proposed model.
+
+The Focal Frequency Loss is intentionally isolated in Arm 5 (ELBO + $\mathcal{L}_\mathrm{Freq}$
+only) as a standalone experimental condition. This design choice directly tests whether
+frequency-domain regularisation alone, without spatial auxiliary constraints, improves over
+the standard ELBO, providing the strongest possible evidence for the independent
+contribution of the novel constraint.
+
+\subsection{Reproducibility Measures}
+\label{sec:methods:training:repro}
+
+Strict reproducibility was enforced throughout. All random number generators were seeded
+identically prior to each experimental arm via the \texttt{set\_seed()} utility function, which
+sets the Python \texttt{random} module, NumPy, PyTorch CPU, and all CUDA device seeds
+simultaneously (seed = 42). Deterministic CUDA operations were enabled via
+\texttt{torch.backends.cudnn.deterministic = True} and
+\texttt{torch.backends.cudnn.benchmark = False}. The official MedMNIST train/val/test
+splits were used without modification, ensuring that all arms were evaluated on the
+identical 624-image held-out test set. Model checkpoints were saved at the end of
+training (\texttt{results/checkpoints/\{arm\_name\}\_best.pt}) and training history was
+serialised to JSON (\texttt{results/\{arm\_name\}\_history.json}), enabling full audit
+and re-analysis without re-training. All software dependencies are specified in
+\texttt{requirements.txt} with pinned version constraints.
+
+% ============================================================
+\section{Evaluation Metrics}
+\label{sec:methods:metrics}
+
+\subsection{Reconstruction Quality}
+\label{sec:methods:metrics:recon}
+
+Three standard image quality metrics were computed on the held-out test set with the model
+in evaluation mode (deterministic $z = \mu_z$):
+
+\paragraph{Peak Signal-to-Noise Ratio (PSNR).}
+\begin{equation}
+\label{eq:methods:psnr}
+\mathrm{PSNR} = 10\log_{10}\!\left(\frac{\mathrm{MAX}^2}{\mathrm{MSE}}\right) \; [\mathrm{dB}]
+\end{equation}
+
+where $\mathrm{MAX} = 1.0$ (normalised intensity range) and MSE is the mean squared error
+between reconstruction and ground truth computed per image. Higher PSNR (dB) indicates
+better fidelity. PSNR is dominated by low-frequency content and does not capture
+perceptual quality, but is the standard quantitative benchmark for image reconstruction
+comparison.
+
+\paragraph{Structural Similarity Index (SSIM).}
+SSIM was computed using the same differentiable implementation as the training loss
+(Equation~\ref{eq:methods:ssim}), applied at test time to the per-image
+reconstruction--ground-truth pair. Range $[-1,1]$, with $1.0$ indicating perfect structural
+match. SSIM provides information complementary to PSNR by capturing local luminance,
+contrast, and structural correlation jointly.
+
+\paragraph{Mean Absolute Error (MAE).}
+\begin{equation}
+\label{eq:methods:mae}
+\mathrm{MAE} = \frac{1}{N}\sum_{i=1}^{N} |\hat{x}_i - x_i|
+\end{equation}
+
+MAE is more robust to outlier pixel errors than MSE and provides a direct physical
+interpretation as the mean absolute intensity deviation per pixel. It is reported alongside
+PSNR and SSIM for completeness.
+
+All three metrics were computed per image in the test set ($n = 624$), yielding a
+distribution of 624 scalar values per metric per arm, enabling parametric statistical
+testing across arms. Bootstrap confidence intervals (95\%, $n_\mathrm{boot} = 1000$
+resamples) were computed for the mean of each metric via the \texttt{bootstrap\_ci()}
+utility function.
+
+\subsection{Latent Space Quality}
+\label{sec:methods:metrics:latent}
+
+\paragraph{t-SNE and UMAP projections.}
+Two-dimensional embeddings of the latent codes were computed using t-SNE
+\cite{van_der_maaten_visualizing_2008} and UMAP \cite{mcinnes_umap_2018}
+for all 624 test-set images. Latent codes were extracted using the deterministic
+mean $\mu_z$ (no sampling). Projections were generated for the CAE (Arm 0),
+Baseline VAE (Arm 1), and PP-VAE (Arm 7) to compare cluster structure across
+the model family. t-SNE was run with perplexity = 30 and PCA initialisation; UMAP
+with $n_\mathrm{neighbours} = 15$ and $\mathrm{min\_dist} = 0.1$. Both were run
+with seed = 42.
+
+\paragraph{Silhouette score.}
+The silhouette score \cite{rousseeuw_silhouettes_1987} quantifies class-conditional
+cluster separation in the latent space:
+\begin{equation}
+\label{eq:methods:silhouette}
+s = \frac{b - a}{\max(a,b)}
+\end{equation}
+
+where $a$ is the mean intra-class distance and $b$ is the mean nearest-class distance for
+a given sample. The score ranges from $-1$ (misclassified) to $1$ (perfectly separated),
+with values above $0.5$ considered indicative of meaningful cluster structure.
+
+\paragraph{Davies-Bouldin index.}
+The Davies-Bouldin index \cite{davies_cluster_1979} measures the ratio of within-cluster
+scatter to between-cluster separation; lower values indicate more compact and well-separated
+clusters. It was included as a cluster quality measure complementary to the silhouette score.
+
+Both latent space metrics were computed using scikit-learn
+\cite{pedregosa_scikit-learn_2011} on the Euclidean distance matrix of the latent codes.
+
+\paragraph{Latent traversal.}
+Linear interpolation between the latent codes of one Pneumonia and one Normal reference
+image was performed to assess manifold smoothness and continuity:
+\begin{equation}
+\label{eq:methods:traversal}
+z(\alpha) = (1-\alpha)\,z_\mathrm{start} + \alpha\,z_\mathrm{end},
+\qquad \alpha \in \{0, \tfrac{1}{9}, \ldots, 1\}
+\end{equation}
+
+The decoded image sequence along the traversal path was compared for the CAE and
+PP-VAE to assess whether the probabilistic bottleneck produces a smoother latent manifold.
+
+\subsection{Calibration and Uncertainty Quantification}
+\label{sec:methods:metrics:calibration}
+
+\paragraph{Pixel-level uncertainty maps.}
+Epistemic uncertainty maps were generated by performing $n = 50$ stochastic forward passes
+per image with the reparameterisation sampling active, then computing the per-pixel variance
+of the resulting reconstructions:
+\begin{equation}
+\label{eq:methods:uncertainty}
+\sigma^2_\mathrm{pixel}(i) = \mathrm{Var}_\varepsilon\bigl[\hat{x}_{\theta}(\mu_z + \varepsilon \cdot \sigma_z)\bigr]_i
+\end{equation}
+
+following the Monte Carlo dropout and VAE uncertainty estimation framework of
+Kendall \& Gal \cite{kendall_what_2017}. High variance indicates regions where the model
+is epistemically uncertain about the correct reconstruction, which in a well-calibrated model
+should co-localise with anatomical regions of genuine structural ambiguity.
+
+\paragraph{Expected Calibration Error (ECE).}
+To quantify the alignment between predicted uncertainty and observed reconstruction
+error, the pixel-level ECE was computed:
+\begin{equation}
+\label{eq:methods:ece}
+\mathrm{ECE} = \sum_{b=1}^{B} \frac{|B_b|}{N}
+    \bigl|\overline{\sigma^2}_b - \overline{\mathrm{err}^2}_b\bigr|
+\end{equation}
+
+where $B_b$ is the $b$-th uncertainty quantile bin ($B = 15$ bins), $\overline{\sigma^2}_b$
+is the mean predicted variance in the bin, and $\overline{\mathrm{err}^2}_b$ is the mean
+observed squared error in the bin \cite{ovadia_can_2019}. Bins were defined by equally
+spaced quantiles of the uncertainty distribution. ECE approaching zero indicates a
+well-calibrated model: regions of high predicted uncertainty correspond to regions of
+actually poor reconstruction.
+
+\paragraph{Sharpness.}
+Sharpness was defined as the mean predictive variance across all pixels and all test images.
+Higher sharpness indicates the model is quantitatively aware of its own uncertainty, which
+is a desirable property in a safety-critical clinical tool.
+
+\paragraph{Reliability diagrams.}
+Reliability diagrams \cite{ovadia_can_2019} were plotted by graphing the mean predicted
+uncertainty against the mean observed squared error for each quantile bin. A perfectly
+calibrated model produces a reliability curve lying along the diagonal. Departures from the
+diagonal indicate systematic over- or under-confidence.
+
+\subsection{Statistical Analysis}
+\label{sec:methods:metrics:stats}
+
+All statistical comparisons were conducted on the distribution of per-image PSNR and SSIM
+values across the 624 test images, with each image constituting one observation per arm.
+
+\paragraph{Normality assessment.} Shapiro-Wilk tests were applied to the PSNR and SSIM
+distributions for each arm ($\alpha = 0.05$) to determine whether parametric or
+non-parametric testing was appropriate.
+
+\paragraph{Primary omnibus test.} If normality held across all arms, a repeated-measures
+one-way ANOVA was used to test for overall differences in mean PSNR/SSIM across the
+eight arms. If normality was violated in any arm, the Friedman test was substituted as the
+non-parametric alternative.
+
+\paragraph{Post-hoc pairwise comparisons.} Bonferroni-corrected paired t-tests were
+applied to all pairwise arm comparisons. With eight arms, there are $\binom{8}{2} = 28$
+possible comparisons, yielding a family-wise corrected significance threshold of
+$\alpha_\mathrm{corrected} = 0.05 / 28 \approx 0.0018$. Corrected $p$-values were
+reported as $\min(p_\mathrm{raw} \times 28,\, 1.0)$.
+
+\paragraph{Effect sizes.} Cohen's $d$ was computed for all pairwise comparisons on paired
+differences \cite{cohen_statistical_1988}:
+\begin{equation}
+\label{eq:methods:cohens_d}
+d = \frac{\overline{\delta}}{\mathrm{SD}(\delta)},
+\qquad \delta_i = \mathrm{PSNR}^{(a)}_i - \mathrm{PSNR}^{(b)}_i
+\end{equation}
+
+Conventional benchmarks: $|d| < 0.2$ negligible, $0.2$--$0.5$ small, $0.5$--$0.8$ medium,
+$> 0.8$ large \cite{cohen_statistical_1988}.
+
+\paragraph{Subgroup analysis.} All primary metrics were stratified by diagnostic class
+(Pneumonia vs.\ Normal) to assess whether the PP-VAE provides differential benefit for
+pathological cases.
+
+All statistical analyses were implemented in the \texttt{src/evaluation/statistical.py} module
+using SciPy \cite{virtanen_scipy_2020} and pandas.
+
+% TABLE PLACEHOLDER
+\tabplaceholder{Statistical analysis plan summary: test, assumptions, correction method,
+significance threshold, effect size measure, and sample sizes for primary and subgroup
+comparisons.}
+
+% ============================================================
+\section{Computational Environment}
+\label{sec:methods:compute}
+
+All experiments were implemented in Python 3.10 with PyTorch 2.0
+\cite{paszke_pytorch_2019}. Key dependencies included: Kornia 0.7.0 for differentiable
+Sobel gradient computation \cite{riba_kornia_2020}; torchvision 0.15 for the VGG-16
+pre-trained weights and image transforms; medmnist 2.3.0 for dataset acquisition
+\cite{yang_medmnist_2023}; scikit-learn 1.3 for silhouette score, Davies-Bouldin index,
+and t-SNE computation \cite{pedregosa_scikit-learn_2011}; SciPy 1.11 for statistical
+testing \cite{virtanen_scipy_2020}; and umap-learn 0.5.3 for UMAP projections
+\cite{mcinnes_umap_2018}.
+
+% TABLE PLACEHOLDER
+\tabplaceholder{Computational environment specification: hardware (CPU model, RAM, GPU),
+Python and key library versions, training time per experimental arm, and total compute for
+the full ablation study.}============================================================
+% CHAPTER 4 — RESULTS
+% ============================================================
+\chapter{Results}
+\label{chap:results}
+
+% Length target: 3,000 – 4,000 words (tables and figures do the work).
+% EXAMINER SIGNAL: Results chapter must be strictly descriptive.
+% No interpretation. Present in the order that builds the scientific story:
+%   dataset → training behaviour → reconstruction → latent → calibration
+%   → ablation → sensitivity → error → clinical
+
+\section{Dataset Characteristics and Degradation Pipeline Validation}
+\label{sec:results:dataset}
+
+% WRITE:
+%   • Class distribution in each split (table from Section 3.2)
+%   • Pixel intensity distributions: clean vs. degraded at each η level
+%   • SNR as a function of η: quantitative characterisation
+%   • Confirm that ground truth / degraded pairs are properly paired
+
+% FIGURE PLACEHOLDER — Degradation examples at η=50,100,200,300
+\figplaceholder{Representative paediatric chest radiograph pairs at four Poisson-Gaussian degradation levels (η = 50, 100, 200, 300)}
+
+% TABLE PLACEHOLDER — SNR and pixel statistics per dose level
+\tabplaceholder{Quantitative characterisation of degraded images: mean SNR, pixel intensity statistics, and PSNR versus clean at each dose level}
+
+\section{Training Behaviour}
+\label{sec:results:training}
+
+% WRITE:
+%   • Loss convergence curves for all ablation arms
+%   • KL divergence trajectory: confirm posterior not collapsed
+%   • Validation loss vs. training loss: evidence of generalisation
+%   • Epochs to convergence per arm
+
+% FIGURE PLACEHOLDER — Training and validation loss curves for all arms
+\figplaceholder{Training and validation loss convergence curves across all ablation arms over training epochs}
+
+% FIGURE PLACEHOLDER — KL divergence trajectory during training
+\figplaceholder{KL divergence (β × L\_KL) as a function of training epoch, demonstrating annealing effect and convergence}
+
+% TABLE PLACEHOLDER — Final training and validation losses per arm
+\tabplaceholder{Final training and validation losses for each ablation arm at convergence}
+
+\section{Reconstruction Performance}
+\label{sec:results:recon}
+
+\subsection{Quantitative Metrics}
+\label{sec:results:recon:quant}
+
+% WRITE:
+%   • Table of PSNR, SSIM, MAE for all ablation arms on test set
+%   • Compare to baseline CAE and baseline VAE
+%   • State which arm achieves best performance on each metric
+%   • Report 95% confidence intervals or standard errors
+
+% TABLE PLACEHOLDER — Primary results table (PSNR, SSIM, MAE)
+\tabplaceholder{Primary reconstruction results: PSNR (dB), SSIM, and MAE on the held-out test set for all experimental arms (mean ± SD)}
+
+\subsection{Statistical Comparisons}
+\label{sec:results:recon:stats}
+
+% WRITE:
+%   • ANOVA result: F-statistic, p-value, degrees of freedom
+%   • Post-hoc pairwise comparisons: Bonferroni-corrected p-values
+%   • Effect sizes (Cohen's d) for key pairwise comparisons
+%   • Separate analyses for Pneumonia vs. Normal subgroups
+
+% TABLE PLACEHOLDER — Statistical comparison table
+\tabplaceholder{Pairwise statistical comparisons: Bonferroni-corrected p-values and Cohen's d effect sizes for PSNR and SSIM}
+
+\subsection{Qualitative Reconstruction Examples}
+\label{sec:results:recon:qual}
+
+% WRITE:
+%   • Side-by-side: degraded / baseline VAE / PP-VAE / clean
+%   • Highlight regions of improvement (cardiac silhouette, lung fields)
+%   • Show failure cases alongside successes (balanced presentation)
+
+% FIGURE PLACEHOLDER — Qualitative reconstruction comparison (4×N grid)
+\figplaceholder{Qualitative reconstruction examples: degraded input, baseline VAE output, PP-VAE output, and clean ground truth for Pneumonia and Normal cases}
+
+% FIGURE PLACEHOLDER — Difference maps (error images)
+\figplaceholder{Pixel-wise error maps for baseline VAE and PP-VAE versus clean ground truth, highlighting systematic error patterns}
+
+\subsection{Performance as a Function of Degradation Severity}
+\label{sec:results:recon:dosecurve}
+
+% WRITE:
+%   • PSNR/SSIM vs. η: how does each arm degrade as dose decreases?
+%   • Identify the dose level at which PP-VAE advantage is largest
+
+% FIGURE PLACEHOLDER — Reconstruction metrics as a function of η
+\figplaceholder{Reconstruction performance (PSNR and SSIM) as a function of degradation level η for baseline VAE and PP-VAE}
+
+\section{Latent Space Analysis}
+\label{sec:results:latent}
+
+\subsection{t-SNE and UMAP Projections}
+\label{sec:results:latent:viz}
+
+% WRITE:
+%   • 2D projections of latent codes for Pneumonia vs. Normal
+%   • Compare CAE, baseline VAE, and PP-VAE
+%   • Visual assessment of cluster separation and continuity
+
+% FIGURE PLACEHOLDER — t-SNE projections (CAE vs VAE vs PP-VAE)
+\figplaceholder{t-SNE projections of latent space encodings: CAE (left), baseline VAE (centre), and PP-VAE (right), colour-coded by diagnostic class}
+
+% FIGURE PLACEHOLDER — UMAP projections for comparison
+\figplaceholder{UMAP projections of latent codes: CAE, baseline VAE, and PP-VAE, with class labels overlaid}
+
+\subsection{Quantitative Latent Space Metrics}
+\label{sec:results:latent:quant}
+
+% WRITE:
+%   • Silhouette scores per model
+%   • Davies-Bouldin index per model
+%   • Correlation between latent separation and reconstruction PSNR
+
+% TABLE PLACEHOLDER — Quantitative latent space metrics
+\tabplaceholder{Quantitative latent space analysis: silhouette score, Davies-Bouldin index, and class separation across CAE, VAE, and PP-VAE}
+
+\subsection{Latent Space Traversal}
+\label{sec:results:latent:traversal}
+
+% WRITE:
+%   • Linear interpolation between latent codes of two images
+%   • Compare smoothness (continuity) in AE vs. VAE latent space
+%   • Visual demonstration of the reparameterisation effect
+
+% FIGURE PLACEHOLDER — Latent traversal comparison
+\figplaceholder{Latent space traversal: linear interpolation between Pneumonia and Normal latent codes for CAE (top) and PP-VAE (bottom)}
+
+\section{Calibration and Uncertainty Analysis}
+\label{sec:results:calibration}
+
+\subsection{Pixel-Level Uncertainty Maps}
+\label{sec:results:calibration:maps}
+
+% WRITE:
+%   • Decoder variance maps: where is the model most uncertain?
+%   • Correspondence between uncertainty and pathological regions
+%   • Qualitative clinical interpretation
+
+% FIGURE PLACEHOLDER — Uncertainty maps for representative cases
+\figplaceholder{Pixel-level uncertainty maps from PP-VAE decoder: high uncertainty (bright) co-localises with pathological consolidation regions}
+
+\subsection{Calibration Metrics}
+\label{sec:results:calibration:ece}
+
+% WRITE:
+%   • Expected Calibration Error for VAE vs. PP-VAE
+%   • Reliability diagrams (confidence vs. accuracy)
+
+% FIGURE PLACEHOLDER — Reliability / calibration diagrams
+\figplaceholder{Reliability diagrams comparing calibration of baseline VAE and PP-VAE: predicted uncertainty versus observed reconstruction error}
+
+% TABLE PLACEHOLDER — ECE and sharpness values
+\tabplaceholder{Calibration metrics: Expected Calibration Error (ECE) and sharpness for baseline VAE and PP-VAE}
+
+\section{Ablation Study Results}
+\label{sec:results:ablation}
+
+% WRITE:
+%   • Incremental contribution of each constraint: from Arm 0 → Arm 6
+%   • Which constraint contributes most? Which is redundant?
+%   • Interaction effects: does L_edge + L_perc > L_edge or L_perc alone?
+
+% FIGURE PLACEHOLDER — Ablation bar chart (PSNR and SSIM)
+\figplaceholder{Ablation study results: PSNR and SSIM for each experimental arm, showing incremental contribution of each loss constraint}
+
+% FIGURE PLACEHOLDER — Ablation contribution heatmap
+\figplaceholder{Heatmap of metric improvement versus baseline VAE for each ablation arm and evaluation metric}
+
+% TABLE PLACEHOLDER — Full ablation results table
+\tabplaceholder{Full ablation results: PSNR, SSIM, MAE, silhouette score, and ECE for all arms (mean ± SD)}
+
+\section{Sensitivity Analysis}
+\label{sec:results:sensitivity}
+
+\subsection{Sensitivity to Loss Weights}
+\label{sec:results:sensitivity:weights}
+
+% WRITE:
+%   • Vary lambda_1 (edge weight): performance across values
+%   • Vary lambda_2 (perceptual weight): performance across values
+%   • Identify flat vs. steep regions of the weight landscape
+
+% FIGURE PLACEHOLDER — Sensitivity surface for lambda_1 vs lambda_2
+\figplaceholder{Sensitivity of PSNR to perceptual loss weight lambda\_2 and edge loss weight lambda\_1 in PP-VAE}
+
+\subsection{Sensitivity to Latent Dimension}
+\label{sec:results:sensitivity:latent}
+
+% WRITE:
+%   • z_dim ∈ {8, 16, 32, 64, 128}: PSNR and SSIM
+%   • Silhouette score as a function of z_dim
+
+% FIGURE PLACEHOLDER — Performance vs. latent dimension
+\figplaceholder{Reconstruction quality (PSNR, SSIM) and latent separation (silhouette score) as a function of latent dimension size}
+
+\subsection{Sensitivity to Degradation Severity}
+\label{sec:results:sensitivity:dose}
+
+% Cross-reference Section 4.3.4; extend with additional metrics
+
+\section{Subgroup Analysis: Pneumonia versus Normal}
+\label{sec:results:subgroup}
+
+% WRITE:
+%   • Separate PSNR/SSIM for Pneumonia vs. Normal cases
+%   • Does PP-VAE show differential improvement in pathological cases?
+%   • Clinical implication: pathology-preservation in practice
+
+% TABLE PLACEHOLDER — Subgroup results by diagnostic class
+\tabplaceholder{Reconstruction performance stratified by diagnostic class: Pneumonia versus Normal for baseline VAE and PP-VAE}
+
+\section{Error Analysis and Failure Cases}
+\label{sec:results:error}
+
+% WRITE:
+%   • Cases where PP-VAE underperforms baseline VAE — why?
+%   • Systematic bias: are errors randomly distributed or anatomically clustered?
+%   • Frequency of artefact generation
+%   • Sample failure cases with commentary
+
+% FIGURE PLACEHOLDER — Failure case gallery
+\figplaceholder{Failure cases: images where PP-VAE reconstruction is inferior to baseline VAE, with error maps and commentary}
+
+\section{Summary of Key Findings}
+\label{sec:results:summary}
+
+% Concise (half page) enumerated list of the main findings.
+% Each finding should map to a specific objective from Section 1.5.
+% No interpretation — interpretation is Chapter 5.
+
+% ============================================================
+% CHAPTER 5 — DISCUSSION
+% ============================================================
+\chapter{Discussion}
+\label{chap:discussion}
+
+% Length target: 3,500 – 4,500 words.
+% EXAMINER SIGNAL: This is where distinction is won or lost.
+% Demonstrate depth of understanding. Situate every finding.
+
+\section{Interpretation of Principal Findings}
+\label{sec:disc:findings}
+
+\subsection{Reconstruction Performance and the PSNR-SSIM Trade-Off}
+\label{sec:disc:findings:psnr}
+
+% WRITE:
+%   • Explain why PP-VAE may achieve lower PSNR than baseline VAE while
+%     achieving higher SSIM — this is the expected outcome of structure-
+%     aware constraints (regression to mean is suppressed, which can
+%     lower average pixel agreement)
+%   • Contextualise relative to clinical significance: SSIM more
+%     diagnostically meaningful than PSNR for structural preservation
+%   • Address the 'better on average, worse on some cases' issue in
+%     subgroup analysis
+
+\subsection{The Role of Each Constraint}
+\label{sec:disc:findings:constraints}
+
+% WRITE:
+%   • Interpret ablation findings: which constraints matter most and why?
+%   • Mechanistic explanation for edge loss effect on cardiac silhouette
+%   • Perceptual loss: feature map distances capture texture patterns
+%     missed by MSE — explain via VGG feature hierarchy
+%   • SSIM term: complements MSE by penalising contrast and structure loss
+%   • Interaction effects: synergy or redundancy between L_edge and L_perc?
+
+\subsection{Latent Space Improvements}
+\label{sec:disc:findings:latent}
+
+% WRITE:
+%   • PP-VAE achieves better class separation than baseline VAE — why?
+%   • KL annealing prevents posterior collapse, maintaining meaningful
+%     latent structure
+%   • Clinical significance of latent separation: unsupervised anomaly
+%     detection potential
+
+\subsection{Uncertainty Calibration}
+\label{sec:disc:findings:calibration}
+
+% WRITE:
+%   • Where is the model most uncertain? (pathological vs. normal regions)
+%   • Does uncertainty co-localise with diagnostic features?
+%   • Clinical workflow integration: flag uncertain reconstructions for
+%     radiologist review
+
+\section{Comparison with Prior Literature}
+\label{sec:disc:lit}
+
+% WRITE:
+%   • vs. sharpXR (Abolade et al. 2025): closest prior; how does PP-VAE
+%     compare on same dataset?
+%   • vs. RED-CNN / DnCNN: pixel metrics similar but PP-VAE adds UQ
+%   • vs. GAN-based methods: PP-VAE more stable; explicit uncertainty
+%   • vs. diffusion models: PP-VAE 100× faster inference; uncertainty
+%     comparable via Monte Carlo sampling
+%   • Position PP-VAE on the quality-interpretability-compute frontier
+
+\section{Theoretical Significance}
+\label{sec:disc:theory}
+
+% WRITE:
+%   • PP-VAE as an instance of constrained ELBO optimisation
+%   • Loss function engineering as a principled alternative to
+%     architecture scaling for medical image tasks
+%   • The composite loss framework is architecture-agnostic:
+%     could be applied to U-Net, GAN, or diffusion decoder
+%   • Information-theoretic interpretation: each constraint term injects
+%     domain knowledge into the learning signal
+
+\section{Clinical Relevance}
+\label{sec:disc:clinical}
+
+% WRITE:
+%   • Quantify dose reduction enabled by PP-VAE reconstruction:
+%     what η value does PP-VAE output match in perceptual quality?
+%   • Deployment scenario: edge deployment on resource-limited hardware
+%     (CPU inference time, memory footprint)
+%   • Radiologist in the loop: uncertainty maps as decision support
+%   • Regulatory considerations (FDA/CE AI-in-radiological-device guidance)
+%   • Paediatric applicability: discuss generalisability from 28×28
+%     benchmark to full-resolution clinical CXR
+
+\section{Strengths of This Study}
+\label{sec:disc:strengths}
+
+% WRITE:
+%   • First systematic ablation of structured composite loss terms
+%     specifically for paediatric CXR VAE reconstruction
+%   • Reproducible pipeline with fixed seeds, open data, public code
+%   • Statistically rigorous comparison (ANOVA + Bonferroni + effect sizes)
+%   • Probabilistic uncertainty output unavailable in deterministic baselines
+%   • Multi-metric evaluation avoids single-metric gaming
+
+\section{Limitations}
+\label{sec:disc:limitations}
+
+% Be proactive — examiners reward candour. Address each honestly:
+%   L1: 28×28 resolution limits translational validity
+%   L2: Simulated degradation may not perfectly capture real scanner physics
+%   L3: VGG-16 perceptual features trained on natural images (domain gap)
+%   L4: Single-dataset evaluation (PneumoniaMNIST only)
+%   L5: Binary classification labels; not multi-class pathology
+%   L6: No formal reader study or radiologist evaluation
+%   L7: Limited compute prevents full hyperparameter search
+%   L8: [Additional limitations from notebook]
+
+\section{Potential Sources of Bias}
+\label{sec:disc:bias}
+
+% WRITE:
+%   • Class imbalance (73% pneumonia): may bias metrics towards pneumonia
+%   • Paediatric dataset from single centre (Guangzhou): demographic homogeneity
+%   • Ground truth is the uncompressed MedMNIST image, not raw DICOM —
+%     pre-existing compression artefacts present in 'clean' reference
+%   • Reporting bias: multiple metrics chosen to favour PP-VAE narrative
+%     (explicitly addressed in pre-registered ablation design)
+
+\section{Generalisability}
+\label{sec:disc:generalisability}
+
+% WRITE:
+%   • Architecture: PP-VAE loss framework applicable to any convolutional VAE
+%   • Imaging modality: edge and perceptual constraints apply to CT, MRI,
+%     ultrasound — not CXR-specific
+%   • Resolution: framework should scale to higher-resolution imaging
+%   • Dataset: next steps require validation on MIMIC-CXR, CheXpert, or
+%     ChestX-ray14 at clinical resolution
+
+\section{Future Research Directions}
+\label{sec:disc:future}
+
+% WRITE (ranked by clinical impact):
+%   F1. Validate on full-resolution DICOM data from clinical scanners
+%   F2. Reader study: does PP-VAE uncertainty map improve radiologist
+%       sensitivity for pneumonia detection?
+%   F3. Extend to CT sinogram-domain reconstruction (raw projection data)
+%   F4. Explore transformer-based encoder for global anatomical context
+%   F5. Active learning with uncertainty: sample-efficient fine-tuning
+%   F6. Federated learning for multi-centre deployment
+%   F7. Diffusion decoder with PP-VAE encoder for best-of-both
+
+\section{Implications for Clinical Translation}
+\label{sec:disc:translation}
+
+% WRITE:
+%   • Pathway from proof-of-concept to clinical deployment
+%   • Regulatory clearance requirements for AI reconstruction tools
+%   • Integration with PACS / RIS workflow
+%   • Economic argument: reduced re-scan rate, reduced dose-related
+%     cancer litigation, reduced radiologist fatigue
+%   • Reference to ThermoNest / SPARk framing: LP-VAE as foundation
+%     for a deployable point-of-care imaging AI tool in LMICs
+
+% ============================================================
+% CHAPTER 6 — CONCLUSION
+% ============================================================
+\chapter{Conclusion}
+\label{chap:conclusion}
+
+% Length target: 800 – 1,200 words. No new analysis.
+
+\section{Summary of Work Undertaken}
+\label{sec:conc:summary}
+
+% One paragraph per chapter: what was done, not what was found.
+
+\section{Answering the Research Objectives}
+\label{sec:conc:objectives}
+
+% Return to each objective O1–O6 from Section 1.5.
+% One sentence per objective: "O1 was met by..."
+
+\section{Principal Scientific Contributions}
+\label{sec:conc:sci}
+
+% Restate contributions C1–C5 from Section 1.6 in light of results.
+% Distinguish: what is now known that was not known before?
+
+\section{Clinical Implications}
+\label{sec:conc:clinical}
+
+% Two paragraphs: immediate implications for paediatric imaging practice;
+% longer-term translational pathway.
+
+\section{Future Work}
+\label{sec:conc:future}
+
+% Condense future directions from Section 5.8 to three priority items.
+
+\section{Closing Statement}
+\label{sec:conc:closing}
+
+% Two to three sentences: what does this work ultimately mean for
+% children who need diagnostic imaging in resource-limited settings?
+% Connect back to the opening clinical narrative.
+
+% ============================================================
+%  REFERENCES
+% ============================================================
+\bibliographystyle{unsrt}  
+\bibliography{References} % Ensure your file is named References.bib
+
+% ============================================================
+%  APPENDICES
+% ============================================================
+\begin{appendices}
+\renewcommand{\chaptername}{Appendix}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Complete Hyperparameter Specification}
+\label{app:hyperparams}
+
+% Full table of every hyperparameter used in every experiment.
+% Must be complete enough for exact reproduction.
+
+% TABLE PLACEHOLDER — Master hyperparameter table
+\tabplaceholder{Master hyperparameter table: all hyperparameters for all experimental arms including seeds, learning rates, batch sizes, loss weights, latent dimension, and training epochs}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Additional Ablation Results}
+\label{app:ablations}
+
+% Results not shown in main Chapter 4 for brevity.
+% Extended ablation arms, sub-ablations of individual loss weights.
+
+% TABLE PLACEHOLDER — Extended ablation results
+\tabplaceholder{Extended ablation results: additional loss weight combinations not reported in main text}
+
+% FIGURE PLACEHOLDER — Extended sensitivity surfaces
+\figplaceholder{Extended sensitivity analysis: PSNR and SSIM across a finer grid of lambda values for all constraint terms}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Supplementary Figures}
+\label{app:supfigs}
+
+% Additional qualitative reconstruction examples (>50 cases)
+% Additional latent space visualisations at different training stages
+% Full learning curve gallery for all arms
+
+% FIGURE PLACEHOLDER — Extended reconstruction gallery
+\figplaceholder{Extended qualitative reconstruction gallery: 30 additional test cases for PP-VAE and baseline VAE comparison}
+
+% FIGURE PLACEHOLDER — Latent space at training epochs 10, 25, 50, final
+\figplaceholder{Evolution of latent space structure (t-SNE) across training epochs for PP-VAE}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Supplementary Statistical Tables}
+\label{app:suptables}
+
+% Complete pairwise comparison tables.
+% All Bonferroni-corrected p-values and confidence intervals.
+
+% TABLE PLACEHOLDER — Full pairwise statistical comparisons
+\tabplaceholder{Complete pairwise Bonferroni-corrected statistical comparisons for all metric pairs across all ablation arms}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Computational Resources}
+\label{app:compute}
+
+% Hardware specification, software version table,
+% training time per arm, total compute hours.
+
+% TABLE PLACEHOLDER — Software dependency versions
+\tabplaceholder{Complete software environment: Python and library versions for all dependencies used}
+
+% TABLE PLACEHOLDER — Training time per experimental arm
+\tabplaceholder{Training and inference time per experimental arm with hardware specification}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Reproducibility Checklist}
+\label{app:repro}
+
+% Structured checklist following Pineau et al. (2021) ML Reproducibility Checklist.
+% Cover: data, model, training, evaluation.
+
+\begin{enumerate}
+  \item Dataset: Is the dataset publicly available? \textbf{Yes} — MedMNIST v2
+  \item Dataset: Is the version and access date documented? [INSERT]
+  \item Dataset: Are train/val/test splits identical to official splits? [INSERT]
+  \item Model: Is the architecture fully specified? [INSERT]
+  \item Model: Are all hyperparameters reported? [INSERT]
+  \item Training: Is the random seed fixed and reported? [INSERT]
+  \item Training: Is the optimiser and schedule fully specified? [INSERT]
+  \item Evaluation: Are metrics computed on held-out test set only? [INSERT]
+  \item Evaluation: Are confidence intervals or standard errors reported? [INSERT]
+  \item Code: Is the codebase publicly available? [INSERT GITHUB URL]
+\end{enumerate}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Code Repository Information}
+\label{app:code}
+
+% GitHub repository URL, commit hash used for final experiments,
+% directory structure overview, instructions to reproduce.
+
+\begin{verbatim}
+Repository: https://github.com/[USERNAME]/pp-vae-paediatric-cxr
+Commit: [INSERT FINAL COMMIT HASH]
+
+Directory structure:
+  /data/          — MedMNIST download scripts
+  /models/        — CAE, VAE, PP-VAE architecture definitions
+  /losses/        — All loss function implementations
+  /train/         — Training scripts per ablation arm
+  /evaluate/      — Metric computation and statistical analysis
+  /notebooks/     — Analysis notebooks
+  /figures/       — Figure generation scripts
+  environment.yml — Conda environment specification
+
+To reproduce all results:
+  conda env create -f environment.yml
+  python train/run_all_ablations.py --seed 42
+  python evaluate/compute_all_metrics.py
+\end{verbatim}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Ethical Considerations}
+\label{app:ethics}
+
+% WRITE:
+%   • Dataset ethics: PneumoniaMNIST sourced from consented clinical data
+%     by Guangzhou Women and Children's Medical Center; MedMNIST consortium
+%     received ethics approval (cite Yang et al. 2023)
+%   • No new patient data collected; no consent required for this study
+%   • University of Cambridge ethics framework for computational research
+%   • Statement on AI model misuse: model not validated for clinical
+%     deployment; not to be used for diagnostic decisions without
+%     prospective clinical validation
+
+% ────────────────────────────────────────────────────────────
+\chapter{Mathematical Derivations}
+\label{app:maths}
+
+\section{ELBO Derivation}
+\label{app:maths:elbo}
+
+% Full derivation of the Evidence Lower BOund from first principles:
+%   log p(x) = ELBO + KL[q(z|x) || p(z|x)]
+%   ELBO = E_q[log p(x|z)] - KL[q(z|x) || p(z)]
+% Show reparameterisation trick and gradient derivation.
+
+\section{Closed-Form KL Divergence}
+\label{app:maths:kl}
+
+% Derive closed-form KL for diagonal Gaussians:
+%   KL[N(mu, sigma²I) || N(0,I)] = 0.5 * sum_j(1 + log(sigma_j²) - mu_j² - sigma_j²)
+
+\section{Differentiability of Composite Loss}
+\label{app:maths:grad}
+
+% Confirm each loss term is differentiable with respect to decoder output:
+%   L_MSE: yes (quadratic)
+%   L_KL: yes (closed form; reparameterised)
+%   L_edge: yes via Kornia differentiable Canny
+%   L_perc: yes via frozen VGG-16 forward pass
+%   L_SSIM: yes via differentiable SSIM (PyTorch implementation)
+
+\end{appendices}
+
+% ============================================================
+%  END DOCUMENT
+% ============================================================
+\end{document}
