@@ -78,30 +78,35 @@
 \counterwithin{table}{chapter}
 
 % ── Placeholder Commands ────────────────────────────────────
+\newcounter{figplaceholdercount}
+\newcounter{tabplaceholdercount}
+
 \newcommand{\figplaceholder}[2][width=0.85\textwidth]{%
+  \stepcounter{figplaceholdercount}%
   \begin{figure}[H]
     \centering
     \fbox{\begin{minipage}{0.85\textwidth}
       \centering\vspace{1.5cm}
-      \textbf{[FIGURE PLACEHOLDER]}\\[0.5em]
-      \caption{#2}
+      \textbf{[FIGURE PLACEHOLDER \thefigplaceholdercount]}\\[0.5em]
+      \textit{#2}
       \vspace{1.5cm}
     \end{minipage}}
-    \caption{#2}
-    \label{fig:#2}
+    \caption[Placeholder figure \thefigplaceholdercount]{#2}
+    \label{fig:placeholder\thefigplaceholdercount}
   \end{figure}}
 
 \newcommand{\tabplaceholder}[1]{%
+  \stepcounter{tabplaceholdercount}%
   \begin{table}[H]
     \centering
     \fbox{\begin{minipage}{0.85\textwidth}
       \centering\vspace{0.8cm}
-      \textbf{[TABLE PLACEHOLDER]}\\[0.5em]
+      \textbf{[TABLE PLACEHOLDER \thetabplaceholdercount]}\\[0.5em]
       \textit{#1}
       \vspace{0.8cm}
     \end{minipage}}
-    \caption{#1}
-    \label{tab:#1}
+    \caption[Placeholder table \thetabplaceholdercount]{#1}
+    \label{tab:placeholder\thetabplaceholdercount}
   \end{table}}
 
 % ── Equation Reference Helper ───────────────────────────────
@@ -235,35 +240,54 @@ The total word count of this dissertation is [INSERT WORD COUNT], which is withi
 
 \begin{acronym}[PPVAE]
   \acro{AE}{Autoencoder}
+  \acro{ALARA}{As Low As Reasonably Achievable}
+  \acro{AP}{Antero-Posterior (projection)}
+  \acro{AUC}{Area Under the Curve}
+  \acro{AWGN}{Additive White Gaussian Noise}
+  \acro{BEIR}{Biological Effects of Ionizing Radiation}
+  \acro{BM3D}{Block-Matching and 3-Dimensional Filtering}
   \acro{CAE}{Convolutional Autoencoder}
-  \acro{VAE}{Variational Autoencoder}
-  \acro{PP-VAE}{Pathology-Preserving Variational Autoencoder}
-  \acro{ELBO}{Evidence Lower BOund}
-  \acro{KL}{Kullback-Leibler (divergence)}
-  \acro{MSE}{Mean Squared Error}
-  \acro{MAE}{Mean Absolute Error}
-  \acro{PSNR}{Peak Signal-to-Noise Ratio}
-  \acro{SSIM}{Structural Similarity Index Measure}
+  \acro{CNN}{Convolutional Neural Network}
+  \acro{CNR}{Contrast-to-Noise Ratio}
   \acro{CT}{Computed Tomography}
   \acro{CXR}{Chest X-Ray / Chest Radiograph}
-  \acro{DL}{Deep Learning}
-  \acro{CNN}{Convolutional Neural Network}
-  \acro{VGG}{Visual Geometry Group (network)}
-  \acro{ReLU}{Rectified Linear Unit}
-  \acro{tSNE}{t-distributed Stochastic Neighbour Embedding}
-  \acro{UMAP}{Uniform Manifold Approximation and Projection}
-  \acro{PCA}{Principal Component Analysis}
-  \acro{GPU}{Graphics Processing Unit}
-  \acro{Adam}{Adaptive Moment Estimation (optimiser)}
-  \acro{LDCT}{Low-Dose Computed Tomography}
-  \acro{SNR}{Signal-to-Noise Ratio}
-  \acro{TV}{Total Variation}
-  \acro{GAN}{Generative Adversarial Network}
   \acro{DDPM}{Denoising Diffusion Probabilistic Model}
-  \acro{NLL}{Negative Log-Likelihood}
+  \acro{DL}{Deep Learning}
+  \acro{DRL}{Diagnostic Reference Level}
+  \acro{DSB}{Double-Strand Break}
   \acro{ECE}{Expected Calibration Error}
+  \acro{ELBO}{Evidence Lower BOund}
+  \acro{ERR}{Excess Relative Risk}
+  \acro{ESPR}{European Society of Paediatric Radiology}
+  \acro{FFL}{Focal Frequency Loss}
+  \acro{FSIM}{Feature Similarity Index Measure}
+  \acro{GAN}{Generative Adversarial Network}
+  \acro{GAT}{Generalised Anscombe Transform}
+  \acro{GPU}{Graphics Processing Unit}
+  \acro{ICRP}{International Commission on Radiological Protection}
+  \acro{KL}{Kullback-Leibler (divergence)}
+  \acro{LDCT}{Low-Dose Computed Tomography}
+  \acro{LNT}{Linear No-Threshold (hypothesis)}
+  \acro{LPIPS}{Learned Perceptual Image Patch Similarity}
+  \acro{LUS}{Lung Ultrasound}
+  \acro{MAE}{Mean Absolute Error}
+  \acro{MSE}{Mean Squared Error}
+  \acro{NLL}{Negative Log-Likelihood}
+  \acro{NLM}{Non-Local Means}
+  \acro{PCA}{Principal Component Analysis}
+  \acro{PP-VAE}{Pathology-Preserving Variational Autoencoder}
+  \acro{PSNR}{Peak Signal-to-Noise Ratio}
+  \acro{ReLU}{Rectified Linear Unit}
   \acro{ROC}{Receiver Operating Characteristic}
-  \acro{AUC}{Area Under the Curve}
+  \acro{SNR}{Signal-to-Noise Ratio}
+  \acro{SSIM}{Structural Similarity Index Measure}
+  \acro{tSNE}{t-distributed Stochastic Neighbour Embedding}
+  \acro{TV}{Total Variation}
+  \acro{UMAP}{Uniform Manifold Approximation and Projection}
+  \acro{VAE}{Variational Autoencoder}
+  \acro{VGG}{Visual Geometry Group (network)}
+  \acro{VST}{Variance Stabilising Transformation}
+  \acro{Adam}{Adaptive Moment Estimation (optimiser)}
 \end{acronym}
 
 \newpage
@@ -299,9 +323,15 @@ The total word count of this dissertation is [INSERT WORD COUNT], which is withi
 \label{sec:intro:clinical}
 % ============================================================
 
-The utilisation of diagnostic medical imaging has expanded exponentially over the last several
-decades, establishing itself as an indispensable pillar of modern clinical decision-making
-\cite{smith-bindman_trends_2019}. Among the multitude of available diagnostic modalities, the
+The utilisation of diagnostic medical imaging has expanded substantially over the last several
+decades, establishing itself as an indispensable pillar of modern clinical decision-making.
+A retrospective study of 135 million imaging examinations across seven US health systems
+and Ontario, Canada found that CT rates among adults doubled between 2000 and 2016 (from
+approximately 150 to 280 examinations per 1,000 person-years), and that paediatric CT rates
+grew at 10\% annually until dose-reduction awareness campaigns began reversing the trend
+after 2006 \cite{smith-bindman_trends_2019}. The clinical implication is important: even when
+individual examination doses are held constant, rising imaging volumes increase the cumulative
+population radiation burden. Among the multitude of available diagnostic modalities, the
 chest radiograph (CXR) remains the most frequently performed imaging investigation globally,
 serving as the primary investigative tool for evaluating suspected respiratory pathology,
 cardiopulmonary abnormalities, and thoracic traumatic injuries
@@ -314,72 +344,47 @@ epidemiological profile that renders them significantly more susceptible to the 
 of ionising radiation compared to adult cohorts, necessitating stringent clinical oversight and
 technological innovation to mitigate these risks \cite{pearce_radiation_2012, mathews_cancer_2013}.
 
-The biological mechanisms underpinning radiation-induced cellular damage are rooted in the
-disruption of genomic integrity at the molecular level. When living tissue is exposed to ionising
-radiation, energy is transferred via two primary pathways: direct and indirect effects
-\cite{jackson_dna-damage_2009}. Direct effects involve the immediate ionisation of the DNA
-macromolecule itself, inducing physical strand breaks. However, because water constitutes
-approximately 75--80\,\% of the chemical composition of a living cell, the vast majority of
-radiation-induced damage is mediated through indirect radiolytic action
-\cite{jackson_dna-damage_2009}. The interaction of X-ray photons with intracellular water
-molecules induces the radiolysis of water ($\mathrm{H_2O \rightarrow H_2O^+ + e^-}$),
-initiating a cascade of reactions that rapidly generate highly reactive oxygen species, most
-notably the hydroxyl radical ($\mathrm{OH^{\bullet}}$) and free aqueous electrons
-\cite{national_research_council_health_2006}. These reactive species diffuse rapidly across
-short intracellular distances, indiscriminately attacking the sugar-phosphate backbone and
-nucleotide bases of the DNA double helix \cite{jackson_dna-damage_2009}.
-
-While biological systems possess highly conserved, sophisticated DNA repair mechanisms,
-their fidelity is not absolute. Single-strand breaks and minor base modifications are generally
-repaired with high precision by endogenous Base Excision Repair and Nucleotide Excision
-Repair pathways \cite{jackson_dna-damage_2009}. Conversely, double-strand breaks
-(DSBs), in which both strands of the DNA helix are severed in close spatial proximity, represent
-critical, highly lethal cellular lesions \cite{jackson_dna-damage_2009}. The cellular response to
-DSBs relies on Homologous Recombination and Non-Homologous End Joining
-\cite{jackson_dna-damage_2009}. If these repair mechanisms are overwhelmed by high-density
-ionisation events, or if they execute an erroneous repair, the resulting structural alterations can
-bypass regulatory cell-cycle checkpoints, including the critical $p^{53}$ tumour suppressor
-pathway \cite{jackson_dna-damage_2009}. The failure to induce apoptosis in these damaged
-cells permits the propagation of genetic mutations, chromosomal aberrations, and translocations
-during subsequent mitotic divisions. Over time, accumulation of these uncorrected genomic
-aberrations within critical oncogenes or tumour suppressor genes can trigger malignant
-transformation, ultimately leading to radiation-induced carcinogenesis
-\cite{national_research_council_health_2006}.
-
-Paediatric patients are disproportionately vulnerable to these stochastic, mutation-driven effects
-due to a combination of physiological and temporal factors \cite{pearce_radiation_2012}.
-Firstly, the developmental nature of paediatric physiology means their tissues contain a
-significantly higher proportion of undifferentiated, rapidly dividing progenitor cells
-\cite{national_research_council_health_2006}. According to the classical principles of
-radiobiology, cells are most sensitive to radiation-induced damage during the mitotic phases of
-the cell cycle; therefore, the high mitotic index of paediatric tissue inherently amplifies
-radiosensitivity \cite{national_research_council_health_2006}. For instance, the infant thyroid
-gland is estimated to be up to nine times more sensitive to radiation exposure than the adult
-thyroid, owing to its higher proportion of dividing follicular cells
-\cite{national_research_council_health_2006}. Secondly, children possess a significantly longer
-post-exposure life expectancy \cite{pearce_radiation_2012}. Radiation-induced solid tumours
-typically exhibit a prolonged latency period, often spanning decades from the initial exposure to
-clinical manifestation \cite{national_research_council_health_2006}. The extended lifespan of a
-paediatric patient provides an expansive temporal window during which sub-lethal,
-radiation-induced genetic mutations can undergo clonal expansion and oncogenic transformation
-\cite{pearce_radiation_2012}.
+The biological mechanisms underpinning this risk are well established. Ionising radiation induces
+cellular damage through two pathways: direct ionisation of DNA, and the more prevalent indirect
+pathway in which X-ray photons hydrolyse intracellular water to generate reactive oxygen species,
+principally the hydroxyl radical, which attacks the DNA sugar-phosphate backbone
+\cite{jackson_dna-damage_2009, national_research_council_health_2006}. While most single-strand
+breaks are repaired accurately, double-strand breaks (DSBs) -- the most lethal genomic lesion --
+may be repaired erroneously, bypassing the $p^{53}$ tumour-suppressor checkpoint and
+permitting propagation of oncogenic mutations through subsequent cell divisions
+\cite{jackson_dna-damage_2009}. Children are disproportionately vulnerable for two compounding
+reasons. First, paediatric tissues contain a higher proportion of rapidly dividing progenitor cells
+with a high mitotic index, intrinsically amplifying radiation sensitivity -- the infant thyroid is
+estimated to be up to nine times more sensitive than its adult counterpart
+\cite{national_research_council_health_2006}. Second, the longer post-exposure lifespan of a
+child provides a multi-decade window during which sub-lethal mutations can undergo clonal
+expansion and malignant transformation \cite{pearce_radiation_2012}.
 
 The quantification of this radiation risk is governed by the Linear No-Threshold (LNT)
-hypothesis, a conceptual framework endorsed by the International Commission on Radiological
-Protection (ICRP) and the Biological Effects of Ionizing Radiation (BEIR VII) committee
+hypothesis, endorsed by the International Commission on Radiological Protection (ICRP) and
+the Biological Effects of Ionizing Radiation (BEIR VII) committee
 \cite{international_commission_on_radiological_protection_2007_2007,
-national_research_council_health_2006}. The LNT model postulates that the risk of
-radiation-induced mutagenesis and subsequent cancer scales linearly with the accumulated
-effective dose, explicitly asserting that there is no safe lower threshold below which the
-biological risk is definitively zero
-\cite{international_commission_on_radiological_protection_2007_2007}. While the effective
-dose of a single paediatric chest radiograph is relatively small (ranging from approximately
-0.007\,mSv for a neonate to 0.033\,mSv for an older adolescent, broadly comparable to a
-few days of natural background radiation), the cumulative biological burden across a patient's
-lifespan can become clinically significant \cite{hiles_effective_2023}. This is particularly
-pertinent for critically ill children who require frequent, longitudinal radiographic monitoring,
-including those with congenital heart disease, cystic fibrosis, neonates in intensive care units,
-and children with pulmonary tuberculosis \cite{johnson_cumulative_2014}.
+national_research_council_health_2006}. The LNT model asserts that the risk of radiation-induced
+cancer scales linearly with accumulated effective dose, with no safe threshold
+\cite{international_commission_on_radiological_protection_2007_2007}. While a single paediatric
+chest radiograph delivers a modest effective dose (approximately 0.007\,mSv for a neonate to
+0.033\,mSv for an adolescent), cumulative exposure across repeat imaging episodes is
+clinically significant \cite{hiles_effective_2023}, particularly for children with congenital heart
+disease, cystic fibrosis, or tuberculosis requiring frequent longitudinal monitoring
+\cite{johnson_cumulative_2014}.
+
+The LNT model carries a direct implication for this dissertation. If any dose incurs finite risk,
+then every unnecessary repeat radiograph -- ordered because a low-dose image was too noisy
+to interpret -- represents a preventable harm. Similarly, every escalation from an inadequate
+CXR to a CT examination imposes a dose roughly 1,400-fold greater for the same anatomical
+region \cite{smith-bindman_hematologic_2025}. Computational enhancement of low-dose images
+that reduces diagnostic failure rates therefore reduces population cancer risk in a manner that
+is directly quantifiable under LNT. This is the epidemiological mandate for the work presented
+in this dissertation, and it motivates the strict requirement that any enhancement algorithm must
+preserve pathological findings faithfully -- a hallucinating algorithm that produces visually
+acceptable images but erases genuine findings imposes the same diagnostic penalty as no
+enhancement at all. The detailed epidemiological evidence and clinical pathway implications are
+reviewed in Chapter~\ref{chap:lit}.
 
 Recent large-scale epidemiological studies have provided robust, quantitative validation of the
 oncogenic risks associated with low-dose medical radiation. A seminal retrospective cohort study
@@ -594,11 +599,43 @@ mandates and clinical efficacy.
 % ============================================================
 
 The pursuit of algorithmic solutions to mitigate image degradation has driven extensive
-research over the past three decades \cite{willemink_preparing_2020}. Methodologies have
-evolved from classical, hand-crafted statistical filters to highly complex, data-driven deep
-learning architectures. However, while each generation of algorithms has offered progressive
-improvements in SNR, they have consistently struggled with the unique and unforgiving
-challenges posed by medical image pathology.
+research over the past three decades
+\cite{willemink_preparing_2020, zhang_beyond_2017, chen_low-dose_2017, zhang_drunet_2021,
+liang_swinir_2021, zhang_hformer_2023, chen_nafnet_2022, zhang_scunet_2023,
+goodfellow_generative_2014, ho_denoising_2020, kingma_auto-encoding_2014}. Methodologies
+have evolved from classical, hand-crafted statistical filters to highly complex, data-driven deep
+learning architectures. However, while each generation has offered progressive improvements
+in SNR, each has introduced a characteristic failure mode in the medical image domain.
+
+Deep learning approaches can be organised into three broad families, each with a distinct
+inductive bias and failure mechanism. \textit{Discriminative supervised methods}
+\cite{zhang_beyond_2017, chen_low-dose_2017, zhang_drunet_2021} -- including residual CNNs,
+dense networks, and hybrid CNN-Transformer architectures such as SwinIR
+\cite{liang_swinir_2021}, Hformer \cite{zhang_hformer_2023}, NAFNet \cite{chen_nafnet_2022},
+and SCUNet \cite{zhang_scunet_2023} -- learn a direct mapping from degraded input to clean
+output. They are efficient and stable but rely on pixel-wise losses that drive regression to the
+conditional mean, systematically blurring fine pathological detail. \textit{Generative adversarial
+methods} \cite{goodfellow_generative_2014} synthesise sharp textures via an adversarial
+discriminator but are prone to hallucinating anatomically plausible yet clinically false structures.
+\textit{Probabilistic methods} \cite{kingma_auto-encoding_2014, ho_denoising_2020} -- including
+VAEs and diffusion models -- offer principled uncertainty quantification but suffer from blur
+(VAEs, from the Gaussian ELBO likelihood) or from prior dominance erasing pathology
+(diffusion, when healthy training distributions overwrite disease features). The following
+subsections examine each family in detail.
+
+A unique challenge of paediatric CXR denoising that distinguishes it from the CT domain
+is that a true paired ``noisy/clean'' training set does not exist and cannot ethically be
+created. In CT denoising, it is feasible to acquire a low-dose and a full-dose scan of the same
+patient in the same session, providing genuine paired training examples. For paediatric chest
+radiography, no ethics committee could sanction irradiating a child at a supra-diagnostic dose
+solely to generate a ``ground-truth clean'' reference for an AI training set. The clean
+reference image was never acquired; it does not exist for this population. The Kermany et al.\
+\cite{kermany_identifying_2018} dataset used in this work was acquired at clinical low doses
+and treated as the clean reference, with noise added computationally via the Poisson-Gaussian
+model of Foi \cite{foi_practical_2008}. This is not merely a pragmatic convenience: it is the
+only ethical approach. Its consequence is that the network is evaluated on recovering a
+signal that was never corrupted past clinical quality, making the task genuinely restorative
+rather than reconstructive from scratch.
 
 % ─────────────────────────────────────────────────────
 \subsection{Traditional Computational Methods}
@@ -825,8 +862,8 @@ families across the dimensions most relevant to paediatric clinical deployment.
   P-G = Poisson-Gaussian. UQ = uncertainty quantification. The PP-VAE-Hformer is the
   only method that addresses all six identified deficiencies simultaneously.}
   \label{tab:intro:comparison}
-  \small
-  \begin{tabularx}{\linewidth}{p{2.2cm} p{2.5cm} p{1.4cm} p{1.4cm} p{1.2cm} p{3.2cm} p{2.8cm} p{1.0cm} p{1.0cm}}
+  \footnotesize
+  \begin{tabularx}{\linewidth}{p{1.9cm} p{2.1cm} p{1.2cm} p{1.2cm} p{1.1cm} p{2.9cm} p{2.6cm} p{0.8cm} p{0.8cm}}
     \toprule
     \textbf{Method Class} &
     \textbf{Key Examples} &
@@ -935,12 +972,12 @@ families across the dimensions most relevant to paediatric clinical deployment.
                        text width=2.6cm, align=center, inner sep=4pt, minimum height=1.5cm},
     proposed/.style={draw=teal!70!black, fill=teal!12, rounded corners=4pt,
                      text width=3.0cm, align=center, inner sep=4pt, minimum height=1.5cm,
-                     very thick},
+                     very thick, drop shadow},
     gap/.style={draw=red!70, fill=red!5, dashed, rounded corners=3pt,
                 text width=2.2cm, align=center, inner sep=3pt, font=\tiny},
     >=Stealth,
-    arr/.style={->, thick, gray!70},
-    harr/.style={->, thick, red!60, dashed},
+    arr/.style={->, thick, darkblue!70},
+    harr/.style={->, thick, red!70, dashed},
   ]
 
   %% ERA LABELS (column headers)
@@ -1134,7 +1171,9 @@ clinically actionable pixel-level confidence maps alongside the reconstructed ra
 \cite{kendall_what_2017}. In deterministic models, clinicians are forced to blindly trust the enhanced image. Providing a spatial map of epistemic uncertainty is a necessary step to bridge the gap between algorithm design and clinical trust.
 
 \textbf{Gap 4: Absence of Explicit Frequency-Domain Regularisation.} Although the spectral bias of neural networks is a rigorously proven, universal property of gradient-based training \cite{rahaman_spectral_2019, xu_frequency_2020}, no existing denoising framework for paediatric radiograph enhancement includes an explicit loss penalty that directly targets discrepancies in the frequency spectrum of the reconstructed image. The practical consequence is that all existing reconstruction algorithms, regardless of their spatial-domain constraints, implicitly permit systematic errors in the high-frequency content of the output. As demonstrated by Durall et al.\ \cite{durall_watch_2020}, even visually convincing deep neural network outputs can contain measurable, clinically significant distortions in their spectral power distribution when examined in the frequency domain. These distortions occur specifically in the high-frequency range that carries the fine diagnostic detail of paediatric pathology. A loss function that operates directly in the Fourier domain, computing how different the frequency composition of the reconstruction is from the target, provides a direct mechanism to correct this systematic spectral error. Without such a constraint, the high-frequency clinical content that spectral bias neglects will remain under-recovered, regardless of how well the spatial-domain losses perform.
-Table~\ref{tab:intro:gaps} synthesises these identified gaps, their evidence base, clinical consequences, and the proposed framework's solutions.
+Table~\ref{tab:intro:gaps} synthesises these identified gaps, their evidence base, clinical
+consequences, and the proposed framework's solutions. The primary literature underpinning
+each gap is reviewed in depth in Chapter~\ref{chap:lit}.
 
 \begin{table}[H]
   \centering
@@ -2038,7 +2077,7 @@ This balance defines two distinct reconstruction regimes. When the signal-to-noi
 $\text{SNR}(y) = y/\sqrt{ay+b}$ is high, the likelihood is narrow and the posterior is
 tightly constrained by the data. The network's reconstruction in this regime is
 \emph{signal retrieval}: the output reflects what was actually in the observation. When the
-SNR is low --- as it is in dark anatomical regions under paediatric ALARA-level doses --- the
+SNR is low (as it is in dark anatomical regions under paediatric ALARA-level doses) the
 likelihood is broad and the posterior is dominated by the prior $p(y)$. The network's
 reconstruction in this regime is \emph{prior sampling}: the output reflects what a clean
 chest X-ray tends to look like, not what this patient's anatomy looked like at this moment.
@@ -2055,7 +2094,7 @@ ceiling is not a modelling failure; it is a law.
 The practical problem is that an L2-trained network outputs a single image $\hat{y}$ that
 looks identical regardless of which regime it came from. In the retrieval regime,
 $\hat{y}$ is accurate. In the prior-sampling regime, $\hat{y}$ is a weighted average of
-what the model believes a lung field looks like at that location --- not this patient's
+what the model believes a lung field looks like at that location, not this patient's
 lung. A radiologist receiving $\hat{y}$ has no information about which case applies. This
 is precisely why diffusion-based denoising fails for medical imaging: the iterative sampling
 process amplifies prior-sampling at every step, and Pfaff et al.\ \cite{pfaff_no-new-denoiser_2024}
