@@ -1,0 +1,56 @@
+\documentclass[border=10pt, tikz]{standalone}
+\usetikzlibrary{positioning, calc, shapes.geometric}
+
+\definecolor{blockColor}{RGB}{245, 245, 245}
+\definecolor{convColor}{RGB}{240, 160, 85}    % Match Encoder Orange
+\definecolor{attnColor}{RGB}{140, 180, 225}    % Transformer Soft Blue
+\definecolor{edgeColor}{RGB}{60, 60, 60}
+\definecolor{textColor}{RGB}{40, 40, 40}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=1.0cm and 1.2cm,
+    font=\sffamily\small,
+    text=textColor,
+    % Element Styles
+    block/.style={rectangle, draw=edgeColor, line width=0.6pt, minimum width=2.4cm, minimum height=1.0cm, align=center, inner sep=6pt},
+    conv/.style={block, fill=convColor!90},
+    attn/.style={block, fill=attnColor!90},
+    circleNode/.style={circle, draw=edgeColor, line width=0.6pt, fill=white, minimum size=0.5cm, inner sep=0pt},
+    container/.style={rectangle, draw=edgeColor, dashed, line width=0.8pt, fill=blockColor!40, inner sep=15pt}
+]
+
+    % --- 1. BASELINE PIPELINE NODES ---
+    \node (input) at (0,0) {};
+    \node[left=0.1cm of input, font=\footnotesize\bfseries] {Feature Map In};
+
+    % ResBlock Component (Convolutional Stage)
+    \node[conv, right=1.0cm of input] (resblock) {\textbf{ResBlock}\\3$\times$3 Conv + GroupNorm\\+ GELU Activation};
+
+    % WindowAttnBlock Component (Transformer Stage)
+    \node[attn, right=1.5cm of resblock] (attnblock) {\textbf{WindowAttnBlock}\\Multi-Head Self-Attention\\($8\times8$ Local Windows)};
+
+    % Output Point
+    \node[right=1.0cm of attnblock] (output) {};
+    \node[right=0.1cm of output, font=\footnotesize\bfseries] {Feature Map Out};
+
+    % --- 2. RESBLOCK INTERNAL SKIP CONNECTION (He et al.) ---
+    \node[circleNode, right=0.4cm of resblock] (add) {\textbf{+}};
+    
+    % --- 3. CONNECTIONS & FLOW LINES ---
+    \draw[thick, -stealth, draw=edgeColor] (input) -- (resblock);
+    \draw[thick, -stealth, draw=edgeColor] (resblock) -- (add);
+    \draw[thick, -stealth, draw=edgeColor] (add) -- (attnblock);
+    \draw[thick, -stealth, draw=edgeColor] (attnblock) -- (output);
+
+    % Draw the Skip Track routing line
+    \path (input) -- (resblock) coordinate[pos=0.4] (skip_start);
+    \draw[thick, -stealth, draw=edgeColor] (skip_start) -- ++(0, 1.0) -- ($(add.north) + (0, 0.75)$) -- (add.north);
+
+    % --- 4. OUTER CONTAINER (HYBRIDBLOCK BOUNDARY) ---
+    \begin{scope}[on background layer]
+        \node[container, fit=(resblock) (add) (attnblock), label={[font=\sffamily\bfseries\large, shift={(0,-0.4)}]above:\textbf{HybridBlock Core Processing Unit}}] (hybridbox) {};
+    \end{scope}
+
+\end{tikzpicture}
+\end{document}

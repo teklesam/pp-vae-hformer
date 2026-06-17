@@ -22,6 +22,7 @@
 \usepackage{amsmath, amssymb, bm}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{threeparttable}
 \usepackage{longtable}
 \usepackage{multirow}
 \usepackage{array}
@@ -35,7 +36,7 @@
             linkcolor=darkblue,
             citecolor=darkblue,
             urlcolor=darkblue]{hyperref}
-\usepackage{natbib}               % Vancouver-style (numbered)
+\usepackage[square,numbers]{natbib}           % Vancouver-style (numbered)
 \usepackage{chngcntr}
 \usepackage{pdflscape}
 \usepackage{appendix}
@@ -51,6 +52,7 @@
 \usepackage{emptypage}
 \usepackage{afterpage}
 \usepackage{tikz}
+\usepackage{xltabular}
 \usetikzlibrary{arrows.meta,positioning,backgrounds,shapes.geometric,calc,fit,decorations.pathreplacing,shadows}
 \usepackage[edges]{forest}
 
@@ -152,7 +154,7 @@
   Population Health Sciences (Health Data Science)}\\[1.5cm]
 
   {\large \today}\\[1cm]
-  {\large Word Count: [INSERT FINAL WORD COUNT]}
+  {\large Word Count: TBD}
 
   \vfill
   \includegraphics[width=4cm]{cambridge_logo}   % Add logo to Overleaf project
@@ -166,7 +168,7 @@
 
 This dissertation is the result of my own work and includes nothing which is the outcome of work done in collaboration, except where specifically indicated. It has not been previously submitted for any degree or other qualification at this or any other University.
 
-The total word count of this dissertation is [INSERT WORD COUNT], which is within the limit stipulated by the MPhil Population Health Sciences regulations.
+The total word count of this dissertation is [XXX], which is within the limit stipulated by the MPhil Population Health Sciences regulations.
 
 \vspace{2cm}
 \noindent\textbf{Signature:} \rule{6cm}{0.4pt}\\[0.5em]
@@ -198,7 +200,7 @@ The total word count of this dissertation is [INSERT WORD COUNT], which is withi
 %   [Insert winning ablation arm metrics here]
 %   [Insert KL divergence / latent separation metric here]
 
-[ABSTRACT TEXT — TO BE WRITTEN LAST]
+[XXX TO BE WRITTEN LAST]
 
 \newpage
 
@@ -216,7 +218,7 @@ The total word count of this dissertation is [INSERT WORD COUNT], which is withi
 % Cambridge E-labs / SPARk 2.0 (translational inspiration);
 % any other institutional support.
 
-[ACKNOWLEDGEMENTS TEXT]
+
 
 \newpage
 
@@ -551,8 +553,7 @@ frequencies will remove both the noise and the diagnosis simultaneously.
 
 This frequency-domain perspective is not merely a conceptual aid. It is central to
 understanding why every existing class of reconstruction algorithm fails in a predictable and
-mathematically consistent way, and why the proposed PP-VAE requires an explicit
-frequency-domain constraint to succeed where its predecessors do not.
+mathematically consistent way, and it motivates the idea for the development of beyond frequency sensitive models in this dissertation.
 
 % ─────────────────────────────────────────────────────────────
 
@@ -608,7 +609,7 @@ learning architectures. However, while each generation has offered progressive i
 in SNR, each has introduced a characteristic failure mode in the medical image domain.
 
 Deep learning approaches can be organised into three broad families, each with a distinct
-inductive bias and failure mechanism. \textit{Discriminative supervised methods}
+inductive bias\footnote{In machine learning, inductive bias is the set of assumptions a learning algorithm uses to predict outputs for unseen inputs.} and failure mechanism. \textit{Discriminative supervised methods}
 \cite{zhang_beyond_2017, chen_low-dose_2017, zhang_drunet_2021} -- including residual CNNs,
 dense networks, and hybrid CNN-Transformer architectures such as SwinIR
 \cite{liang_swinir_2021}, Hformer \cite{zhang_hformer_2023}, NAFNet \cite{chen_nafnet_2022},
@@ -794,7 +795,7 @@ towards a healthy counterfactual, actively scrubbing out disease features (such 
 pneumonia or cardiomegaly) to conform to the learned distribution of normal radiographs
 \cite{kazerouni_diffusion_2023}. This ``hallucination of health'' phenomenon is the inverse of
 the GAN hallucination problem but is equally dangerous in the paediatric setting where the
-detection of subtle pathology is the primary clinical objective.
+detection of subtle pathology is the primary clinical objective. Furthermore, because real-world clinical datasets lack the sequential noise time stamps (t) required by diffusion frameworks, these models struggle to accurately decouple static physical noise from true anatomy. When faced with heavy, unindexed clinical degradation, the reverse sampling process becomes mathematically under-constrained. To compensate, the network falls back entirely on its generative prior, directly causing semantic hallucinations where diagnostic anomalies are either smoothed away or replaced with plausible-looking, yet entirely fabricated, healthy structures \cite{pfaff_no-new-denoiser_2024}. 
 
 % ─────────────────────────────────────────────────────
 \subsection{Deep Learning: Variational Autoencoders}
@@ -851,19 +852,27 @@ collapsed VAE reconstructs a generic average radiograph entirely divorced from t
 patient's true anatomy.
 
 Table~\ref{tab:intro:comparison} provides a comparative synthesis of these five methodological
-families across the dimensions most relevant to paediatric clinical deployment.
+families across the dimensions most relevant to paediatric clinical deployment and Figure~\ref{fig:intro:evotree} depicts on the evolution of the different variants for denoising task of medical images.
+
+\renewcommand{\arraystretch}{0.8} % Compresses row height by 5%
 
 \begin{landscape}
-\begin{table}[H]
-  \centering
-  \caption{Comparative analysis of image denoising method classes across clinically relevant
-  axes. Loss abbreviations: MSE = mean squared error; Charb. = Charbonnier; NLL = heteroscedastic
-  negative log-likelihood. Noise model: AWGN = additive white Gaussian noise;
-  P-G = Poisson-Gaussian. UQ = uncertainty quantification. The PP-VAE-Hformer is the
-  only method that addresses all six identified deficiencies simultaneously.}
-  \label{tab:intro:comparison}
   \footnotesize
-  \begin{tabularx}{\linewidth}{p{1.9cm} p{2.1cm} p{1.2cm} p{1.2cm} p{1.1cm} p{2.9cm} p{2.6cm} p{0.8cm} p{0.8cm}}
+  \begin{xltabular}{\linewidth}{
+    >{\raggedright\arraybackslash}p{2.4cm} 
+    >{\raggedright\arraybackslash}p{2.4cm} 
+    >{\raggedright\arraybackslash}p{1.6cm} 
+    >{\raggedright\arraybackslash}p{1.6cm} 
+    >{\raggedright\arraybackslash}p{1.6cm} 
+    >{\raggedright\arraybackslash}X        
+    >{\raggedright\arraybackslash}X        
+    >{\centering\arraybackslash}p{0.8cm}   
+    >{\centering\arraybackslash}p{0.8cm}   
+  }
+    
+    % --- HEADER FOR THE FIRST PAGE ---
+    \caption{Comparative analysis of image denoising method classes across clinically relevant axes. The PP-VAE-Hformer is the only method that addresses all six identified deficiencies simultaneously.}
+    \label{tab:intro:comparison} \\
     \toprule
     \textbf{Method Class} &
     \textbf{Key Examples} &
@@ -875,6 +884,36 @@ families across the dimensions most relevant to paediatric clinical deployment.
     \textbf{UQ?} &
     \textbf{Paed.?} \\
     \midrule
+    \endfirsthead
+    
+    % --- HEADER FOR SUBSEQUENT PAGES ---
+    \caption[]{Comparative analysis of image denoising method classes (Continued)} \\
+    \toprule
+    \textbf{Method Class} &
+    \textbf{Key Examples} &
+    \textbf{Domain} &
+    \textbf{Noise Model} &
+    \textbf{Loss} &
+    \textbf{Strengths} &
+    \textbf{Critical Limitations} &
+    \textbf{UQ?} &
+    \textbf{Paed.?} \\
+    \midrule
+    \endhead
+    
+    % --- FOOTER FOR EVERY PAGE EXCEPT THE LAST ---
+    \midrule
+    \multicolumn{9}{r}{\textit{Continued on next page...}} \\
+    \endfoot
+    
+    % --- FOOTER FOR THE FINAL PAGE (Footnotes Added Here) ---
+    \bottomrule
+    \multicolumn{9}{l}{\strut \textbf{Loss abbreviations:} MSE = mean squared error; Charb. = Charbonnier; NLL = heteroscedastic negative log-likelihood.} \\
+    \multicolumn{9}{l}{\strut \textbf{Noise model:} AWGN = additive white Gaussian noise; P-G = Poisson-Gaussian. \textbf{UQ} = uncertainty quantification.} \\
+    \multicolumn{9}{l}{\strut $^\dagger$ Achieved via ensemble sampling.} \\
+    \endlastfoot
+    
+    % --- TABLE DATA ---
     Classical filtering
       \cite{rudin_nonlinear_1992, buades_non-local_2005, dabov_image_2007, makitalo_optimal_2013}
     & BM3D, NLM, TV, Wavelet + GAT
@@ -884,6 +923,7 @@ families across the dimensions most relevant to paediatric clinical deployment.
     & Cannot separate noise from fine pathology; over-smooths diagnostically critical high-frequency edges; brittle parameter estimation \cite{borges_noise_2020}.
     & No & Limited \\
     \midrule
+    
     Residual CNNs
       \cite{zhang_beyond_2017, chen_low-dose_2017, zhang_drunet_2021, zhang_beyond_2017}
     & DnCNN, IRCNN, FFDNet, RED-CNN, DRUNet
@@ -893,6 +933,7 @@ families across the dimensions most relevant to paediatric clinical deployment.
     & MSE drives regression to the posterior mean, blurring fine structure; spectral bias neglects high-frequency anatomy \cite{rahaman_spectral_2019}; no UQ; AWGN assumption invalid for low-dose CXR \cite{foi_practical_2008}.
     & No & No \\
     \midrule
+    
     Dense / frequency CNNs
       \cite{luo_uddn_2021, luo_eedn_2022, huang_densely_2017}
     & UDDN, EEDN, MWCNN
@@ -902,6 +943,7 @@ families across the dimensions most relevant to paediatric clinical deployment.
     & Frequency insight locked in architecture, not loss; Charbonnier still pixel-only; no UQ; cardiac/natural domain only; Gaussian noise assumption.
     & No & No \\
     \midrule
+    
     Transformer / hybrid
       \cite{liang_swinir_2021, zhang_hformer_2023, chen_nafnet_2022, zhang_scunet_2023}
     & SwinIR, Hformer, NAFNet, SCUNet
@@ -911,6 +953,7 @@ families across the dimensions most relevant to paediatric clinical deployment.
     & All still use pixel-only loss; no UQ output; validated only on natural images or CT; no paediatric CXR evaluation; Hformer uses L2 despite Zhao (2017) showing it suboptimal \cite{zhao_loss_2017}.
     & No & No \\
     \midrule
+    
     Generative adversarial
       \cite{goodfellow_generative_2014, wolterink_generative_2017, yang_low-dose_2018}
     & pix2pix, CycleGAN, WGAN-VGG
@@ -920,6 +963,7 @@ families across the dimensions most relevant to paediatric clinical deployment.
     & Hallucination: creates false pathology or erases real findings \cite{bhadra_hallucinations_2021}; mode collapse; distorted high-frequency spectrum \cite{durall_watch_2020}; clinically unsafe.
     & No & No \\
     \midrule
+    
     Diffusion models
       \cite{ho_denoising_2020, kazerouni_diffusion_2023}
     & DDPM, score-based SDE
@@ -927,8 +971,9 @@ families across the dimensions most relevant to paediatric clinical deployment.
     & Score matching
     & State-of-the-art generative realism; probabilistic sampling.
     & Requires 100--1000 inference steps; prior dominance erases pathology under heavy noise \cite{pfaff_no-new-denoiser_2024}; hallucination of healthy anatomy over disease findings; clinically dangerous.
-    & Yes (ensemble) & No \\
+    & Yes$^\dagger$ & No \\
     \midrule
+    
     Standard VAEs
       \cite{kingma_auto-encoding_2014, bredell_explicitly_2023}
     & Convolutional VAE
@@ -938,6 +983,7 @@ families across the dimensions most relevant to paediatric clinical deployment.
     & Blur error from factorised Gaussian likelihood \cite{bredell_explicitly_2023}; spectral bias compounds blurring at high frequencies; posterior collapse risk \cite{lucas_dont_2019}.
     & Yes & No \\
     \midrule
+    
     \textbf{PP-VAE-Hformer (proposed)}
       \cite{kermany_identifying_2018, kendall_what_2017, jiang_focal_2021, zhang_hformer_2023}
     & \textbf{Hformer + VAE bottleneck}
@@ -947,159 +993,134 @@ families across the dimensions most relevant to paediatric clinical deployment.
     & Dual uncertainty output ($\hat{\sigma}^2_a$, $\hat{\sigma}^2_e$); frequency-aware training; noise-physics-grounded loss; paediatric domain; efficient 1.65M backbone.
     & \textbf{Addresses all limitations above.} Results pending full training.
     & \textbf{Yes} & \textbf{Yes} \\
-    \bottomrule
-  \end{tabularx}
-\end{table}
-\end{landscape}
+  \end{xltabular}
 
-% ─── Architecture Evolution Figure ────────────────────────────────────────────
-\begin{landscape}
+% ─── Architecture Evolution Figur
+
 \begin{figure}[H]
   \centering
+  \resizebox{\linewidth}{!}{%
   \begin{tikzpicture}[
-    every node/.style={font=\scriptsize},
-    era/.style={font=\footnotesize\bfseries, text=white, fill=gray!60, rounded corners=3pt,
-                minimum width=1.5cm, minimum height=0.6cm, align=center},
+    every node/.style={font=\small},
+    era/.style={font=\normalsize\bfseries, text=white, fill=gray!60, rounded corners=3pt,
+                minimum width=2.2cm, minimum height=0.7cm, align=center},
     classical/.style={draw=blue!50!black, fill=blue!8, rounded corners=4pt,
-                      text width=2.6cm, align=center, inner sep=4pt, minimum height=1.5cm},
+                      text width=2.5cm, align=center, inner sep=4pt, minimum height=0.9cm},
     cnnl2/.style={draw=red!60!black, fill=red!8, rounded corners=4pt,
-                  text width=2.6cm, align=center, inner sep=4pt, minimum height=1.5cm},
+                  text width=2.5cm, align=center, inner sep=4pt, minimum height=0.9cm},
     charb/.style={draw=orange!70!black, fill=orange!8, rounded corners=4pt,
-                  text width=2.6cm, align=center, inner sep=4pt, minimum height=1.5cm},
+                  text width=2.5cm, align=center, inner sep=4pt, minimum height=0.9cm},
     transformer/.style={draw=purple!60!black, fill=purple!8, rounded corners=4pt,
-                        text width=2.6cm, align=center, inner sep=4pt, minimum height=1.5cm},
+                        text width=2.5cm, align=center, inner sep=4pt, minimum height=0.9cm},
     generative/.style={draw=gray!60, fill=gray!8, rounded corners=4pt,
-                       text width=2.6cm, align=center, inner sep=4pt, minimum height=1.5cm},
+                       text width=2.5cm, align=center, inner sep=4pt, minimum height=0.9cm},
     proposed/.style={draw=teal!70!black, fill=teal!12, rounded corners=4pt,
-                     text width=3.0cm, align=center, inner sep=4pt, minimum height=1.5cm,
+                     text width=3.6cm, align=center, inner sep=5pt, minimum height=1.0cm,
                      very thick, drop shadow},
-    gap/.style={draw=red!70, fill=red!5, dashed, rounded corners=3pt,
-                text width=2.2cm, align=center, inner sep=3pt, font=\tiny},
     >=Stealth,
-    arr/.style={->, thick, darkblue!70},
+    arr/.style={->, thick, blue!60!black},
     harr/.style={->, thick, red!70, dashed},
   ]
 
-  %% ERA LABELS (column headers)
-  \node[era] at (0,    7.2) {Pre-2017};
-  \node[era] at (3.1,  7.2) {2017};
-  \node[era] at (6.2,  7.2) {2018--2019};
-  \node[era] at (9.3,  7.2) {2021};
-  \node[era] at (12.4, 7.2) {2022--2023};
-  \node[era, fill=teal!60] at (15.5, 7.2) {Proposed};
+  %% ================= ERA LABELS =================
+  \node[era] at (0,    7.5) {Pre-2017};
+  \node[era] at (4.5,  7.5) {2017};
+  \node[era] at (9.0,  7.5) {2018--2019};
+  \node[era] at (13.5, 7.5) {2021};
+  \node[era] at (18.0, 7.5) {2022--2023};
+  \node[era, fill=teal!60] at (22.5, 7.5) {Proposed};
 
-  %% CLASSICAL METHODS
-  \node[classical] (bm3d) at (0, 5.5)
-    {\textbf{BM3D}\\\textit{Dabov 2007}\\Filter-based\\28.57\,dB\\\textsc{no training}};
-  \node[classical] (nlm) at (0, 3.5)
-    {\textbf{NLM}\\\textit{Buades 2005}\\Self-similarity\\Over-smooths};
-  \node[classical] (tv) at (0, 1.5)
-    {\textbf{TV / Wavelet}\\\textit{Rudin 1992}\\Variational\\Loses texture};
+  %% ================= NODES =================
 
-  %% CNN BASIC — 2017
-  \node[cnnl2] (dncnn) at (3.1, 6.0)
-    {\textbf{DnCNN}\\\textit{Zhang 2017}\\Residual CNN\\L2 loss\\29.23\,dB};
-  \node[cnnl2] (redcnn) at (3.1, 3.8)
-    {\textbf{RED-CNN}\\\textit{Chen 2017}\\Enc-Dec $\bullet$ CT\\L2 loss\\Med.\ baseline};
-  \node[cnnl2] (ircnn) at (3.1, 1.8)
-    {\textbf{IRCNN}\\\textit{Zhang 2017}\\Plug-and-play\\L2 loss\\29.15\,dB};
+  %% Pre-2017 (X = 0)
+  \node[classical] (bm3d) at (0, 4.5) {\textbf{Dabov} (2007)\\BM3D \cite{dabov_image_2007}};
+  \node[classical] (nlm)  at (0, 0.5) {\textbf{Buades} (2005)\\NLM \cite{buades_non-local_2005}};
+  \node[classical] (tv)   at (0, -3.0) {\textbf{Rudin} (1992)\\TV / Wavelet \cite{rudin_nonlinear_1992}};
 
-  %% CNN ADVANCED — 2018-2019
-  \node[cnnl2] (ffdnet) at (6.2, 6.8)
-    {\textbf{FFDNet}\\\textit{Zhang 2018}\\$\sigma_M$-cond.\\L2 loss\\29.19\,dB};
-  \node[cnnl2] (n3net) at (6.2, 5.2)
-    {\textbf{N3Net}\\\textit{Pl\"{o}tz 2018}\\Learned KNN\\L2 loss\\29.30\,dB};
-  \node[cnnl2] (mwcnn) at (6.2, 3.6)
-    {\textbf{MWCNN}\\\textit{Liu 2018}\\Wavelet pool\\L2 loss\\29.41\,dB};
-  \node[cnnl2] (rnan) at (6.2, 2.0)
-    {\textbf{RNAN}\\\textit{Zhang 2019}\\Non-local attn\\L2 loss\\29.44\,dB};
-  \node[cnnl2] (focnet) at (6.2, 0.4)
-    {\textbf{FOCNet}\\\textit{Jia 2019}\\Frac.\ ODE\\L2 loss\\29.38\,dB};
+  %% 2017 (X = 4.5)
+  \node[cnnl2] (ircnn)  at (4.5, 5.5)  {\textbf{Zhang} (2017)\\IRCNN \cite{zhang_beyond_2017}};
+  \node[cnnl2] (dncnn)  at (4.5, 3.0)  {\textbf{Zhang} (2017)\\DnCNN \cite{zhang_beyond_2017}};
+  \node[cnnl2] (redcnn) at (4.5, -2.5) {\textbf{Chen} (2017)\\RED-CNN \cite{chen_low-dose_2017}};
 
-  %% CNN DEEP + DENSE — 2021
-  \node[cnnl2] (drunet) at (9.3, 6.5)
-    {\textbf{DRUNet}\\\textit{Zhang 2021}\\Deep U-Net\\L2 $\bullet$ 32.7M\\\textbf{CNN ceil.\ 29.48\,dB}};
-  \node[charb] (uddn) at (9.3, 4.3)
-    {\textbf{UDDN}\\\textit{Luo 2021}\\Dense CNN\\Charbonnier\\\textit{Cardiac X-ray}};
+  %% 2018--2019 (X = 9.0)
+  \node[cnnl2] (n3net)  at (9.0, 6.2)  {\textbf{Plötz} (2018)\\N3Net};
+  \node[cnnl2] (ffdnet) at (9.0, 4.8)  {\textbf{Zhang} (2018)\\FFDNet};
+  \node[cnnl2] (mwcnn)  at (9.0, 3.4)  {\textbf{Liu} (2018)\\MWCNN};
+  \node[cnnl2] (rnan)   at (9.0, 2.0)  {\textbf{Zhang} (2019)\\RNAN};
+  \node[cnnl2] (focnet) at (9.0, 0.6)  {\textbf{Jia} (2019)\\FOCNet \cite{jia2019focnet}};
+  \node[generative] (gan) at (9.0, -3.5) {\textbf{Goodfellow}\\GAN (2014) \cite{goodfellow_generative_2014}};
 
-  %% TRANSFORMER / HYBRID — 2021-2023
-  \node[transformer] (swinir) at (12.4, 6.5)
-    {\textbf{SwinIR}\\\textit{Liang 2021}\\Swin Transformer\\Charbonnier\\29.50\,dB};
-  \node[charb] (eedn) at (9.3, 2.3)
-    {\textbf{EEDN}\\\textit{Luo 2022}\\Dense+Edge\\Charbonnier\\\textit{Cardiac X-ray}};
-  \node[transformer] (nafnet) at (12.4, 4.7)
-    {\textbf{NAFNet}\\\textit{Chen 2022}\\SimpleGate\\MAE loss\\$\approx$29.52\,dB};
-  \node[transformer] (scunet) at (12.4, 3.0)
-    {\textbf{SCUNet}\\\textit{Zhang 2023}\\SC block\\\textbf{Incl.\ Poisson noise}\\\textbf{29.55\,dB (ceiling)}};
-  \node[cnnl2] (hformer) at (12.4, 1.3)
-    {\textbf{Hformer}\\\textit{Zhang 2023}\\DWConv+LSA\\\textbf{L2 loss (gap!)}\\1.65M $\bullet$ CT};
+  %% 2021 (X = 13.5)
+  \node[cnnl2] (drunet) at (13.5, 3.5) {\textbf{Zhang} (2021)\\DRUNet \cite{zhang_drunet_2021}};
+  \node[charb] (uddn)   at (13.5, -1.5) {\textbf{Lehtinen}\\UDDN (2018) \cite{luo_uddn_2021}};
+  \node[generative] (diffusion) at (13.5, -4.5) {\textbf{Ho} (2020)\\Diffusion \cite{ho_denoising_2020}};
 
-  %% GENERATIVE (side branch, shown as warning)
-  \node[generative] (gan) at (6.2, -1.5)
-    {\textbf{GAN}\\\textit{Goodfellow 2014}\\Adversarial\\Hallucination risk};
-  \node[generative] (diffusion) at (9.3, -1.5)
-    {\textbf{Diffusion}\\\textit{Ho 2020}\\Iterative sampling\\Pfaff (2024):\\\textbf{pathology erased}};
+  %% 2022--2023 (X = 18.0)
+  \node[transformer] (swinir)  at (18.0, 5.8) {\textbf{Liang} (2021)\\SwinIR \cite{liang_swinir_2021}};
+  \node[transformer] (nafnet)  at (18.0, 4.4) {\textbf{Chen} (2022)\\NAFNet \cite{chen_nafnet_2022}};
+  \node[transformer] (scunet)  at (18.0, 3.0) {\textbf{Zhang} (2023)\\SCUNet \cite{zhang_scunet_2023}};
+  \node[charb] (eedn)          at (18.0, -1.5) {\textbf{Krull} (2022)\\EEDN \cite{luo_eedn_2022}};
+  \node[cnnl2] (hformer)       at (18.0, -3.0) {\textbf{Gao} (2023)\\Hformer \cite{zhang_hformer_2023}};
 
-  %% PROPOSED
-  \node[proposed] (proposed) at (15.5, 4.0)
-    {\textbf{PP-VAE-Hformer}\\(This work)\\\rule{2.5cm}{0.2pt}\\Hformer + VAE\\NLL+SSIM+FFL+KL\\Paed.\ CXR $\bullet$ P-G noise\\$\hat{\mu}$ + $\hat{\sigma}^2_a$ + $\hat{\sigma}^2_e$};
+  %% Proposed (X = 22.5)
+  \node[proposed] (proposed) at (22.5, 1.5) {\textbf{This Work}\\PP-VAE-Hformer};
 
-  %% EVOLUTION ARROWS — CNN lineage
+  %% ================= EVOLUTION ARROWS =================
+
+  %% Pre-2017 → 2017
   \draw[arr] (bm3d.east) -- (dncnn.west);
-  \draw[arr] (dncnn.east) -- (ffdnet.west);
-  \draw[arr] (dncnn.east) -- (n3net.west);
-  \draw[arr] (dncnn.east) -- (mwcnn.west);
-  \draw[arr] (dncnn.east) -- (rnan.west);
-  \draw[arr] (dncnn.east) -- (focnet.west);
-  \draw[arr] (ircnn.east) -- (ffdnet.south west);
-  \draw[arr] (redcnn.east) -- (uddn.west);
-  \draw[arr] (mwcnn.east) to[bend left=10] (drunet.west);
-  \draw[arr] (rnan.east) to[bend right=10] (drunet.south west);
-  \draw[arr] (ffdnet.east) -- (drunet.west);
-  \draw[arr] (drunet.east) -- (swinir.west);
-  \draw[arr] (drunet.east) -- (nafnet.west);
+  \draw[arr] (nlm.east)  to[out=0, in=180] (redcnn.west);
+
+  %% 2017 → 2018--2019
+  \draw[arr] (ircnn.east)  -- (ffdnet.west);
+  \draw[arr] (dncnn.east)  to[out=0, in=180] (n3net.west);
+  \draw[arr] (dncnn.east)  -- (mwcnn.west);
+  \draw[arr] (dncnn.east)  to[out=0, in=180] (rnan.west);
+  \draw[arr] (dncnn.east)  to[out=0, in=180] (focnet.west);
+  \draw[arr] (redcnn.east) to[out=0, in=180] (gan.west);
+
+  %% 2018--2019 → 2021
+  \draw[arr] (ffdnet.east) to[out=0, in=180] (drunet.west);
+  \draw[arr] (mwcnn.east)  -- (drunet.west);
+  \draw[arr] (rnan.east)   to[out=0, in=180] (drunet.west);
+  \draw[arr] (focnet.east) to[out=0, in=180] (uddn.west);
+
+  %% 2021 → 2022--2023
+  \draw[arr] (drunet.east) to[out=0, in=180] (swinir.west);
+  \draw[arr] (drunet.east) to[out=0, in=180] (nafnet.west);
   \draw[arr] (drunet.east) -- (scunet.west);
-  \draw[arr] (uddn.east) -- (eedn.west);
-  \draw[arr] (eedn.east) to[bend right=15] (hformer.west);
-  \draw[arr] (swinir.east) to[bend left=15] (proposed.north west);
-  \draw[arr] (hformer.east) -- (proposed.west);
-  \draw[arr] (scunet.east) to[bend right=15] (proposed.south west);
+  \draw[arr] (uddn.east)   -- (eedn.west);
 
-  %% GENERATIVE (warning arrows)
-  \draw[harr] (gan.east) -- (diffusion.west);
-  \draw[harr, ->] (diffusion.east) to[bend right=20]
-      node[midway, above, font=\tiny, text=red!70] {\texttimes\ Hallucination} (hformer.south);
+  %% EEDN → Hformer (routes AROUND the right side, NOT crossing the box)
+  \draw[arr] (eedn.east) to[out=0, in=0] (hformer.east);
 
-  %% LEGEND
-  \begin{scope}[shift={(0, -3.5)}]
-    \node[cnnl2, minimum width=1.5cm, minimum height=0.5cm, text width=1.5cm]
-      at (0, 0) {\textbf{L2 (MSE) loss}};
-    \node[charb, minimum width=1.8cm, minimum height=0.5cm, text width=1.8cm]
-      at (3.0, 0) {\textbf{Charbonnier loss}};
-    \node[transformer, minimum width=1.8cm, minimum height=0.5cm, text width=1.8cm]
-      at (6.2, 0) {\textbf{Hybrid Transformer}};
-    \node[classical, minimum width=1.6cm, minimum height=0.5cm, text width=1.6cm]
-      at (9.3, 0) {\textbf{Classical method}};
-    \node[proposed, minimum width=1.6cm, minimum height=0.5cm, text width=1.6cm]
-      at (12.4, 0) {\textbf{Proposed}};
-    \node[font=\tiny, text=red!70] at (15.5, 0) {\texttimes\ Hallucination risk};
+  %% Convergence → Proposed
+  \draw[arr] (swinir.east)  to[out=0, in=180] (proposed.west);
+  \draw[arr] (nafnet.east)  to[out=0, in=180] (proposed.west);
+  \draw[arr] (scunet.east)  -- (proposed.west);
+  \draw[arr] (hformer.east) to[out=0, in=195] (proposed.west);
+
+  %% Generative warning (dashed, below main flow)
+  \draw[harr] (gan.east)       -- (diffusion.west);
+  \draw[harr] (diffusion.east) to[out=0, in=210]
+    node[midway, below right, font=\tiny, text=red!70] {\texttimes\ Hallucination \cite{bhadra_hallucinations_2021}} (hformer.south west);
+
+  %% ================= LEGEND =================
+  \begin{scope}[shift={(2.0, -6.5)}]
+    \node[cnnl2, minimum width=2.3cm, minimum height=0.7cm]       at (0, 0)   {L2 (MSE) loss};
+    \node[charb, minimum width=2.3cm, minimum height=0.7cm]       at (3.4, 0) {Charbonnier};
+    \node[transformer, minimum width=2.3cm, minimum height=0.7cm] at (6.8, 0) {Hybrid Trans.};
+    \node[classical, minimum width=2.3cm, minimum height=0.7cm]   at (10.2, 0){Classical};
+    \node[proposed, minimum width=2.3cm, minimum height=0.7cm]    at (14.6, 0){Proposed};
   \end{scope}
 
   \end{tikzpicture}
-  \caption{Evolution of image denoising architectures from classical methods (2007) through
-  to the proposed PP-VAE-Hformer. Arrows indicate conceptual inheritance or direct extension.
-  Colour indicates loss function family: red = MSE/L2 (the dominant paradigm throughout the
-  progression); orange = Charbonnier (partial improvement); purple = hybrid Transformer;
-  teal = proposed composite NLL + MS-SSIM + FFL + KL. Every method in the progression
-  uses AWGN noise assumptions and produces no uncertainty output; the proposed
-  framework is the first to address Poisson-Gaussian noise physics, paediatric CXR, and
-  dual aleatoric/epistemic uncertainty simultaneously. DnCNN (2017) is the ancestral baseline
-  from which all subsequent CNN methods descend; Hformer (2023) is the proposed backbone,
-  retained for its efficiency (1.65\,M parameters) but trained with the novel composite loss.}
-  \label{fig:intro:evotree}
+  } % End of resizebox
+   \caption{Evolution of image denoising architectures from classical methods (2007) through to the proposed PP-VAE-Hformer.}
+   \label{fig:architecture_evolution}
+   \caption*{\footnotesize \textit{Note:} Arrows indicate conceptual inheritance or direct extension. Colour indicates loss function family: red = MSE/L2; orange = Charbonnier; purple = hybrid Transformer; teal = proposed composite. Citations refer to the corresponding publications in the bibliography.}
 \end{figure}
 \end{landscape}
-
 % ============================================================
 \section{Critical Analysis of Literature, Research Motivation, and Gap Identification}
 \label{sec:intro:gap}
@@ -1175,13 +1196,18 @@ Table~\ref{tab:intro:gaps} synthesises these identified gaps, their evidence bas
 consequences, and the proposed framework's solutions. The primary literature underpinning
 each gap is reviewed in depth in Chapter~\ref{chap:lit}.
 
-\begin{table}[H]
+\begin{table}[htbp]
   \centering
   \caption{Gap synthesis in medical image enhancement. Each identified limitation maps to a
   specific design decision in the proposed PP-VAE framework.}
   \label{tab:intro:gaps}
   \small
-  \begin{tabularx}{\textwidth}{p{2.4cm} p{3.2cm} p{4.4cm} p{4.8cm}}
+  \begin{tabularx}{\textwidth}{
+    >{\raggedright\arraybackslash}p{2.8cm} 
+    >{\raggedright\arraybackslash}p{2.2cm} 
+    >{\raggedright\arraybackslash}X 
+    >{\raggedright\arraybackslash}X
+  }
     \toprule
     \textbf{Identified Limitation} &
     \textbf{Evidence Base} &
@@ -1359,7 +1385,7 @@ The complete composite loss is:
 
 where $\beta$ is annealed from 0 to 0.001 over 20 epochs to prevent posterior collapse,
 and $\lambda_{\mathrm{SSIM}} = 0.5$, $\lambda_{\mathrm{FFL}} = 0.1$ are fixed by
-systematic ablation, as detailed in Chapter~3.
+systematic ablation, as detailed in Chapter~\ref{chap:methods}.
 
 This composite objective is evaluated through a five-arm ablation study: Arm~A uses only
 an L2 loss and no VAE bottleneck (matching the training objective of every comparison
@@ -1505,13 +1531,10 @@ single cohort. Their main findings are summarised in Table~\ref{tab:lit:dose}.
 
 \begin{table}[H]
   \centering
-  \caption{Radiation dose and attributable cancer risk by imaging modality in children, from
-  Smith-Bindman et al.\ \cite{smith-bindman_hematologic_2025}. The contrast between chest
-  radiography and CT of the head illustrates why preventing escalation from X-ray to CT is
-  clinically meaningful for cancer risk.}
+  \caption{Radiation dose and attributable cancer risk by imaging modality in children.}
   \label{tab:lit:dose}
   \small
-  \begin{tabularx}{\textwidth}{l r r r}
+  \begin{tabular}{l c c c}
     \toprule
     \textbf{Modality} &
     \textbf{Mean bone marrow dose (mGy)} &
@@ -1519,11 +1542,17 @@ single cohort. Their main findings are summarised in Table~\ref{tab:lit:dose}.
     \textbf{Attributable cancer risk} \\
     \midrule
     Chest radiograph & 0.01 & --- & 0.03\,\% \\
-    Chest CT & 2.8 & 2.54 & 6.0\,\% \\
-    Head CT & 13.7 & 2.54 & 25.9\,\% \\
-    Abdominal CT & 10.4 & 2.54 & 21.4\,\% \\
+    Chest CT          & 2.8  & 2.54 & 6.0\,\% \\
+    Head CT           & 13.7 & 2.54 & 25.9\,\% \\
+    Abdominal CT      & 10.4 & 2.54 & 21.4\,\% \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
+
+  \vspace{0.3em}
+  {\footnotesize \textbf{Note:} The contrast between chest radiography and head CT---a factor 
+  of over 800 in attributable risk---illustrates why preventing unnecessary escalation from 
+  X-ray to CT is clinically meaningful. ERR = excess relative risk. Source: Smith-Bindman 
+  et al.\ (2025), \textit{N Engl J Med}, 392(1):44--56.}
 \end{table}
 
 The key finding for this dissertation is the roughly 1,400-fold difference in bone marrow
@@ -1633,7 +1662,7 @@ images; a fair comparison requires a shared resolution regime.
 \label{sec:lit:architectures}
 % ============================================================
 
-Image denoising has a long research history, and the field has undergone rapid change in the
+Image denoising has a long research history, and the field has undergone rapid change (Figure~\ref{fig:architecture_evolution}) in the
 past decade as deep learning has displaced classical signal processing methods. This section
 traces that trajectory and evaluates each class of method against the requirements of
 paediatric CXR denoising.
@@ -1778,52 +1807,51 @@ the key benchmark results across the methods described above.
 
 \begin{table}[H]
   \centering
-  \caption{PSNR (dB) on the BSD68 greyscale denoising benchmark at three standard noise
-  levels, showing the full chronological progression from classical methods to the current
-  state of the art. All numbers from Liang et al.\ \cite{liang_swinir_2021} Table~5 unless
-  noted. \dag: from Zhang et al.\ \cite{zhang_scunet_2023} Table~1. Higher PSNR is better.
-  The architecture tier and dominant loss are highlighted to show that performance gains
-  have come primarily from architectural innovation, not loss function improvement: the field
-  has used L2 or Charbonnier throughout its entire development.}
+  \caption{PSNR (dB) on BSD68 greyscale denoising: classical methods to state of the art.}
   \label{tab:lit:architectures}
   \small
-  \begin{tabularx}{\textwidth}{l l l l r r r}
+  \begin{tabular}{l c c c c c c}
     \toprule
     \textbf{Method} & \textbf{Year} & \textbf{Tier} & \textbf{Loss} &
     \textbf{$\sigma=15$} & \textbf{$\sigma=25$} & \textbf{$\sigma=50$} \\
     \midrule
     \multicolumn{7}{l}{\textit{Classical methods (no training data)}} \\
-    BM3D \cite{dabov_image_2007}           & 2007 & Classical     & n/a         & 31.73 & 28.57 & 25.62 \\
-    WNNM                                   & 2014 & Classical     & n/a         & 31.37 & 29.41 & 25.87 \\
+    BM3D           & 2007 & Classical     & n/a         & 31.73 & 28.57 & 25.62 \\
+    WNNM           & 2014 & Classical     & n/a         & 31.37 & 29.41 & 25.87 \\
     \midrule
-    \multicolumn{7}{l}{\textit{Tier 1 -- CNN: Basic residual}} \\
-    DnCNN \cite{zhang_beyond_2017}         & 2017 & CNN-basic     & \textbf{L2} & 31.73 & 29.23 & 26.23 \\
-    IRCNN \cite{zhang_drunet_2021}         & 2017 & CNN-P\&P      & \textbf{L2} & 31.63 & 29.15 & 26.22 \\
+    \multicolumn{7}{l}{\textit{Tier 1 --- CNN: Basic residual}} \\
+    DnCNN          & 2017 & CNN-basic     & \textbf{L2} & 31.73 & 29.23 & 26.23 \\
+    IRCNN          & 2017 & CNN-P\&P      & \textbf{L2} & 31.63 & 29.15 & 26.22 \\
     \midrule
-    \multicolumn{7}{l}{\textit{Tier 2 -- CNN: Explicit noise conditioning}} \\
-    FFDNet \cite{zhang_drunet_2021}        & 2018 & CNN-$\sigma$  & \textbf{L2} & 31.63 & 29.19 & 26.29 \\
+    \multicolumn{7}{l}{\textit{Tier 2 --- CNN: Explicit noise conditioning}} \\
+    FFDNet         & 2018 & CNN-$\sigma$  & \textbf{L2} & 31.63 & 29.19 & 26.29 \\
     \midrule
-    \multicolumn{7}{l}{\textit{Tier 3 -- CNN: Non-local and frequency-domain}} \\
-    N3Net \cite{zhang_drunet_2021}         & 2018 & CNN-nonlocal  & \textbf{L2} & 31.78 & 29.30 & 26.39 \\
-    MWCNN \cite{zhang_drunet_2021}         & 2018 & CNN-wavelet   & \textbf{L2} & 31.86 & 29.41 & 26.53 \\
-    FOCNet \cite{jia2019focnet}            & 2019 & CNN-math      & \textbf{L2} & 31.83 & 29.38 & 26.50 \\
-    RNAN \cite{zhang_drunet_2021}          & 2019 & CNN-attn      & \textbf{L2} & 31.86 & 29.44 & 26.48 \\
+    \multicolumn{7}{l}{\textit{Tier 3 --- CNN: Non-local and frequency-domain}} \\
+    N3Net          & 2018 & CNN-nonlocal  & \textbf{L2} & 31.78 & 29.30 & 26.39 \\
+    MWCNN          & 2018 & CNN-wavelet   & \textbf{L2} & 31.86 & 29.41 & 26.53 \\
+    FOCNet         & 2019 & CNN-math      & \textbf{L2} & 31.83 & 29.38 & 26.50 \\
+    RNAN           & 2019 & CNN-attn      & \textbf{L2} & 31.86 & 29.44 & 26.48 \\
     \midrule
-    \multicolumn{7}{l}{\textit{Tier 4 -- CNN: Deep and conditioned (ceiling)}} \\
-    DRUNet \cite{zhang_drunet_2021}        & 2021 & CNN-deep      & \textbf{L2} & \textbf{31.91} & \textbf{29.48} & \textbf{26.59} \\
+    \multicolumn{7}{l}{\textit{Tier 4 --- CNN: Deep and conditioned (ceiling)}} \\
+    DRUNet         & 2021 & CNN-deep      & \textbf{L2} & \textbf{31.91} & \textbf{29.48} & \textbf{26.59} \\
     \midrule
-    \multicolumn{7}{l}{\textit{Tier 5 -- Transformer / Hybrid (current state of the art)}} \\
-    SwinIR \cite{liang_swinir_2021}        & 2021 & Transformer   & Charbonnier & 31.97 & 29.50 & 26.58 \\
-    NAFNet \cite{chen_nafnet_2022}         & 2022 & Conv no-act.  & MAE         & 31.99 & $\approx$29.52 & --- \\
-    SCUNet \cite{zhang_scunet_2023}        & 2023 & SC-hybrid\dag & \textbf{L2} & \textbf{31.99} & \textbf{29.55} & \textbf{26.67} \\
-    Hformer \cite{zhang_hformer_2023}      & 2023 & CNN+attn      & \textbf{L2} & --- & --- & --- \\
+    \multicolumn{7}{l}{\textit{Tier 5 --- Transformer / Hybrid (current SOTA)}} \\
+    SwinIR         & 2021 & Transformer   & Charbonnier & 31.97 & 29.50 & 26.58 \\
+    NAFNet         & 2022 & Conv no-act.  & MAE         & 31.99 & $\approx$29.52 & --- \\
+    SCUNet\textsuperscript{\dag} & 2023 & SC-hybrid & \textbf{L2} & \textbf{31.99} & \textbf{29.55} & \textbf{26.67} \\
+    Hformer        & 2023 & CNN+attn      & \textbf{L2} & --- & --- & --- \\
     \midrule
-    \multicolumn{7}{l}{\textit{Tier 6 -- Proposed (paediatric CXR domain)}} \\
-    PP-VAE-Hformer (this work)             & 2025 & CNN+attn+VAE  & NLL+SSIM+FFL+KL & TBD & TBD & TBD \\
+    \multicolumn{7}{l}{\textit{Tier 6 --- Proposed (paediatric CXR domain)}} \\
+    PP-VAE-Hformer (this work) & 2025 & CNN+attn+VAE & NLL+SSIM+FFL+KL & TBD & TBD & TBD \\
     \bottomrule
-  \end{tabularx}
-\end{table}
+  \end{tabular}
 
+  \vspace{0.4em}
+  {\footnotesize \textbf{Notes:} Higher PSNR is better; bold indicates best in tier. 
+  Performance gains come primarily from architectural innovation---the field has relied on 
+  L2 or Charbonnier loss throughout. Sources: all numbers from Liang et al.\ (2021, Table~5) 
+  unless noted. \textsuperscript{\dag}SCUNet numbers from Zhang et al.\ (2023, Table~1).}
+\end{table}
 % ─────────────────────────────────────────────────────────
 \subsection{Why Architecture Alone Cannot Bridge the Gap}
 \label{sec:lit:architectures:plateau}
@@ -1840,37 +1868,33 @@ A second piece of evidence comes from neural network theory. Rahaman et al.\ \ci
 % ─── Cross-Cutting Limitations Table ─────────────────────────────────────────
 \begin{table}[H]
   \centering
-  \caption{Cross-cutting gaps across all major denoising methods in the comparison hierarchy.
-  Every column represents a gap that the dissertation addresses; every row shows a method that
-  fails to fill it. Tick marks (\checkmark) indicate the gap is addressed; crosses (\texttimes)
-  indicate it is not. Partial ticks (P) indicate a partial or indirect address. The proposed
-  PP-VAE-Hformer is the only method to address all six gaps simultaneously. Domain
-  abbreviations: CXR = chest X-ray, CT = computed tomography, Nat. = natural images.}
+  \caption{Cross-cutting gaps across major denoising methods. Only the proposed 
+  PP-VAE-Hformer addresses all six gaps simultaneously.}
   \label{tab:lit:gaps}
   \small
-  \begin{tabularx}{\textwidth}{l l l X X X X}
+  \begin{tabular}{l c c c c c c}
     \toprule
-    \textbf{Method} &
-    \textbf{Domain} &
-    \textbf{Noise model} &
-    \textbf{Structural loss} &
-    \textbf{Freq.\ loss} &
-    \textbf{UQ output} &
-    \textbf{Paed.\ CXR} \\
+    \textbf{Method} & \textbf{Domain} & \textbf{Noise model} & \textbf{Struct.\ loss} & 
+    \textbf{Freq.\ loss} & \textbf{UQ} & \textbf{Paed.\ CXR} \\
     \midrule
-    RED-CNN \cite{chen_low-dose_2017}    & CT      & Gaussian & \texttimes & \texttimes & \texttimes & \texttimes \\
-    UDDN \cite{luo_uddn_2021}           & Cardiac CXR & Gaussian & \texttimes & \texttimes & \texttimes & \texttimes \\
-    EEDN \cite{luo_eedn_2022}           & Cardiac CXR & Gaussian & P (arch.)  & P (arch.)  & \texttimes & \texttimes \\
-    DRUNet \cite{zhang_drunet_2021}     & Nat.    & Gaussian & \texttimes & \texttimes & \texttimes & \texttimes \\
-    SwinIR \cite{liang_swinir_2021}     & Nat.    & Gaussian & \texttimes & \texttimes & \texttimes & \texttimes \\
-    NAFNet \cite{chen_nafnet_2022}      & Nat.    & Real/AWGN & \texttimes & \texttimes & \texttimes & \texttimes \\
-    SCUNet \cite{zhang_scunet_2023}     & Nat.    & P-G+JPEG & \texttimes & \texttimes & \texttimes & \texttimes \\
-    Hformer \cite{zhang_hformer_2023}   & CT      & Gaussian & \texttimes & \texttimes & \texttimes & \texttimes \\
+    RED-CNN      & CT          & Gaussian         & \texttimes & \texttimes & \texttimes & \texttimes \\
+    UDDN         & Cardiac CXR & Gaussian         & \texttimes & \texttimes & \texttimes & \texttimes \\
+    EEDN         & Cardiac CXR & Gaussian         & P          & P          & \texttimes & \texttimes \\
+    DRUNet       & Natural     & Gaussian         & \texttimes & \texttimes & \texttimes & \texttimes \\
+    SwinIR       & Natural     & Gaussian         & \texttimes & \texttimes & \texttimes & \texttimes \\
+    NAFNet       & Natural     & Real/AWGN        & \texttimes & \texttimes & \texttimes & \texttimes \\
+    SCUNet       & Natural     & P-G + JPEG       & \texttimes & \texttimes & \texttimes & \texttimes \\
+    Hformer      & CT          & Gaussian         & \texttimes & \texttimes & \texttimes & \texttimes \\
     \midrule
-    \textbf{PP-VAE-Hformer (proposed)}  & \textbf{Paed.\ CXR} & \textbf{Poisson-Gaussian} &
+    \textbf{PP-VAE-Hformer} & \textbf{Paed.\ CXR} & \textbf{Poisson-Gaussian} & 
     \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark} \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
+
+  \vspace{0.3em}
+  {\footnotesize \checkmark = addressed; \texttimes = not addressed; P = partial or indirect address. 
+  Struct.\ loss = structural similarity loss; Freq.\ loss = frequency-domain loss; 
+  UQ = uncertainty quantification output; Paed.\ CXR = paediatric chest X-ray domain.}
 \end{table}
 
 % ============================================================
@@ -2325,24 +2349,29 @@ in a vulnerable population.
 This study evaluates a new image restoration framework for paediatric chest radiography through a controlled ablation\footnote{An ablation study is an experiment that systematically removes or adds individual components of a model to measure what each contributes to overall performance.} experiment. Five experimental arms were defined, each differing only in the loss function\footnote{A loss function is a mathematical expression that the training algorithm minimises. It measures how far the model's outputs are from the desired outputs, and its gradient is used to update the model's internal parameters.} used during training. Every other aspect of the experiment -- the dataset, the model architecture, the optimiser, the number of training epochs, and the evaluation protocol -- was held constant across all five arms. This design ensures that observed differences in performance can be attributed specifically to the loss-function change, rather than to differences in data, model capacity, or computational budget, following the methodology used in prior denoising benchmarks \cite{zhang_beyond_2017, liang_swinir_2021}.
 
 The five arms form a cumulative sequence, summarised in Table~\ref{tab:methods:arms}. Arm A is the baseline: it uses mean squared error, which is the loss function used by DnCNN \cite{zhang_beyond_2017} and Hformer \cite{zhang_hformer_2023}. Each subsequent arm adds one component to the loss function, so that adjacent arms can be compared to isolate the contribution of each addition. Arm E is the full proposed model, PP-VAE-Hformer (Pathology-Preserving Variational Autoencoder with Hformer-inspired backbone), which uses all four loss components and includes a probabilistic bottleneck that enables two types of uncertainty estimation.
-
 \begin{table}[htbp]
-\centering
-\caption{The five experimental arms. Each arm differs only in the loss function and whether the probabilistic bottleneck is active. All other settings (architecture depth, optimiser, learning rate, dataset, training duration) are identical.}
-\label{tab:methods:arms}
-\begin{tabular}{p{1.2cm}p{4.5cm}p{2.3cm}p{5cm}}
-\toprule
-\textbf{Arm} & \textbf{Loss components} & \textbf{VAE bottleneck} & \textbf{Contribution under test} \\
-\midrule
-A & MSE only & No & Baseline (replicates DnCNN / Hformer) \\
-B & NLL & No & Heteroscedastic uncertainty loss \\
-C & NLL + MS-SSIM & No & Structural fidelity term \\
-D & NLL + MS-SSIM + FFL & No & Frequency-domain spectral penalty \\
-E & NLL + MS-SSIM + FFL + KL & Yes & Probabilistic bottleneck and epistemic uncertainty \\
-\bottomrule
-\end{tabular}
-\end{table}
+  \centering
+  \caption{The five experimental arms for loss function and bottleneck ablation.}
+  \label{tab:methods:arms}
+  \small
+  \begin{tabular}{c p{3.8cm} c p{4.5cm}}
+    \toprule
+    \textbf{Arm} & \textbf{Loss components} & \textbf{VAE} & \textbf{Contribution tested} \\
+    \midrule
+    A & MSE only                                 & No  & Baseline (replicates DnCNN / Hformer) \\
+    B & NLL                                      & No  & Heteroscedastic uncertainty loss \\
+    C & NLL + MS-SSIM                            & No  & Structural fidelity term \\
+    D & NLL + MS-SSIM + FFL                      & No  & Frequency-domain spectral penalty \\
+    E & NLL + MS-SSIM + FFL + KL                 & Yes & Probabilistic bottleneck \& epistemic uncertainty \\
+    \bottomrule
+  \end{tabular}
 
+  \vspace{0.3em}
+  {\footnotesize \textbf{Note:} All other settings (architecture depth, optimiser, learning rate, 
+  dataset, training duration) are identical across arms. VAE = variational autoencoder bottleneck active. 
+  NLL = negative log-likelihood; MS-SSIM = multi-scale structural similarity; FFL = focal frequency loss; 
+  KL = Kullback--Leibler divergence.}
+\end{table}
 The study proceeds through four sequential phases: (1) dataset preparation and noise simulation; (2) model training across all five arms; (3) quantitative evaluation on a held-out test set; and (4) calibration analysis of the uncertainty estimates produced by Arms B through E. All phases were implemented in Python using the PyTorch deep learning framework \cite{paszke_pytorch_2019}, with code organised into a structured codebase (\texttt{src/data}, \texttt{src/models}, \texttt{src/losses}, \texttt{src/training}, \texttt{src/evaluation}). The full training pipeline is executable from a single command-line script (\texttt{scripts/train\_proposed.py}) for reproducibility.
 
 % FIGURE PLACEHOLDER
@@ -2489,23 +2518,25 @@ at random from all three presets for each batch, so that the trained model learn
 across the full clinical dose range rather than overfitting to a single level. Evaluation was
 performed separately at each preset to characterise model behaviour across the dose
 spectrum.
-
 \begin{table}[htbp]
 \centering
-\caption{Foi noise presets used in the experiments. Effective $\sigma$ is computed as
-$\sqrt{a \cdot 0.5 + b}$, evaluated at mean image intensity $\bar{y} = 0.5$, providing a
-single-number summary comparable to the additive Gaussian noise levels used in natural-image
-denoising benchmarks (e.g.\ $\sigma = 15$, 25, 50 in BSD68).}
+\caption{Foi noise presets used in the experiments.}
 \label{tab:methods:noise_presets}
-\begin{tabular}{lllll}
+\begin{threeparttable}
+\begin{tabular}{lcccc}
 \toprule
 \textbf{Preset} & \textbf{$a$} & \textbf{$b$} & \textbf{Eff.\ $\sigma$ at $\bar{y}=0.5$} & \textbf{Approximate clinical context} \\
 \midrule
-Low & 0.01 & 0.002 & $\approx 0.074$ ($\sigma \approx 15$) & Near-standard dose \\
-Mid & 0.03 & 0.005 & $\approx 0.122$ ($\sigma \approx 25$) & Reduced dose \\
-High & 0.08 & 0.010 & $\approx 0.204$ ($\sigma \approx 50$) & Ultra-low-dose \\
+Low   & 0.01 & 0.002 & $\approx 0.074$ ($\sigma \approx 15$) & Near-standard dose \\
+Mid   & 0.03 & 0.005 & $\approx 0.122$ ($\sigma \approx 25$) & Reduced dose \\
+High  & 0.08 & 0.010 & $\approx 0.204$ ($\sigma \approx 50$) & Ultra-low-dose \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item Effective $\sigma$ is computed as $\sqrt{a \cdot 0.5 + b}$, evaluated at mean image intensity $\bar{y} = 0.5$, providing a single-number summary comparable to the additive Gaussian noise levels used in natural-image denoising benchmarks (e.g.\ $\sigma = 15$, 25, 50 in BSD68).
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 The physically important distinction from additive Gaussian benchmarks (which use a fixed
@@ -2547,6 +2578,9 @@ stochastic sampling here. Three symmetric decoder stages (Upsample + skip concat
 produces $\hat{\mu}_y$ (denoised image) and $\log\hat{\sigma}^2_a$ (aleatoric uncertainty
 map) in parallel.}
 
+
+
+
 \subsection{Stem and Encoder}
 \label{sec:methods:architecture:encoder}
 
@@ -2566,30 +2600,27 @@ progression is summarised in Table~\ref{tab:methods:channels}.
 
 \begin{table}[htbp]
 \centering
-\caption{Spatial resolution and channel count at each stage of PP-VAE-Hformer. The input
-image is compressed by a factor of $8\times$ spatially (256 to 32 pixels) and expanded
-$512\times$ in channel depth before the bottleneck. The decoder mirrors this progression.}
+\caption{Spatial resolution and channel count at each stage of PP-VAE-Hformer.}
 \label{tab:methods:channels}
-\begin{tabular}{llrr}
+\begin{tabular}{lccc}
 \toprule
 \textbf{Stage} & \textbf{Operation} & \textbf{Spatial size} & \textbf{Channels} \\
 \midrule
-Input & Raw noisy image & $256 \times 256$ & 1 \\
-Stem & Conv $3\times3$, stride 1 & $256 \times 256$ & 64 \\
-Encoder 1 & 2 HybridBlocks + Downsample & $128 \times 128$ & 128 \\
-Encoder 2 & 2 HybridBlocks + Downsample & $64 \times 64$ & 256 \\
-Encoder 3 & 2 HybridBlocks + Downsample & $32 \times 32$ & 512 \\
-Bottleneck & 2 HybridBlocks + (VAE) & $32 \times 32$ & 512 \\
-Decoder 3 & Upsample + skip + 2 HybridBlocks & $64 \times 64$ & 256 \\
-Decoder 2 & Upsample + skip + 2 HybridBlocks & $128 \times 128$ & 128 \\
-Decoder 1 & Upsample + skip + 2 HybridBlocks & $256 \times 256$ & 64 \\
-Output & Dual Conv $3\times3$, stride 1 & $256 \times 256$ & 1 \\
+Input      & Raw noisy image                & $256 \times 256$ & 1    \\
+Stem       & Conv $3\times3$, stride 1     & $256 \times 256$ & 64   \\
+Encoder 1  & 2 HybridBlocks + Downsample   & $128 \times 128$ & 128  \\
+Encoder 2  & 2 HybridBlocks + Downsample   & $64 \times 64$   & 256  \\
+Encoder 3  & 2 HybridBlocks + Downsample   & $32 \times 32$   & 512  \\
+Bottleneck & 2 HybridBlocks + (VAE)        & $32 \times 32$   & 512  \\
+Decoder 3  & Upsample + skip + 2 HybridBlocks & $64 \times 64$ & 256  \\
+Decoder 2  & Upsample + skip + 2 HybridBlocks & $128 \times 128$ & 128 \\
+Decoder 1  & Upsample + skip + 2 HybridBlocks & $256 \times 256$ & 64   \\
+Output     & Dual Conv $3\times3$, stride 1 & $256 \times 256$ & 1    \\
 \bottomrule
+\multicolumn{4}{l}{\footnotesize{The input image is compressed by a factor of $8\times$ spatially (256 to 32 pixels) and expanded}} \\
+\multicolumn{4}{l}{\footnotesize{$512\times$ in channel depth before the bottleneck. The decoder mirrors this progression.}} \\
 \end{tabular}
 \end{table}
-
-\subsection{HybridBlock}
-\label{sec:methods:architecture:hybridblock}
 
 The HybridBlock is the core processing unit of PP-VAE-Hformer. It applies two operations
 in sequence: a convolutional ResBlock followed by a windowed self-attention block
@@ -2837,23 +2868,11 @@ over the first 20 training epochs:
 \end{equation}
 
 The complete composite loss for Arm E is then:
-\begin{equation}
-\label{eq:methods:composite}
-\mathcal{L}_{\mathrm{total}} = \mathcal{L}_{\mathrm{NLL}}
-  + \beta_t\,\mathcal{L}_{\mathrm{KL}}
-  + \lambda_{\mathrm{SSIM}}\,\mathcal{L}_{\mathrm{SSIM}}
-  + \lambda_{\mathrm{FFL}}\,\mathcal{L}_{\mathrm{FFL}}
-\end{equation}
-with $\lambda_{\mathrm{SSIM}} = 0.5$, $\lambda_{\mathrm{FFL}} = 0.1$, and $\beta_t$ from
-Equation~\ref{eq:methods:beta}. Table~\ref{tab:methods:loss_summary} summarises which
-loss components are active in each experimental arm.
-
 \begin{table}[htbp]
 \centering
-\caption{Loss components active in each experimental arm. A tick indicates that the term
-contributes a non-zero gradient during training. The KL term requires the VAE bottleneck
-to be active.}
+\caption{Loss components active in each experimental arm.}
 \label{tab:methods:loss_summary}
+\begin{threeparttable}
 \begin{tabular}{lccccc}
 \toprule
 & \multicolumn{5}{c}{\textbf{Loss term active?}} \\
@@ -2869,6 +2888,11 @@ D & & \checkmark & \checkmark & \checkmark & \\
 E (proposed) & & \checkmark & \checkmark & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item A tick indicates that the term contributes a non-zero gradient during training. The KL term requires the VAE bottleneck to be active.
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 % ============================================================
@@ -3051,10 +3075,9 @@ supplementary figures.
 
 \begin{table}[htbp]
 \centering
-\caption{Summary of evaluation metrics by category. Primary metric is FSIM; all others are
-secondary or supplementary. Calibration metrics (ECE) apply only to Arms B--E. Epistemic
-ECE applies only to Arm E.}
+\caption{Summary of evaluation metrics by category.}
 \label{tab:methods:metrics}
+\begin{threeparttable}
 \begin{tabular}{llll}
 \toprule
 \textbf{Category} & \textbf{Metric} & \textbf{Higher is better?} & \textbf{Arms} \\
@@ -3067,9 +3090,15 @@ Calibration & ECE at 50\%, 80\%, 90\%, 95\% & No (lower = better) & B--E \\
 Calibration & Epistemic ECE & No (lower = better) & E only \\
 Clinical & CNR & Yes & All \\
 Clinical & EPI & Yes & All \\
-Clinical & NPS & -- (curve) & All \\
+Clinical & NPS & --- (curve) & All \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item Primary metric is FSIM; all others are secondary or supplementary.
+\item Calibration metrics (ECE) apply only to Arms B--E. Epistemic ECE applies only to Arm E.
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 % ============================================================
@@ -3536,7 +3565,7 @@ arm at 200 epochs, and total compute for the full ablation study.}
 % ============================================================
 %  REFERENCES
 % ============================================================
-\bibliographystyle{unsrt}  
+\bibliographystyle{unsrtnat}  
 \bibliography{References} % Ensure your file is named References.bib
 
 % ============================================================
