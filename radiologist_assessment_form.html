@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expert Radiological Assessment — PP-VAE-Hformer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Times New Roman', Times, serif; font-size: 10.5pt;
+         max-width: 210mm; margin: 0 auto; padding: 1.6cm 2cm;
+         color: #111; background: white; }
+  @media print { body { margin: 0; padding: 1.6cm 2cm; } }
+
+  /* Header */
+  .header { display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px; }
+  .logo-box { border: 1px solid #aaa; width: 100px; height: 46px;
+              display: flex; align-items: center; justify-content: center;
+              font-size: 8pt; color: #888; font-style: italic; }
+  .title-block { text-align: center; flex: 1; padding: 0 12px; }
+  .title-block h2 { font-size: 13pt; color: #00356e; margin-bottom: 3px; }
+  .title-block p { font-size: 9pt; color: #333; }
+  .conf-bar { background: #00356e; color: white; font-size: 8pt; font-weight: bold;
+              padding: 3px 8px; text-align: center; margin-bottom: 6px; letter-spacing: 0.05em; }
+  hr.thick { border: none; border-top: 1.5px solid #222; margin: 8px 0; }
+
+  /* Background */
+  .background { font-size: 9.5pt; line-height: 1.45; margin: 8px 0; }
+  .background b { font-weight: bold; }
+
+  /* Rubric box */
+  .rubric { background: #d6e8d8; border: 0.6px solid #999;
+            padding: 7px 10px; margin: 8px 0; font-size: 9.5pt; }
+  .rubric b { font-weight: bold; }
+  .rubric table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+  .rubric td { vertical-align: top; padding: 2px 4px; }
+  .rubric td:first-child { font-weight: bold; width: 28px; text-align: center; }
+
+  /* Instructions */
+  .instructions { font-size: 9.5pt; margin: 6px 0; }
+  .instructions b { font-weight: bold; }
+
+  /* Assessment table */
+  table.assess { width: 100%; border-collapse: collapse; font-size: 9pt;
+                 margin: 6px 0; }
+  table.assess th { background: #00356e; color: white; padding: 4px 5px;
+                    text-align: center; font-size: 8.5pt; }
+  table.assess td { border: 0.5px solid #bbb; padding: 5px 5px;
+                    text-align: center; height: 28px; vertical-align: middle; }
+  table.assess td.obs { text-align: left; }
+  table.assess tr.section-row td { background: #eef2f7; font-weight: bold;
+                                    text-align: left; padding-left: 8px;
+                                    font-size: 8.5pt; color: #00356e; }
+  table.assess tr:nth-child(even) td { background: #f9f9f9; }
+  table.assess tr.section-row:nth-child(even) td { background: #eef2f7; }
+
+  /* Score blanks */
+  .score-blanks { letter-spacing: 2px; font-family: monospace; font-size: 10pt; }
+  .blank { display: inline-block; border-bottom: 1px solid #555;
+           width: 18px; text-align: center; }
+
+  /* Consent */
+  .consent { border: 1px solid #222; padding: 8px 10px; margin-top: 10px;
+             font-size: 8.8pt; line-height: 1.4; }
+  .consent b { font-weight: bold; }
+  .sig-grid { display: grid; grid-template-columns: 1fr 1fr 1fr;
+              gap: 10px; margin-top: 10px; }
+  .sig-line { font-size: 9pt; }
+  .sig-line span { display: block; border-bottom: 1px solid #444;
+                   margin-top: 16px; height: 1px; }
+
+  /* References */
+  .refs { font-size: 8pt; margin-top: 8px; color: #333; line-height: 1.4; }
+  .refs b { font-weight: bold; }
+
+  /* Footer */
+  .footer { font-size: 7.5pt; text-align: right; color: #666;
+            margin-top: 6px; border-top: 0.5px solid #bbb; padding-top: 3px; }
+</style>
+</head>
+<body>
+
+<div class="conf-bar">CONFIDENTIAL — RESEARCH USE ONLY &nbsp;|&nbsp; PP-VAE-Hformer Expert Evaluation</div>
+
+<div class="header">
+  <div class="logo-box">Cambridge<br>Logo</div>
+  <div class="title-block">
+    <h2>Expert Radiological Assessment</h2>
+    <p>PP-VAE-Hformer Paediatric CXR Denoising</p>
+    <p style="font-size:8.5pt;color:#555;">MPhil Dissertation Study · University of Cambridge · 2026</p>
+  </div>
+  <div class="logo-box">BSU<br>Logo</div>
+</div>
+
+<hr class="thick">
+
+<div class="background">
+<b>Background.</b>
+Paediatric chest X-rays (CXR) are frequently acquired at reduced radiation dose, resulting in increased quantum noise that may obscure diagnostic features. Deep-learning denoising methods can recover image quality but risk suppressing or hallucinating pathological findings. This study evaluates a <em>Pathology-Preserving Variational Autoencoder with Hformer backbone</em> (PP-VAE-Hformer), trained on the Kermany paediatric CXR dataset [1] under a Poisson-Gaussian noise model. Automated metrics (PSNR, SSIM, LPIPS) assess pixel-level fidelity; however, expert perceptual assessment is required to validate diagnostic acceptability. The scoring protocol follows the Expert Evaluation of Denoised Noise (EEDN) forced-choice framework [3], adapted for radiological use.
+</div>
+
+<div class="rubric">
+  <b>Scoring Rubric</b> — for each image pair (Reference shown first | Reconstruction shown second):
+  <table>
+    <tr><td>1</td><td>Reconstruction is <b>diagnostically equivalent</b> to the reference: all relevant features (lung markings, cardiac silhouette, consolidation/infiltrates if present) are preserved at the same level of diagnostic confidence.</td></tr>
+    <tr><td>0.5</td><td>Reconstruction is <b>diagnostically acceptable</b> with minor degradation: image quality is slightly reduced but would not change clinical management.</td></tr>
+    <tr><td>0</td><td>Reconstruction is <b>diagnostically unacceptable</b>: significant blurring, artefacts, or loss of pathological features that would alter clinical interpretation.</td></tr>
+  </table>
+</div>
+
+<div class="instructions">
+<b>Instructions:</b> For each row, the <b>left panel shows the high-quality reference</b> image; the right panel shows the reconstruction from the labelled method. Circle or write your score (1 / 0.5 / 0) in the Score column and note any observations.
+</div>
+
+<table class="assess">
+  <thead>
+    <tr>
+      <th style="width:4%">#</th>
+      <th style="width:10%">Case ID</th>
+      <th style="width:11%">Class</th>
+      <th style="width:19%">Method</th>
+      <th style="width:10%">Noise Level</th>
+      <th style="width:14%">Score<br>(1 / 0.5 / 0)</th>
+      <th>Observations</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="section-row"><td colspan="7">Normal cases — Mid noise (η = 200)</td></tr>
+    <tr><td>1</td><td></td><td>Normal</td><td>Arm A — L₂ (MSE)</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>2</td><td></td><td>Normal</td><td>Arm B — NLL</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>3</td><td></td><td>Normal</td><td>Arm D — NLL+SSIM+FFL</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>4</td><td></td><td>Normal</td><td>PP-VAE (Arm E)</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>5</td><td></td><td>Normal</td><td>DnCNN baseline</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr class="section-row"><td colspan="7">Pneumonia cases — Mid noise (η = 200)</td></tr>
+    <tr><td>6</td><td></td><td>Pneumonia</td><td>Arm A — L₂ (MSE)</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>7</td><td></td><td>Pneumonia</td><td>Arm B — NLL</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>8</td><td></td><td>Pneumonia</td><td>Arm D — NLL+SSIM+FFL</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>9</td><td></td><td>Pneumonia</td><td>PP-VAE (Arm E)</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>10</td><td></td><td>Pneumonia</td><td>DnCNN baseline</td><td>Mid</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr class="section-row"><td colspan="7">High noise cases (η = 400) — selected by rater</td></tr>
+    <tr><td>11</td><td></td><td></td><td>Arm D — NLL+SSIM+FFL</td><td>High</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+    <tr><td>12</td><td></td><td></td><td>PP-VAE (Arm E)</td><td>High</td><td class="score-blanks"><span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span> / <span class="blank">&nbsp;</span></td><td class="obs"></td></tr>
+  </tbody>
+</table>
+
+<div class="consent">
+<b>Declaration of Consent.</b>
+I confirm that I am a qualified radiologist / radiographer and that I am providing this assessment voluntarily for academic research purposes only. I understand that: (i) the images are from the publicly available Kermany paediatric CXR dataset and contain no identifiable patient information; (ii) my scores will be used solely within the MPhil dissertation of S. Tekle (stm43@cam.ac.uk), University of Cambridge; (iii) results may be reported in aggregate in the dissertation and any resulting publications; (iv) I may withdraw my assessment at any time without consequence. This study does not require NHS REC approval as it uses publicly available anonymised data only.
+<div class="sig-grid">
+  <div class="sig-line">Name (print):<span></span></div>
+  <div class="sig-line">GMC / GDC No.:<span></span></div>
+  <div class="sig-line">Date:<span></span></div>
+  <div class="sig-line">Signature:<span></span></div>
+  <div class="sig-line">Institution:<span></span></div>
+  <div class="sig-line">Specialty:<span></span></div>
+</div>
+</div>
+
+<div class="refs">
+<b>References:</b>
+[1] Kermany et al. (2018). Identifying medical diagnoses using deep-learning image-based transfer learning. <em>Cell</em>, 172(5), 1122–1131. &nbsp;
+[2] Zhang et al. (2018). The unreasonable effectiveness of deep features as a perceptual metric (LPIPS). <em>CVPR</em>. &nbsp;
+[3] Coupé et al. (2012). EEDN: Expert Evaluation of Denoised Noise. <em>IEEE Trans. Med. Imaging</em>. &nbsp;
+[4] Wang et al. (2004). Image quality assessment: from error visibility to structural similarity. <em>IEEE TIP</em>.
+</div>
+
+<div class="footer">Rater ID: _____________ &nbsp;|&nbsp; Form version 1.0 · 2026-06-18 &nbsp;|&nbsp; PP-VAE-Hformer MPhil Dissertation · S. Tekle · University of Cambridge</div>
+
+</body>
+</html>
