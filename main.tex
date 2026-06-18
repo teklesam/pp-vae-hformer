@@ -2404,8 +2404,89 @@ The five arms form a cumulative sequence, summarised in Table~\ref{tab:methods:a
 \end{table}
 The study proceeds through four sequential phases: (1) dataset preparation and noise simulation; (2) model training across all five arms; (3) quantitative evaluation on a held-out test set; and (4) calibration analysis of the uncertainty estimates produced by Arms B through E. All phases were implemented in Python using the PyTorch deep learning framework \cite{paszke_pytorch_2019}, with code organised into a structured codebase (\texttt{src/data}, \texttt{src/models}, \texttt{src/losses}, \texttt{src/training}, \texttt{src/evaluation}). The full training pipeline is executable from a single command-line script (\texttt{scripts/train\_proposed.py}) for reproducibility.
 
-% FIGURE PLACEHOLDER
-\figplaceholder{Overview of the experimental pipeline. Clean radiographs are corrupted by simulated Poisson-Gaussian noise and fed to the PP-VAE-Hformer. The model produces three outputs: a denoised image, an aleatoric uncertainty map, and (for Arm E) an epistemic uncertainty map via Monte Carlo sampling. All five arms share the same architecture and training schedule; only the loss function and the VAE bottleneck switch differ.}
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  >=Stealth,
+  every node/.style={font=\small},
+  imgbox/.style={draw=gray!60, fill=gray!10, rounded corners=3pt,
+                 minimum width=1.4cm, minimum height=1.4cm, align=center},
+  procbox/.style={draw=blue!50!black, fill=blue!7, rounded corners=5pt,
+                  minimum width=2.6cm, minimum height=1.1cm, align=center,
+                  inner sep=5pt},
+  noisebox/.style={draw=orange!70!black, fill=orange!7, rounded corners=5pt,
+                   minimum width=2.2cm, minimum height=1.1cm, align=center,
+                   inner sep=5pt},
+  armbox/.style={draw=gray!50, fill=white, rounded corners=3pt,
+                 minimum width=2.5cm, minimum height=0.55cm, align=center,
+                 inner sep=3pt, font=\footnotesize},
+  outbox/.style={draw=teal!60!black, fill=teal!8, rounded corners=5pt,
+                 minimum width=2.6cm, minimum height=0.75cm, align=center,
+                 inner sep=4pt, font=\footnotesize},
+  arr/.style={->, thick, gray!70!black},
+  darr/.style={->, thick, teal!70!black},
+]
+
+%% ── Column positions ────────────────────────────────────────────
+\def\xA{0}\def\xB{2.3}\def\xC{5.0}\def\xD{8.3}\def\xE{11.8}
+
+%% ── Input image (placeholder box) ──────────────────────────────
+\node[imgbox] (cxr) at (\xA, 0) {\footnotesize CXR\\[-2pt]\footnotesize (clean)};
+\node[above=0.05cm of cxr, font=\footnotesize\itshape] {Kermany dataset};
+
+%% ── Noise simulation ────────────────────────────────────────────
+\node[noisebox] (noise) at (\xB, 0) {Poisson-Gaussian\\[-2pt]corruption\\[-2pt]$\eta \in \{50,100,200,300\}$};
+
+%% ── PP-VAE-Hformer (model) ──────────────────────────────────────
+\node[procbox] (model) at (\xC+1, 0) {\textbf{PP-VAE-Hformer}\\[-2pt]Encoder--Bottleneck--Decoder\\[-2pt](shared architecture)};
+
+%% ── Ablation arms panel ─────────────────────────────────────────
+\node[armbox, fill=blue!5,  draw=blue!40]   (armA) at (\xC+1,  1.65) {Arm A: $\mathcal{L}_2$};
+\node[armbox, fill=orange!5,draw=orange!40] (armB) at (\xC+1,  1.05) {Arm B: NLL};
+\node[armbox, fill=green!5, draw=green!40]  (armC) at (\xC+1,  0.45) {Arm C: NLL + SSIM};
+\node[armbox, fill=red!5,   draw=red!40]    (armD) at (\xC+1, -0.45) {Arm D: NLL + SSIM + FFL};
+\node[armbox, fill=purple!5,draw=purple!40,very thick] (armE) at (\xC+1, -1.05)
+      {Arm E: NLL + SSIM + FFL + KL \textbf{(VAE)}};
+
+\node[above=0.08cm of armA, font=\footnotesize\bfseries] {Loss function variant};
+
+%% ── Outputs ─────────────────────────────────────────────────────
+\node[outbox] (out1) at (\xE, 0.75)
+      {$\hat{\mu}_y$ \;Denoised image};
+\node[outbox] (out2) at (\xE, 0)
+      {$\log\hat{\sigma}^2_a$ \;Aleatoric map\\[-1pt](Arms B--E)};
+\node[outbox, draw=purple!60!black, fill=purple!6] (out3) at (\xE, -0.75)
+      {$\hat{\sigma}^2_e$ \;Epistemic map\\[-1pt](Arm E, MC sampling)};
+
+%% ── Arrows ──────────────────────────────────────────────────────
+\draw[arr] (cxr.east)   -- (noise.west);
+\draw[arr] (noise.east) -- (model.west);
+\draw[darr] (model.east) -- (out1.west);
+\draw[darr] (model.east) -- (out2.west);
+\draw[darr] (model.east) -- (out3.west);
+
+%% ── Brace spanning ablation arms ────────────────────────────────
+\draw[decorate, decoration={brace, amplitude=5pt, mirror},
+      gray!60, thick]
+  ([xshift=-1.4cm]armA.north west) -- ([xshift=-1.4cm]armE.south west)
+  node[midway, left=0.2cm, font=\footnotesize, align=right, text=gray!70!black]
+       {5 ablation\\[-2pt]arms};
+
+\end{tikzpicture}
+\caption[Experimental pipeline overview]{%
+  Overview of the experimental pipeline.
+  Clean paediatric chest radiographs from the Kermany dataset are corrupted by
+  simulated Poisson-Gaussian noise at four levels ($\eta \in \{50,100,200,300\}$).
+  The degraded images are processed by PP-VAE-Hformer, which is trained under five
+  ablation arms that differ only in loss function and the presence of the VAE
+  probabilistic bottleneck (Arm~E). All arms share the same encoder--decoder
+  architecture and training schedule. The model produces a denoised image
+  $\hat{\mu}_y$ (all arms), a per-pixel aleatoric uncertainty map
+  $\log\hat{\sigma}^2_a$ (Arms~B--E), and an epistemic uncertainty map
+  $\hat{\sigma}^2_e$ obtained by Monte Carlo sampling through the VAE bottleneck
+  (Arm~E only).}
+\label{fig:methods:pipeline}
+\end{figure}
 
 % ============================================================
 \section{Dataset}
@@ -2599,14 +2680,189 @@ enabling epistemic uncertainty estimation via repeated stochastic forward passes
 output head at the final decoder stage produces two outputs simultaneously: a denoised
 image mean and a per-pixel aleatoric uncertainty map.
 
-% FIGURE PLACEHOLDER
-\figplaceholder{PP-VAE-Hformer architecture diagram. A $1\times256\times256$ noisy input
-passes through a stem convolution and three encoder stages (HybridBlocks + strided
-Downsample), reaching a $512\times32\times32$ bottleneck. The optional VAE introduces
-stochastic sampling here. Three symmetric decoder stages (Upsample + skip concatenation
-+ HybridBlocks) restore the image to $256\times256$. A dual $3\times3$ convolution head
-produces $\hat{\mu}_y$ (denoised image) and $\log\hat{\sigma}^2_a$ (aleatoric uncertainty
-map) in parallel.}
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  >=Stealth,
+  every node/.style={font=\footnotesize},
+  %% Block styles
+  imgnode/.style={draw=gray!60, fill=gray!12, rounded corners=3pt,
+                  minimum width=1.0cm, minimum height=1.8cm, align=center},
+  stemnode/.style={draw=blue!50!black, fill=blue!8, rounded corners=4pt,
+                   minimum width=1.5cm, minimum height=0.7cm, align=center, inner sep=3pt},
+  encnode/.style={draw=blue!60!black, fill=blue!12, rounded corners=4pt,
+                  minimum width=1.6cm, minimum height=1.4cm, align=center, inner sep=4pt},
+  downnode/.style={draw=blue!40, fill=blue!5, rounded corners=3pt,
+                   minimum width=0.55cm, minimum height=0.55cm, align=center},
+  botnode/.style={draw=teal!60!black, fill=teal!10, rounded corners=4pt,
+                  minimum width=1.7cm, minimum height=1.4cm, align=center, inner sep=4pt,
+                  very thick},
+  vaenode/.style={draw=purple!60!black, fill=purple!8, rounded corners=4pt,
+                  minimum width=1.6cm, minimum height=1.5cm, align=center, inner sep=4pt,
+                  dashed, thick},
+  decnode/.style={draw=orange!60!black, fill=orange!8, rounded corners=4pt,
+                  minimum width=1.6cm, minimum height=1.4cm, align=center, inner sep=4pt},
+  upnode/.style={draw=orange!40, fill=orange!5, rounded corners=3pt,
+                 minimum width=0.55cm, minimum height=0.55cm, align=center},
+  outnode/.style={draw=teal!60!black, fill=teal!8, rounded corners=4pt,
+                  minimum width=1.5cm, minimum height=0.7cm, align=center, inner sep=3pt},
+  %% HybridBlock inset
+  hbbox/.style={draw=gray!50, fill=gray!4, rounded corners=4pt,
+                minimum width=2.2cm, minimum height=1.0cm, align=center, inner sep=3pt},
+  %% Annotations
+  dimtag/.style={font=\tiny, text=gray!70!black, align=center},
+  arrmain/.style={->, thick, gray!70!black},
+  arrskip/.style={->, thick, gray!50, dashed},
+  arrvae/.style={->, thick, purple!70!black},
+]
+
+%% ════════════════════════════════════════════════════════════════
+%% COLUMN X-POSITIONS (left to right)
+%% ════════════════════════════════════════════════════════════════
+\def\xIn{0}
+\def\xStem{1.5}
+\def\xEone{3.4}     % Encoder 1
+\def\xEtwo{5.4}     % Encoder 2
+\def\xEthr{7.4}     % Encoder 3
+\def\xBot{9.5}      % Bottleneck
+\def\xVae{11.6}     % VAE (Arm E)
+\def\xDthr{13.7}    % Decoder 3
+\def\xDtwo{15.7}    % Decoder 2
+\def\xDone{17.7}    % Decoder 1
+\def\xOut{19.7}     % Output heads
+
+%% ── Input ──────────────────────────────────────────────────────
+\node[imgnode] (inp) at (\xIn, 0)
+      {$\mathbf{x}$\\[2pt]$1{\times}256$\\${\times}256$};
+\node[above=0.6cm of inp, dimtag] {Noisy\\CXR};
+
+%% ── Stem ────────────────────────────────────────────────────────
+\node[stemnode] (stem) at (\xStem, 0)
+      {Stem\\$3{\times}3$ conv};
+\node[below=0.05cm of stem, dimtag] {$64{\times}256{\times}256$};
+
+%% ── Encoder stages ──────────────────────────────────────────────
+\node[encnode] (enc1) at (\xEone, 0)
+      {\textbf{E1}\\HB$\times$2\\$+$Down};
+\node[below=0.05cm of enc1, dimtag] {$128{\times}128{\times}128$};
+
+\node[encnode] (enc2) at (\xEtwo, 0)
+      {\textbf{E2}\\HB$\times$2\\$+$Down};
+\node[below=0.05cm of enc2, dimtag] {$256{\times}64{\times}64$};
+
+\node[encnode] (enc3) at (\xEthr, 0)
+      {\textbf{E3}\\HB$\times$2\\$+$Down};
+\node[below=0.05cm of enc3, dimtag] {$512{\times}32{\times}32$};
+
+%% ── Bottleneck ──────────────────────────────────────────────────
+\node[botnode] (bot) at (\xBot, 0)
+      {\textbf{Bottleneck}\\HB$\times$2};
+\node[below=0.05cm of bot, dimtag] {$512{\times}32{\times}32$};
+
+%% ── VAE probabilistic bottleneck (Arm E only) ──────────────────
+\node[vaenode] (vae) at (\xVae, 0)
+      {\textbf{VAE}\\[2pt]$\mathbf{z}_\mu$, $\mathbf{z}_{\log\sigma^2}$\\[2pt]
+       $\mathbf{z} = \mathbf{z}_\mu + \boldsymbol{\varepsilon}\odot e^{\frac{1}{2}\mathbf{z}_{\log\sigma^2}}$\\[2pt]
+       (Arm E only)};
+\node[below=0.05cm of vae, dimtag] {$512{\times}32{\times}32$};
+
+%% ── Decoder stages ──────────────────────────────────────────────
+\node[decnode] (dec3) at (\xDthr, 0)
+      {\textbf{D3}\\Up$+$skip\\$+$HB$\times$2};
+\node[below=0.05cm of dec3, dimtag] {$256{\times}64{\times}64$};
+
+\node[decnode] (dec2) at (\xDtwo, 0)
+      {\textbf{D2}\\Up$+$skip\\$+$HB$\times$2};
+\node[below=0.05cm of dec2, dimtag] {$128{\times}128{\times}128$};
+
+\node[decnode] (dec1) at (\xDone, 0)
+      {\textbf{D1}\\Up$+$skip\\$+$HB$\times$2};
+\node[below=0.05cm of dec1, dimtag] {$64{\times}256{\times}256$};
+
+%% ── Dual output heads ───────────────────────────────────────────
+\node[outnode] (outmu) at (\xOut,  0.55)
+      {$\hat{\mu}_y$\\Denoised};
+\node[outnode, draw=orange!70!black, fill=orange!6]
+      (outsig) at (\xOut, -0.55)
+      {$\log\hat{\sigma}^2_a$\\Aleatoric};
+\node[above=0.5cm of outmu, dimtag] {Dual $3{\times}3$\\output head};
+
+%% ── Main flow arrows ────────────────────────────────────────────
+\draw[arrmain] (inp.east)  -- (stem.west);
+\draw[arrmain] (stem.east) -- (enc1.west);
+\draw[arrmain] (enc1.east) -- (enc2.west);
+\draw[arrmain] (enc2.east) -- (enc3.west);
+\draw[arrmain] (enc3.east) -- (bot.west);
+\draw[arrmain] (bot.east)  -- (vae.west);
+\draw[arrmain] (vae.east)  -- (dec3.west);
+\draw[arrmain] (dec3.east) -- (dec2.west);
+\draw[arrmain] (dec2.east) -- (dec1.west);
+\draw[arrmain] (dec1.east) -- (outmu.west);
+\draw[arrmain] (dec1.east) -- (outsig.west);
+
+%% ── Skip connections (curved, dashed) ──────────────────────────
+\def\skipY{-2.5}   % y-level of skip connection routing
+\draw[arrskip]
+  (enc1.south) -- ++(0,-0.7) -| node[pos=0.02,dimtag,below]{skip $s_1$} (\xDone, \skipY+0.2) -- (dec1.south);
+\draw[arrskip]
+  (enc2.south) -- ++(0,-1.1) -| node[pos=0.01,dimtag,below]{skip $s_2$} (\xDtwo, \skipY+0.2) -- (dec2.south);
+\draw[arrskip]
+  (enc3.south) -- ++(0,-1.5) -| node[pos=0.01,dimtag,below]{skip $s_3$} (\xDthr, \skipY+0.2) -- (dec3.south);
+
+%% ── Arms A–D: bypass the VAE ────────────────────────────────────
+\draw[arrmain, gray!40, bend left=30]
+  ([yshift=4pt]bot.north east) to
+  node[above, dimtag, text=gray!50]{Arms A--D (det.)}
+  ([yshift=4pt]dec3.north west);
+
+%% ════════════════════════════════════════════════════════════════
+%% HYBRIDBLOCK INSET (bottom-right callout)
+%% ════════════════════════════════════════════════════════════════
+\begin{scope}[shift={(\xEone-0.3,-4.5)}]
+  \node[hbbox, minimum width=5.5cm, minimum height=3.2cm] (hbframe) at (2.0,0) {};
+  \node[above=0.0cm of hbframe, font=\scriptsize\bfseries, text=gray!80] {HybridBlock (HB)};
+
+  \node[stemnode, minimum width=1.6cm] (rb)   at (0.4, 0.3)  {ResBlock\\$3{\times}3$ GN+GELU};
+  \node[stemnode, minimum width=1.6cm,
+        draw=purple!50!black, fill=purple!6]
+        (wa)   at (3.5, 0.3) {Window\\[-1pt]AttnBlock\\$8{\times}8$ window};
+  \node[stemnode, minimum width=0.6cm, draw=gray!50, fill=gray!8]
+        (add)  at (2.0, -0.8) {$+$};
+
+  \draw[arrmain, ->] (rb.east)   -- (wa.west);
+  \draw[arrmain, ->] (wa.south)  |- (add.east);
+  \draw[arrmain, ->] (rb.south)  |- (add.west);
+  \node[left=0.0cm of rb, dimtag] {$\mathbf{f}_{in}$};
+  \node[below=0.05cm of add, dimtag] {$\mathbf{f}_{out}$};
+
+  % Callout line to Encoder 1
+  \draw[gray!40, dashed, thin]
+    (hbframe.north) -- ([yshift=-1.4cm]enc1.south);
+\end{scope}
+
+\end{tikzpicture}
+}% end resizebox
+\caption[PP-VAE-Hformer architecture]{%
+  PP-VAE-Hformer encoder--decoder architecture.
+  A $1\!\times\!256\!\times\!256$ noisy input passes through a stem convolution
+  and three encoder stages (\textbf{E1--E3}), each comprising two HybridBlocks
+  (HB$\times$2) followed by a strided downsampling convolution.
+  The bottleneck operates at $512\!\times\!32\!\times\!32$.
+  \textit{Arm E only:} a VAE probabilistic bottleneck applies the
+  reparameterisation trick ($\mathbf{z} = \mathbf{z}_\mu + \boldsymbol{\varepsilon}
+  \odot e^{\frac{1}{2}\mathbf{z}_{\log\sigma^2}}$, $\boldsymbol{\varepsilon}\sim\mathcal{N}(\mathbf{0},\mathbf{I})$);
+  Arms A--D bypass this module (deterministic path, curved arrow).
+  Three symmetric decoder stages (\textbf{D3--D1}) upsample the feature map and
+  concatenate skip connections $s_1$--$s_3$ from the corresponding encoder stage
+  (dashed arrows).
+  The dual $3\!\times\!3$ output head produces the denoised image $\hat{\mu}_y$
+  and the per-pixel aleatoric log-variance $\log\hat{\sigma}^2_a$ in parallel.
+  \textit{Inset:} the HybridBlock (HB) applies a convolutional ResBlock
+  (GroupNorm + GELU) followed by a window self-attention block
+  ($8\!\times\!8$ non-overlapping windows), with a residual connection.}
+\label{fig:methods:architecture}
+\end{figure}
 
 
 
