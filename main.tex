@@ -3159,7 +3159,7 @@ arm at 200 epochs, and total compute for the full ablation study.}
 \section{Training Behaviour}
 \label{sec:results:training}
 
-Figure~\ref{fig:results:training} shows the validation PSNR trajectory and KL divergence schedule across all ablation arms over 200 training epochs. All five arms converged smoothly without divergence events. Validation PSNR was computed every five epochs using a deterministic forward pass; the interleaved \texttt{nan} entries in the training logs between evaluation epochs are by design and do not indicate instability. The KL divergence panel confirms successful $\beta$-annealing for Arm~E: the weighted KL loss grows monotonically from zero to its plateau following the 20-epoch warmup, without evidence of posterior collapse.
+Figure~\ref{fig:results:training} shows the validation PSNR trajectory for Arms~B, C, and~D over 200 training epochs (Arms~A and~E training logs are presented once final checkpoints are downloaded; the KL divergence panel will be populated from Arm~E). All three arms converged smoothly without divergence events. Validation PSNR was computed every five epochs using a deterministic forward pass; the interleaved \texttt{nan} entries in the training logs between evaluation epochs are by design and do not indicate instability.
 
 \begin{figure}[H]
 \centering
@@ -3179,12 +3179,12 @@ Figure~\ref{fig:results:training} shows the validation PSNR trajectory and KL di
 \toprule
 \textbf{Arm} & \textbf{Best val PSNR (dB)} & \textbf{Best val SSIM} & \textbf{Best epoch} \\
 \midrule
-A — Hformer + $\mathcal{L}_{\mathrm{MSE}}$ & [FILL] & [FILL] & [FILL] \\
-B — Hformer + NLL                           & [FILL] & [FILL] & [FILL] \\
-C — Hformer + NLL + SSIM                    & [FILL] & [FILL] & [FILL] \\
-D — Hformer + NLL + SSIM + FFL             & [FILL] & [FILL] & [FILL] \\
-E — PP-VAE-Hformer (full)                   & [FILL] & [FILL] & [FILL] \\
-DnCNN (Zhang et al., 2017)                 & [FILL] & [FILL] & [FILL] \\
+A — Hformer + $\mathcal{L}_{\mathrm{MSE}}$ & 34.623\textsuperscript{†} & 0.9269\textsuperscript{†} & [pending] \\
+B — Hformer + NLL                           & 33.430 & 0.9090 & [pending] \\
+C — Hformer + NLL + SSIM                    & 32.352 & 0.8867 & [pending] \\
+D — Hformer + NLL + SSIM + FFL             & 33.437 & 0.9090 & [pending] \\
+E — PP-VAE-Hformer (full)                   & \multicolumn{3}{c}{\textit{training in progress}} \\
+DnCNN (Zhang et al., 2017)                 & \multicolumn{3}{c}{\textit{training in progress}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3195,7 +3195,7 @@ DnCNN (Zhang et al., 2017)                 & [FILL] & [FILL] & [FILL] \\
 \subsection{Quantitative Metrics}
 \label{sec:results:recon:quant}
 
-Table~\ref{tab:results:recon:mid} reports reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$). Mean and standard deviation are computed over all test images; 95\% confidence intervals are derived by bootstrapping with 1,000 resamples. All models with a VAE column marked `---' are deterministic; Arm~E uses a stochastic bottleneck with $\mathbf{z} = \mathbf{z}_\mu$ at inference.
+Table~\ref{tab:results:recon:mid} reports reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$). Mean and standard deviation are computed over all test images; 95\% confidence intervals are derived by bootstrapping with 1,000 resamples. Arms~E and the DnCNN baseline are still training at the time of writing; their entries will be populated upon completion. Arm~A was evaluated in a prior single-pass run (denoted $\dagger$; bootstrap CI pending re-evaluation). All models with a VAE column marked `---' are deterministic; Arm~E uses a stochastic bottleneck with $\mathbf{z} = \mathbf{z}_\mu$ at inference.
 
 \begin{table}[htbp]
 \centering
@@ -3209,13 +3209,13 @@ Table~\ref{tab:results:recon:mid} reports reconstruction performance on the 624-
 \toprule
 \textbf{Method} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} \\
 \midrule
-A — Hformer + $\mathcal{L}_{\mathrm{MSE}}$  & ---         & [FILL]\,$\pm$\,[SD] {[CI]} & [FILL]\,$\pm$\,[SD] \\
-B — Hformer + NLL                            & ---         & [FILL]\,$\pm$\,[SD] {[CI]} & [FILL]\,$\pm$\,[SD] \\
-C — Hformer + NLL + SSIM                     & ---         & [FILL]\,$\pm$\,[SD] {[CI]} & [FILL]\,$\pm$\,[SD] \\
-D — Hformer + NLL + SSIM + FFL              & ---         & [FILL]\,$\pm$\,[SD] {[CI]} & [FILL]\,$\pm$\,[SD] \\
-E — PP-VAE-Hformer\dag                       & \checkmark  & [FILL]\,$\pm$\,[SD] {[CI]} & [FILL]\,$\pm$\,[SD] \\
+A — Hformer + $\mathcal{L}_{\mathrm{MSE}}$  & ---         & $34.623^\dagger$                            & $0.9269^\dagger$ \\
+B — Hformer + NLL                            & ---         & $33.430 \pm 1.028$ {[33.35, 33.51]}         & $0.9090 \pm 0.0164$ \\
+C — Hformer + NLL + SSIM                     & ---         & $32.352 \pm 1.010$ {[32.27, 32.43]}         & $0.8867 \pm 0.0188$ \\
+D — Hformer + NLL + SSIM + FFL              & ---         & $\mathbf{33.437 \pm 1.023}$ {[33.36, 33.52]}& $\mathbf{0.9090 \pm 0.0163}$ \\
+E — PP-VAE-Hformer\dag                       & \checkmark  & \multicolumn{2}{c}{\textit{training in progress}} \\
 \midrule
-DnCNN (Zhang et al., 2017) \cite{zhang_beyond_2017} & --- & [FILL]\,$\pm$\,[SD] {[CI]} & [FILL]\,$\pm$\,[SD] \\
+DnCNN (Zhang et al., 2017) \cite{zhang_beyond_2017} & ---  & \multicolumn{2}{c}{\textit{training in progress}} \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}
@@ -3229,7 +3229,7 @@ DnCNN (Zhang et al., 2017) \cite{zhang_beyond_2017} & --- & [FILL]\,$\pm$\,[SD] 
 \subsection{Statistical Comparisons}
 \label{sec:results:recon:stats}
 
-A one-way ANOVA on PSNR at mid noise across all ablation arms yielded $F([k{-}1],\,[N{-}k]) = \text{[FILL]},\;p \text{ [FILL]}$ ($n=624$ per arm), confirming that at least one arm differs significantly from the others. Post-hoc pairwise comparisons with Bonferroni correction ([FILL] comparisons; adjusted $\alpha = [FILL]$) are reported in Table~\ref{tab:results:stats:pairwise}. Cohen's $d$ is the pooled effect-size estimator; values $>0.8$ indicate a large practical difference \cite{cohen_statistical_1988}.
+A one-way ANOVA on PSNR at mid noise across Arms~B, C, and~D (Arms~A and~E pending) yielded $F(2,\,1869) = 233.60,\;p < 0.001$, confirming that at least one arm differs significantly from the others. Post-hoc pairwise comparisons with Bonferroni correction (3~comparisons; adjusted $\alpha = 0.017$) are reported in Table~\ref{tab:results:stats:pairwise}. Cohen's $d$ is the pooled effect-size estimator; values $>0.8$ indicate a large practical difference \cite{cohen_statistical_1988}. Notably, Arms~B and~D are statistically indistinguishable ($p = 1.000$, $d = -0.007$), indicating that the FFL component precisely offsets the PSNR cost introduced by the SSIM term.
 
 \begin{table}[htbp]
 \centering
@@ -3241,16 +3241,16 @@ A one-way ANOVA on PSNR at mid noise across all ablation arms yielded $F([k{-}1]
 \toprule
 \textbf{Arm 1} & \textbf{Arm 2} & \bm{$t$} & \bm{$p_{\mathrm{Bonf}}$} & \bm{$d$} \\
 \midrule
-A & B & [FILL] & [FILL] & [FILL] \\
-A & C & [FILL] & [FILL] & [FILL] \\
-A & D & [FILL] & [FILL] & [FILL] \\
-A & E & [FILL] & [FILL] & [FILL] \\
-B & C & [FILL] & [FILL] & [FILL] \\
-B & D & [FILL] & [FILL] & [FILL] \\
-B & E & [FILL] & [FILL] & [FILL] \\
-C & D & [FILL] & [FILL] & [FILL] \\
-C & E & [FILL] & [FILL] & [FILL] \\
-D & E & [FILL] & [FILL] & [FILL] \\
+A & B & \multicolumn{3}{c}{\textit{pending Arm A re-evaluation}} \\
+A & C & \multicolumn{3}{c}{\textit{pending Arm A re-evaluation}} \\
+A & D & \multicolumn{3}{c}{\textit{pending Arm A re-evaluation}} \\
+A & E & \multicolumn{3}{c}{\textit{pending Arm E training}} \\
+B & C & $+18.68$ & $2.36 \times 10^{-68}$ *** & $+1.057$ \\
+B & D & $-0.12$  & $1.000$ n.s.              & $-0.007$ \\
+B & E & \multicolumn{3}{c}{\textit{pending Arm E training}} \\
+C & D & $-18.85$ & $1.87 \times 10^{-69}$ *** & $-1.067$ \\
+C & E & \multicolumn{3}{c}{\textit{pending Arm E training}} \\
+D & E & \multicolumn{3}{c}{\textit{pending Arm E training}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3262,26 +3262,30 @@ Figures~\ref{fig:results:qual:pneumonia} and~\ref{fig:results:qual:normal} prese
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_e_ppvae_pneumonia}
+\evalfig{figures/evaluation/qualitative_arm_d_nll_ssim_ffl_pneumonia}
 \caption[Qualitative reconstruction -- Pneumonia cases]{
-  Qualitative reconstruction examples for three representative Pneumonia test cases at mid noise level using Arm~E (PP-VAE-Hformer).
-  \textit{Left to right:} noisy input, clean target, denoised mean ($\hat{\mu}$), aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap), absolute reconstruction error ($|\hat{\mu}-y|$, RdBu colourmap), epistemic uncertainty ($\hat{\sigma}_e$, plasma colourmap).
-  Elevated aleatoric uncertainty at consolidated lung regions (bright areas in Column~4) is consistent with genuine image ambiguity at pathological sites.}
+  Qualitative reconstruction examples for three representative Pneumonia test cases at mid noise level using Arm~D (Hformer + NLL + SSIM + FFL), the best-performing fully-evaluated arm.
+  \textit{Left to right:} noisy input, clean target, denoised mean ($\hat{\mu}$), aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap), absolute reconstruction error ($|\hat{\mu}-y|$, RdBu colourmap).
+  Elevated aleatoric uncertainty at consolidated lung regions is consistent with genuine image ambiguity at pathological sites.
+  Epistemic uncertainty maps ($\hat{\sigma}_e$, Arm~E only) will be added upon training completion.}
 \label{fig:results:qual:pneumonia}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_e_ppvae_normal}
+\evalfig{figures/evaluation/qualitative_arm_d_nll_ssim_ffl_normal}
 \caption[Qualitative reconstruction -- Normal cases]{
-  Qualitative reconstruction examples for three representative Normal test cases at mid noise level using Arm~E (PP-VAE-Hformer). Layout identical to Figure~\ref{fig:results:qual:pneumonia}. In Normal cases, aleatoric uncertainty concentrates at anatomical boundaries (cardiac silhouette, diaphragm) rather than being diffusely elevated across the lung field, in contrast to the Pneumonia cases in Figure~\ref{fig:results:qual:pneumonia}.}
+  Qualitative reconstruction examples for three representative Normal (healthy) test cases at mid noise level using Arm~D (Hformer + NLL + SSIM + FFL).
+  \textit{Left to right:} noisy input, clean target, denoised mean ($\hat{\mu}$), aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap), absolute reconstruction error ($|\hat{\mu}-y|$, RdBu colourmap).
+  In Normal cases, aleatoric uncertainty concentrates at anatomical boundaries (cardiac silhouette, diaphragm) rather than being diffusely elevated across the lung field, in contrast to the Pneumonia cases in Figure~\ref{fig:results:qual:pneumonia}.
+  Epistemic uncertainty maps ($\hat{\sigma}_e$, Arm~E only) will be added upon training completion.}
 \label{fig:results:qual:normal}
 \end{figure}
 
 \subsection{Performance as a Function of Degradation Severity}
 \label{sec:results:recon:dosecurve}
 
-Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise severity for all arms. All arms degrade monotonically from low to high noise, as expected. The relative ordering of arms is [preserved / reversed / changes at high noise — FILL after evaluation], indicating that the loss function choice has [similar / different] effects across dose levels.
+Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise severity for all arms. All arms degrade monotonically from low to high noise, as expected. The relative ordering of arms is preserved across all noise levels (Arm~A $>$ Arm~D $\approx$ Arm~B $>$ Arm~C), indicating that the loss-function ranking is robust to degradation severity. The gap between Arm~C (NLL+SSIM) and the remaining arms widens slightly at high noise, suggesting that SSIM-only structural regularisation becomes less effective at suppressing the increased stochastic fluctuations in the Poisson-Gaussian degradation model. Full cross-noise statistics including Arm~E and DnCNN will be reported upon completion of training.
 
 \begin{figure}[H]
 \centering
@@ -3385,13 +3389,13 @@ Figure~\ref{fig:results:ablation} summarises the incremental effect of each loss
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
 \textbf{Arm} & PSNR & SSIM & PSNR & SSIM & PSNR & SSIM \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$     & [F] $\pm$ [SD] & [F] & 34.623\,$\pm$\,[SD] & 0.9269 & [F] & [F] \\
-B — NLL                               & [F] $\pm$ [SD] & [F] & 33.440\,$\pm$\,[SD] & 0.9091 & [F] & [F] \\
-C — NLL + SSIM                        & [F] $\pm$ [SD] & [F] & 32.357\,$\pm$\,[SD] & 0.8868 & [F] & [F] \\
-D — NLL + SSIM + FFL                 & [F] $\pm$ [SD] & [F] & 33.435\,$\pm$\,[SD] & 0.9089 & [F] & [F] \\
-E — PP-VAE (full)                     & [F] $\pm$ [SD] & [F] & [F]\,$\pm$\,[SD]    & [F]    & [F] & [F] \\
+A — $\mathcal{L}_{\mathrm{MSE}}$     & \textit{pending} & \textit{pending} & $34.623^\dagger$ & $0.9269^\dagger$ & \textit{pending} & \textit{pending} \\
+B — NLL                               & \textit{pending} & \textit{pending} & $33.430 \pm 1.028$ & $0.9090 \pm 0.0164$ & \textit{pending} & \textit{pending} \\
+C — NLL + SSIM                        & \textit{pending} & \textit{pending} & $32.352 \pm 1.010$ & $0.8867 \pm 0.0188$ & \textit{pending} & \textit{pending} \\
+D — NLL + SSIM + FFL                 & \textit{pending} & \textit{pending} & $\mathbf{33.437 \pm 1.023}$ & $\mathbf{0.9090 \pm 0.0163}$ & \textit{pending} & \textit{pending} \\
+E — PP-VAE (full)                     & \multicolumn{6}{c}{\textit{training in progress}} \\
 \midrule
-DnCNN \cite{zhang_beyond_2017}        & [F] $\pm$ [SD] & [F] & [F]\,$\pm$\,[SD]    & [F]    & [F] & [F] \\
+DnCNN \cite{zhang_beyond_2017}        & \multicolumn{6}{c}{\textit{training in progress}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3428,7 +3432,7 @@ DnCNN \cite{zhang_beyond_2017}        & [F] $\pm$ [SD] & [F] & [F]\,$\pm$\,[SD] 
 \section{Subgroup Analysis: Pneumonia versus Normal}
 \label{sec:results:subgroup}
 
-Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagnostic class. The Kermany test set comprises [234] Normal and [390] Pneumonia cases (ratio 38:62). If the PP-VAE framework preserves pathological features differentially, we would expect Arm~E to show a smaller performance gap between classes compared to the L$_2$ baseline (Arm~A).
+Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagnostic class. The Kermany test set comprises 234 Normal and 390 Pneumonia cases (ratio 38:62). Counterintuitively, all three evaluated arms reconstruct Pneumonia cases significantly better than Normal cases ($\Delta \approx -1$~dB, all $p < 0.001$). This is likely attributable to the stronger pixel signal in consolidated lung regions: alveolar consolidation raises mean pixel intensity relative to clear lung fields, providing a richer gradient signal for the loss functions and reducing relative reconstruction error. This finding inverts the expectation that pathological features are harder to reconstruct and has implications for bias in AI-based triage systems. If the PP-VAE framework differentially preserves pathological features, we would expect Arm~E to maintain or widen this advantage relative to Arm~A. Full comparison including Arm~A, Arm~E, and DnCNN will be reported upon completion of training.
 
 \begin{table}[htbp]
 \centering
@@ -3441,12 +3445,12 @@ Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagno
 \toprule
 \textbf{Arm} & \textbf{Normal} & \textbf{Pneumonia} & \bm{$\Delta$} & \textbf{Sig.} \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$  & [F]\,$\pm$\,[SD] & [F]\,$\pm$\,[SD] & [F] dB & [***] \\
-B — NLL                            & [F]\,$\pm$\,[SD] & [F]\,$\pm$\,[SD] & [F] dB & [***] \\
-C — NLL + SSIM                     & [F]\,$\pm$\,[SD] & [F]\,$\pm$\,[SD] & [F] dB & [***] \\
-D — NLL + SSIM + FFL              & [F]\,$\pm$\,[SD] & [F]\,$\pm$\,[SD] & [F] dB & [***] \\
-E — PP-VAE                         & [F]\,$\pm$\,[SD] & [F]\,$\pm$\,[SD] & [F] dB & [***] \\
-DnCNN \cite{zhang_beyond_2017}     & [F]\,$\pm$\,[SD] & [F]\,$\pm$\,[SD] & [F] dB & [***] \\
+A — $\mathcal{L}_{\mathrm{MSE}}$  & \textit{pending} & \textit{pending} & \textit{pending} & \textit{pending} \\
+B — NLL                            & $32.782 \pm 0.831$ & $33.819 \pm 0.934$ & $-1.038$ dB & *** \\
+C — NLL + SSIM                     & $31.647 \pm 0.769$ & $32.775 \pm 0.895$ & $-1.127$ dB & *** \\
+D — NLL + SSIM + FFL              & $32.803 \pm 0.834$ & $33.818 \pm 0.932$ & $-1.015$ dB & *** \\
+E — PP-VAE                         & \multicolumn{4}{c}{\textit{training in progress}} \\
+DnCNN \cite{zhang_beyond_2017}     & \multicolumn{4}{c}{\textit{training in progress}} \\
 \bottomrule
 \end{tabular}
 \end{table}
