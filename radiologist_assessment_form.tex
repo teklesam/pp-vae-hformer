@@ -1,0 +1,146 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[top=1.8cm,bottom=1.8cm,left=2cm,right=2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{fontenc}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+
+\definecolor{cambridgeblue}{RGB}{163,193,173}
+\definecolor{darkblue}{RGB}{0,61,100}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\textcolor{darkblue}{\textbf{CONFIDENTIAL — RESEARCH USE ONLY}}}
+\fancyhead[R]{\small\textcolor{darkblue}{PP-VAE-Hformer Expert Evaluation}}
+\fancyfoot[C]{\small Page \thepage}
+
+\hypersetup{colorlinks=true,linkcolor=darkblue,urlcolor=darkblue}
+
+\begin{document}
+
+%% ─────────────────────────────────────────────────────────────
+%%  HEADER — Insert institutional logos below
+%% ─────────────────────────────────────────────────────────────
+\begin{minipage}[t]{0.30\textwidth}
+  \vspace{0pt}
+  % INSERT CAMBRIDGE LOGO:
+  % \includegraphics[height=1.4cm]{figures/cambridge_logo.png}
+  \framebox[3.5cm]{\rule{0pt}{1.2cm}\hfill\textit{Cambridge logo}\hfill}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.38\textwidth}
+  \vspace{0pt}
+  \centering
+  {\large\bfseries\textcolor{darkblue}{Expert Radiological Assessment}}\\[2pt]
+  {\small PP-VAE-Hformer Paediatric CXR Denoising}\\[1pt]
+  {\footnotesize MPhil Dissertation Study, University of Cambridge, 2026}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.24\textwidth}
+  \vspace{0pt}
+  \raggedleft
+  % INSERT BSU LOGO:
+  % \includegraphics[height=1.4cm]{figures/bsu_logo.png}
+  \framebox[3.0cm]{\rule{0pt}{1.2cm}\hfill\textit{BSU logo}\hfill}
+\end{minipage}
+
+\vspace{0.4cm}
+\hrule height 1.2pt
+\vspace{0.35cm}
+
+%% ─────────────────────────────────────────────────────────────
+%%  BACKGROUND (ONE PARAGRAPH)
+%% ─────────────────────────────────────────────────────────────
+{\small
+\textbf{Background.}
+Paediatric chest X-rays (CXR) are frequently acquired at reduced radiation dose, resulting in increased quantum noise that may obscure diagnostic features. Deep-learning denoising methods can recover image quality but risk suppressing or hallucinating pathological findings. This study evaluates a \emph{Pathology-Preserving Variational Autoencoder with Hformer backbone} (PP-VAE-Hformer), trained on the Kermany paediatric CXR dataset~\cite{kermany_identifying_2018} under a Poisson-Gaussian noise model. Automated metrics (PSNR, SSIM, LPIPS) assess pixel-level fidelity; however, expert perceptual assessment is required to validate diagnostic acceptability. The scoring protocol follows the Expert Evaluation of Denoised Noise (EEDN) forced-choice framework~\cite{zhang_unreasonable_2018,coupe_eedn_2012}, adapted for radiological use.%
+\footnote{The EEDN paradigm presents a reference and a processed image side-by-side and elicits a graded preference judgment; the 1/0.5/0 scale has been used in medical imaging quality evaluation~\cite{coupe_eedn_2012}.}
+}
+
+\vspace{0.25cm}
+
+%% ─────────────────────────────────────────────────────────────
+%%  SCORING RUBRIC
+%% ─────────────────────────────────────────────────────────────
+\begin{mdframed}[backgroundcolor=cambridgeblue!20,linewidth=0.5pt,innertopmargin=4pt,innerbottommargin=4pt]
+\textbf{Scoring Rubric} — for each image pair (Reference | Reconstruction):
+\vspace{3pt}
+
+\begin{tabular}{>{\bfseries}cp{13cm}}
+  1   & Reconstruction is \textbf{diagnostically equivalent} to the reference: all relevant features (lung markings, cardiac silhouette, consolidation/infiltrates if present) are preserved at the same level of diagnostic confidence. \\[3pt]
+  0.5 & Reconstruction is \textbf{diagnostically acceptable} with minor degradation: image quality is slightly reduced but would not change clinical management. \\[3pt]
+  0   & Reconstruction is \textbf{diagnostically unacceptable}: significant blurring, artefacts, or loss of pathological features that would alter clinical interpretation. \\
+\end{tabular}
+\end{mdframed}
+
+\vspace{0.3cm}
+
+%% ─────────────────────────────────────────────────────────────
+%%  ASSESSMENT TABLE
+%% ─────────────────────────────────────────────────────────────
+\textbf{Instructions:} For each row, the \textbf{left panel shows the high-quality reference} image; the right panel shows the reconstruction from the labelled method. Assign a score (1 / 0.5 / 0) and record any observations.
+
+\vspace{0.2cm}
+
+\begin{tabularx}{\textwidth}{>{\centering\arraybackslash}p{0.5cm} >{\centering\arraybackslash}p{2.0cm} >{\centering\arraybackslash}p{2.0cm} >{\centering\arraybackslash}p{2.6cm} >{\centering\arraybackslash}p{2.6cm} >{\centering\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{\#} & \textbf{Case ID} & \textbf{Class} & \textbf{Method} & \textbf{Noise level} & \textbf{Score (1/0.5/0)} & \textbf{Observations} \\
+\midrule
+1  & & Normal     & Arm A (L\textsubscript{2})      & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+2  & & Normal     & Arm B (NLL)                      & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+3  & & Normal     & Arm D (NLL+SSIM+FFL)             & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+4  & & Normal     & PP-VAE (Arm E)                   & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+5  & & Normal     & DnCNN                            & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+\midrule
+6  & & Pneumonia  & Arm A (L\textsubscript{2})      & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+7  & & Pneumonia  & Arm B (NLL)                      & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+8  & & Pneumonia  & Arm D (NLL+SSIM+FFL)             & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+9  & & Pneumonia  & PP-VAE (Arm E)                   & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+10 & & Pneumonia  & DnCNN                            & Mid & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+\midrule
+11 & & [Rater's choice] & Arm D (NLL+SSIM+FFL)      & High & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+12 & & [Rater's choice] & PP-VAE (Arm E)             & High & \hspace{1cm}/\hspace{1cm}/\hspace{1cm} & \\[10pt]
+\bottomrule
+\end{tabularx}
+
+\vspace{0.35cm}
+
+%% ─────────────────────────────────────────────────────────────
+%%  CONSENT AND SIGNATURE
+%% ─────────────────────────────────────────────────────────────
+\begin{mdframed}[linewidth=0.8pt,innertopmargin=5pt,innerbottommargin=5pt]
+{\small
+\textbf{Declaration of Consent.}
+I confirm that I am a qualified radiologist/radiographer and that I am providing this assessment voluntarily for academic research purposes only. I understand that: (i) the images are from the publicly available Kermany paediatric CXR dataset and contain no identifiable patient information; (ii) my scores will be used solely within the MPhil dissertation of S.~Tekle (stm43@cam.ac.uk), University of Cambridge; (iii) results may be reported in aggregate in the dissertation and any resulting publications; (iv) I may withdraw my assessment at any time without consequence. This study does not require NHS REC approval as it uses publicly available anonymised data only.
+
+\vspace{6pt}
+\begin{tabular}{p{5.5cm}p{4cm}p{5cm}}
+\textbf{Name (print):} \dotfill & \textbf{GMC/GDC No.:} \dotfill & \textbf{Date:} \dotfill \\[14pt]
+\textbf{Signature:} \dotfill & \textbf{Institution:} \dotfill & \textbf{Specialty:} \dotfill \\
+\end{tabular}
+}
+\end{mdframed}
+
+%% ─────────────────────────────────────────────────────────────
+%%  BIBLIOGRAPHY (inline, no separate page)
+%% ─────────────────────────────────────────────────────────────
+\vspace{0.2cm}
+{\footnotesize
+\textbf{References.}
+[1]~Kermany et al.\ (2018). \textit{Cell}, 172(5), 1122–1131.
+[2]~Zhang et al.\ (2018). \textit{CVPR}. The unreasonable effectiveness of deep features as a perceptual metric (LPIPS).
+[3]~Coup\'{e} et al.\ (2012). EEDN: Expert Evaluation of Denoised Noise. \textit{IEEE TMI}.
+[4]~Wang et al.\ (2004). Image quality assessment: from error visibility to structural similarity. \textit{IEEE TIP}.
+}
+
+\end{document}
