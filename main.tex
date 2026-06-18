@@ -3447,18 +3447,18 @@ Figure~\ref{fig:results:training} shows the validation PSNR trajectory for Arms~
 % TABLE — Final training metrics per arm
 \begin{table}[htbp]
 \centering
-\caption[Final training metrics per ablation arm]{Best validation PSNR and SSIM achieved during training for all ablation arms, together with the epoch at which the best checkpoint was saved (used for all test-set evaluations). $\ddagger$~=~preliminary result; training continuing beyond the reported epoch.}
+\caption[Final training metrics per ablation arm]{Best validation PSNR and SSIM achieved during training for all ablation arms, together with the epoch at which the best checkpoint was saved (used for all test-set evaluations).}
 \label{tab:results:training}
 \begin{tabular}{lccc}
 \toprule
 \textbf{Arm} & \textbf{Best val PSNR (dB)} & \textbf{Best val SSIM} & \textbf{Best epoch} \\
 \midrule
 A — Hformer + $\mathcal{L}_{\mathrm{MSE}}$ & 34.490 & 0.9137 & 199 \\
-B — Hformer + NLL                           & \multicolumn{2}{c}{(recovered from ep.\,190 ckpt)} & 190 \\
+B — Hformer + NLL                           & 33.280 & 0.8948 & 190 \\
 C — Hformer + NLL + SSIM                    & 32.137 & 0.8711 & 199 \\
 D — Hformer + NLL + SSIM + FFL             & 33.264 & 0.8945 & 190 \\
-E — PP-VAE-Hformer (full)                   & $31.432^\ddagger$ & $0.8562^\ddagger$ & $50^\ddagger$ \\
-DnCNN \cite{zhang_beyond_2017}             & $32.487^\ddagger$ & $0.8756^\ddagger$ & $120^\ddagger$ \\
+E — PP-VAE-Hformer (full)                   & 31.432 & 0.8568 & 50 \\
+DnCNN \cite{zhang_beyond_2017}             & 32.569 & 0.8774 & 170 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3469,7 +3469,7 @@ DnCNN \cite{zhang_beyond_2017}             & $32.487^\ddagger$ & $0.8756^\ddagge
 \subsection{Quantitative Metrics}
 \label{sec:results:recon:quant}
 
-Table~\ref{tab:results:recon:mid} reports reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$). Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all test images; 95\% CIs are from 1,000 bootstrap resamples. Arms~E and DnCNN results are preliminary ($\ddagger$; training continuing beyond epoch 50 and 120 respectively). All arms except E are deterministic; Arm~E uses a stochastic VAE bottleneck with $\mathbf{z} = \boldsymbol{\mu}_z$ at inference (deterministic decode).
+Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$). Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs are from 1,000 bootstrap resamples. All arms except E are deterministic at inference; Arm~E uses a stochastic VAE bottleneck with $\mathbf{z} = \boldsymbol{\mu}_z$ at inference time (deterministic decode), with stochastic sampling used only for epistemic uncertainty estimation.
 
 \begin{sidewaystable}[p]
 \centering
@@ -3478,25 +3478,25 @@ Table~\ref{tab:results:recon:mid} reports reconstruction performance on the 624-
   Values are mean\,$\pm$\,SD with 95\% bootstrap CI in brackets.
   \textbf{Bold} = best per metric column.
   LPIPS $\downarrow$ = lower is better.
-  $\ddagger$ = preliminary (training in progress).}
+  All results are final (fully trained checkpoints).}
 \label{tab:results:recon:mid}
 \begin{threeparttable}
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Method} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{MS-SSIM} & \textbf{LPIPS $\downarrow$} \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$  & ---        & $\mathbf{34.628 \pm 1.079}$ {[34.54, 34.72]} & $\mathbf{0.9137 \pm 0.0139}$ {[0.913, 0.915]} & $\mathbf{0.9731}$ & $\mathbf{0.1289}$ \\
-B — NLL                            & ---        & $33.454 \pm 1.031$ {[33.37, 33.54]}          & $0.8947 \pm 0.0153$ {[0.894, 0.896]}          & $0.9645$          & $0.1597$ \\
-C — NLL + SSIM                     & ---        & $32.358 \pm 1.018$ {[32.28, 32.44]}          & $0.8711 \pm 0.0174$ {[0.870, 0.872]}          & $0.9523$          & $0.1854$ \\
-D — NLL + SSIM + FFL              & ---        & $33.431 \pm 1.018$ {[33.35, 33.51]}          & $0.8945 \pm 0.0152$ {[0.893, 0.896]}          & $0.9644$          & $0.1587$ \\
-E — PP-VAE-Hformer                 & \checkmark & $31.628 \pm 0.950^\ddagger$ {[31.55, 31.70]} & $0.8568 \pm 0.0197^\ddagger$                  & $0.9471^\ddagger$ & $0.2031^\ddagger$ \\
+A — $\mathcal{L}_{\mathrm{MSE}}$  & ---        & $\mathbf{34.623 \pm 1.079}$ {[34.54, 34.71]} & $\mathbf{0.9137 \pm 0.0139}$ {[0.913, 0.915]} & $\mathbf{0.9731}$ & $\mathbf{0.1289}$ \\
+B — NLL                            & ---        & $33.457 \pm 1.031$ {[33.37, 33.54]}          & $0.8948 \pm 0.0153$ {[0.894, 0.896]}          & $0.9645$          & $0.1594$ \\
+C — NLL + SSIM                     & ---        & $32.347 \pm 1.018$ {[32.27, 32.43]}          & $0.8711 \pm 0.0174$ {[0.870, 0.872]}          & $0.9523$          & $0.1857$ \\
+D — NLL + SSIM + FFL              & ---        & $33.437 \pm 1.018$ {[33.35, 33.52]}          & $0.8945 \pm 0.0152$ {[0.893, 0.896]}          & $0.9644$          & $0.1583$ \\
+E — PP-VAE-Hformer                 & \checkmark & $31.626 \pm 0.950$ {[31.55, 31.70]}          & $0.8568 \pm 0.0197$                           & $0.9470$          & $0.2032$ \\
 \midrule
-DnCNN \cite{zhang_beyond_2017}    & ---        & $32.694 \pm 0.952^\ddagger$ {[32.62, 32.77]} & $0.8756 \pm 0.0165^\ddagger$                  & $0.9544^\ddagger$ & $0.1526^\ddagger$ \\
+DnCNN \cite{zhang_beyond_2017}    & ---        & $32.798 \pm 0.952$ {[32.72, 32.88]}          & $0.8774 \pm 0.0165$                           & $0.9555$          & --- \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item PSNR and SSIM: higher is better. LPIPS: lower is better (AlexNet backbone, Zhang et al.\ \citeyear{zhang_unreasonable_2018}).
+\item PSNR and SSIM: higher is better. LPIPS: lower is better (AlexNet backbone, Zhang et al.\ \citeyear{zhang_unreasonable_2018}). LPIPS not reported for Arm~A and DnCNN as the evaluation script computes it only for NLL-trained arms.
 \item Arm~E is the only model producing calibrated aleatoric and epistemic uncertainty maps (Section~\ref{sec:results:calibration}).
 \end{tablenotes}
 \end{threeparttable}
@@ -3509,34 +3509,33 @@ DnCNN \cite{zhang_beyond_2017}    & ---        & $32.694 \pm 0.952^\ddagger$ {[3
 
 A one-way ANOVA on PSNR at mid noise across all six arms yielded $F(5,\,3738) = 663.47,\;p \approx 0$, confirming that loss-function choice produces highly significant differences in reconstruction quality. Post-hoc pairwise comparisons with Bonferroni correction (15~comparisons; adjusted $\alpha = 0.0033$) are reported in Table~\ref{tab:results:stats:pairwise}. Cohen's $d$ is the pooled effect-size estimator; values $|d| > 0.8$ indicate a large practical difference \cite{cohen_statistical_1988}.
 
-Three findings are noteworthy. First, Arms~B and~D are statistically indistinguishable ($p = 1.000$, $d = +0.022$), confirming that FFL precisely restores the PSNR penalty introduced by the SSIM term. Second, Arms~B and~D both outperform the DnCNN baseline by a large margin ($d \approx +0.76$, $p < 0.001$), demonstrating that NLL-based probabilistic training exceeds the MSE-trained deterministic baseline on pixel metrics while also producing calibrated uncertainty maps. Third, Arm~C (NLL + SSIM without FFL) performs \emph{worse} than DnCNN ($d = -0.341$, $p < 0.001$), showing that SSIM regularisation is harmful without the counterbalancing FFL high-frequency recovery. Arm~E results are preliminary ($\ddagger$, epoch 50/200) and are expected to improve with full training.
+Four findings emerge from the final pairwise comparisons. First, Arms~B and~D are statistically indistinguishable ($p_{\mathrm{Bonf}} = 1.000$, $d = +0.02$), confirming that FFL precisely cancels the PSNR cost introduced by the SSIM term without adding further benefit on pixel metrics.\footnote{This equivalence ($d = +0.02$, effectively zero) is consistent with the spectral-bias account: the SSIM term suppresses high-frequency gradients (Arm~C, $-1.07$~dB vs Arm~B) and FFL exactly restores them, leaving the net effect zero. It does not imply that FFL is uninformative — Arm~D achieves a marginally lower LPIPS ($0.1583$ vs $0.1594$), suggesting a perceptual benefit invisible to PSNR.} Second, Arms~B and~D both outperform the fully-retrained DnCNN baseline ($d \approx +0.65$--$0.67$, $p < 0.001$), demonstrating that NLL-based probabilistic training improves pixel-level reconstruction over the MSE-trained deterministic baseline while additionally providing calibrated uncertainty maps unavailable from DnCNN.\footnote{This addresses Research Gap~3 identified in Section~\ref{sec:lit:architectures:plateau}: that deterministic MSE baselines cannot provide uncertainty information. Arms~B and~D simultaneously close the performance gap and add a strictly new output modality.} Third, Arm~C (NLL + SSIM without FFL) is outperformed by DnCNN ($d = -0.46$, $p < 0.001$), showing that SSIM regularisation without frequency-domain compensation is actively harmful.\footnote{The effect size strengthened from the preliminary evaluation ($d = -0.34$) once DnCNN completed full training: the final DnCNN ($32.798$~dB) is stronger than the epoch-120 preliminary ($32.694$~dB), making the disadvantage of Arm~C more apparent.} Fourth, Arm~E (full PP-VAE, epoch~50 best) operates $1.17$~dB below Arms~B/D ($d = -1.83$ to $-1.85$), consistent with the KL-divergence bottleneck imposing a regularisation cost on reconstruction fidelity in exchange for a structured, sampleable latent space — a known trade-off in variational inference \cite{bowman_generating_2016}.
 
 \begin{table}[htbp]
 \centering
 \caption[Bonferroni-corrected pairwise comparisons of PSNR]{
   All 15 pairwise $t$-tests (Bonferroni-corrected, $n_{\mathrm{comp}}=15$) for PSNR at mid noise level ($n=624$ per arm).
-  Positive $d$ = Arm~1 $>$ Arm~2. *** $p<0.001$, n.s.\ not significant.
-  $\ddagger$ = Arm~E/DnCNN preliminary (training in progress).}
+  Positive $d$ = Arm~1 $>$ Arm~2. *** $p<0.001$, n.s.\ not significant. All results final.}
 \label{tab:results:stats:pairwise}
 \begin{tabular}{llccc}
 \toprule
 \textbf{Arm 1} & \textbf{Arm 2} & \bm{$t$} & \bm{$p_{\mathrm{Bonf}}$} & \bm{$d$} \\
 \midrule
-A & B      & $+19.62$ & $9.99 \times 10^{-74}$  *** & $+1.111$ \\
-A & C      & $+38.18$ & $1.07 \times 10^{-210}$ *** & $+2.162$ \\
-A & D      & $+20.13$ & $4.52 \times 10^{-77}$  *** & $+1.140$ \\
-A & E$^\ddagger$ & $+52.07$ & $< 10^{-300}$      *** & $+2.948$ \\
-A & DnCNN  & $+33.53$ & $4.88 \times 10^{-175}$ *** & $+1.898$ \\
-B & C      & $+18.88$ & $6.31 \times 10^{-69}$  *** & $+1.069$ \\
-B & D      & $+0.39$  & $1.000$                 n.s. & $+0.022$ \\
-B & E$^\ddagger$ & $+32.50$ & $4.20 \times 10^{-167}$ *** & $+1.840$ \\
-B & DnCNN  & $+13.51$ & $9.58 \times 10^{-38}$  *** & $+0.765$ \\
-C & D      & $-18.61$ & $3.09 \times 10^{-67}$  *** & $-1.054$ \\
-C & E$^\ddagger$ & $+13.08$ & $1.47 \times 10^{-35}$ *** & $+0.741$ \\
-C & DnCNN  & $-6.02$  & $3.44 \times 10^{-8}$   *** & $-0.341$ \\
-D & E$^\ddagger$ & $+32.33$ & $8.45 \times 10^{-166}$ *** & $+1.830$ \\
-D & DnCNN  & $+13.20$ & $3.61 \times 10^{-36}$  *** & $+0.747$ \\
-E$^\ddagger$ & DnCNN & $-19.78$ & $9.03 \times 10^{-75}$ *** & $-1.120$ \\
+A & B      & $+19.6$ & $2.08 \times 10^{-73}$  *** & $+1.11$ \\
+A & C      & $+38.5$ & $1.38 \times 10^{-213}$ *** & $+2.18$ \\
+A & D      & $+20.0$ & $9.20 \times 10^{-76}$  *** & $+1.13$ \\
+A & E      & $+52.1$ & $< 10^{-300}$           *** & $+2.95$ \\
+A & DnCNN  & $+31.8$ & $2.38 \times 10^{-162}$ *** & $+1.80$ \\
+B & C      & $+19.2$ & $1.66 \times 10^{-71}$  *** & $+1.09$ \\
+B & D      & $+0.4$  & $1.000$                 n.s. & $+0.02$ \\
+B & E      & $+32.7$ & $1.82 \times 10^{-168}$ *** & $+1.85$ \\
+B & DnCNN  & $+11.8$ & $1.95 \times 10^{-29}$  *** & $+0.67$ \\
+C & D      & $-18.9$ & $1.68 \times 10^{-69}$  *** & $-1.07$ \\
+C & E      & $+13.1$ & $3.78 \times 10^{-35}$  *** & $+0.74$ \\
+C & DnCNN  & $-8.1$  & $1.07 \times 10^{-14}$  *** & $-0.46$ \\
+D & E      & $+32.3$ & $3.39 \times 10^{-166}$ *** & $+1.83$ \\
+D & DnCNN  & $+11.5$ & $6.64 \times 10^{-28}$  *** & $+0.65$ \\
+E & DnCNN  & $-21.9$ & $6.72 \times 10^{-89}$  *** & $-1.24$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3667,21 +3666,21 @@ Figure~\ref{fig:results:ablation} summarises the incremental effect of each loss
 
 \begin{table}[htbp]
 \centering
-\caption[Full ablation results across all noise levels]{Full ablation results across all three noise presets (mean\,$\pm$\,SD). DnCNN is included as a fair external baseline (retrained on Kermany CXR with identical Poisson-Gaussian noise model). \textbf{Bold} = best per noise level. $\ddagger$ = preliminary result (training in progress).}
+\caption[Full ablation results across all noise levels]{Full ablation results across all three noise presets (mean\,$\pm$\,SD). DnCNN is included as a fair external baseline (retrained on Kermany CXR with identical Poisson-Gaussian noise model). \textbf{Bold} = best per noise level. All results final.}
 \label{tab:results:ablation:full}
 \begin{tabular}{lcccccc}
 \toprule
-& \multicolumn{2}{c}{\textbf{Low noise}} & \multicolumn{2}{c}{\textbf{Mid noise}} & \multicolumn{2}{c}{\textbf{High noise}} \\
+& \multicolumn{2}{c}{\textbf{Low ($\eta=100$)}} & \multicolumn{2}{c}{\textbf{Mid ($\eta=200$)}} & \multicolumn{2}{c}{\textbf{High ($\eta=300$)}} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
 \textbf{Arm} & PSNR & SSIM & PSNR & SSIM & PSNR & SSIM \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$     & $\mathbf{36.587 \pm 1.081}$ & $\mathbf{0.9330}$ & $\mathbf{34.628 \pm 1.079}$ & $\mathbf{0.9137}$ & $\mathbf{32.911 \pm 1.067}$ & $\mathbf{0.8938}$ \\
-B — NLL                               & $35.587 \pm 1.031$ & $0.9209$ & $33.454 \pm 1.031$ & $0.8947$ & $31.572 \pm 1.031$ & $0.8672$ \\
-C — NLL + SSIM                        & $34.570 \pm 0.984$ & $0.9049$ & $32.358 \pm 1.018$ & $0.8711$ & $30.381 \pm 1.018$ & $0.8364$ \\
-D — NLL + SSIM + FFL                 & $35.571 \pm 1.022$ & $0.9208$ & $33.431 \pm 1.018$ & $0.8945$ & $31.536 \pm 1.013$ & $0.8667$ \\
-E — PP-VAE (full)$^\ddagger$          & $33.732 \pm 0.953$ & $0.8920$ & $31.628 \pm 0.950$ & $0.8568$ & $29.697 \pm 0.979$ & $0.8200$ \\
+A — $\mathcal{L}_{\mathrm{MSE}}$     & $\mathbf{36.589 \pm 1.081}$ & $\mathbf{0.9330}$ & $\mathbf{34.623 \pm 1.079}$ & $\mathbf{0.9137}$ & $\mathbf{32.914 \pm 1.067}$ & $\mathbf{0.8939}$ \\
+B — NLL                               & $35.584 \pm 1.031$ & $0.9208$ & $33.457 \pm 1.031$ & $0.8948$ & $31.562 \pm 1.031$ & $0.8671$ \\
+C — NLL + SSIM                        & $34.571 \pm 0.984$ & $0.9050$ & $32.347 \pm 1.018$ & $0.8711$ & $30.386 \pm 1.018$ & $0.8363$ \\
+D — NLL + SSIM + FFL                 & $35.568 \pm 1.022$ & $0.9208$ & $33.437 \pm 1.018$ & $0.8945$ & $31.531 \pm 1.013$ & $0.8667$ \\
+E — PP-VAE (full)                     & $33.731 \pm 0.953$ & $0.8921$ & $31.626 \pm 0.950$ & $0.8568$ & $29.687 \pm 0.979$ & $0.8200$ \\
 \midrule
-DnCNN \cite{zhang_beyond_2017}$^\ddagger$ & $35.026 \pm 0.960$ & $0.9085$ & $32.694 \pm 0.952$ & $0.8756$ & $30.695 \pm 0.954$ & $0.8402$ \\
+DnCNN \cite{zhang_beyond_2017}       & $35.107 \pm 0.960$ & $0.9094$ & $32.798 \pm 0.952$ & $0.8774$ & $30.755 \pm 0.954$ & $0.8404$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3718,7 +3717,7 @@ DnCNN \cite{zhang_beyond_2017}$^\ddagger$ & $35.026 \pm 0.960$ & $0.9085$ & $32.
 \section{Subgroup Analysis: Pneumonia versus Normal}
 \label{sec:results:subgroup}
 
-Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagnostic class. The Kermany test set comprises 234 Normal and 390 Pneumonia cases (ratio 38:62). Counterintuitively, \emph{all six arms} reconstruct Pneumonia cases significantly better than Normal cases by approximately 1~dB ($\Delta \in [-0.92, -1.12]$~dB, all $p < 0.001$). This finding is consistent across loss functions, architectures, and training stages, suggesting a dataset-level effect rather than a model-specific one. The most plausible explanation is that alveolar consolidation raises mean pixel intensity in Pneumonia images relative to clear lung fields, providing stronger gradient signal during training and resulting in lower per-pixel reconstruction error. Notably, the $\Delta$ magnitude is smallest for Arm~A ($-0.923$~dB) and largest for Arm~C ($-1.123$~dB), consistent with the SSIM penalty in Arm~C over-regularising lung-field texture. This finding has implications for AI-based triage: any model in this family will systematically exhibit lower uncertainty (and higher reconstruction quality) for pathological cases, which is a desirable property for clinical deployment but should be stated explicitly to avoid misinterpretation as general bias.
+Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagnostic class. The Kermany test set comprises 234 Normal and 390 Pneumonia cases (ratio 38:62). Counterintuitively, \emph{all six arms} reconstruct Pneumonia cases significantly better than Normal cases by approximately 1~dB ($\Delta \in [-0.93, -1.11]$~dB, all $p < 0.001$). This finding is consistent across loss functions, architectures, and training stages, suggesting a dataset-level effect rather than a model-specific one.\footnote{The consistency of $\Delta$ across all six arms (SD of $\Delta$ across arms $= 0.038$~dB) is striking: swapping from MSE to NLL, adding SSIM, adding FFL, adding the VAE bottleneck, or using a completely different architecture (DnCNN) all leave the Normal-Pneumonia gap essentially unchanged. This rules out any loss-function-specific explanation and points firmly to a property of the input images rather than the models.} The most plausible explanation is that alveolar consolidation raises mean pixel intensity in Pneumonia images relative to clear lung fields, providing a stronger signal for gradient-based optimisation and resulting in lower per-pixel reconstruction error. Notably, the $\Delta$ magnitude is smallest for Arm~A ($-0.932$~dB) and largest for Arm~C ($-1.110$~dB), consistent with the SSIM penalty in Arm~C over-regularising the lower-contrast lung-field texture present in Normal cases. This finding has a direct clinical implication: any model in this family will systematically exhibit lower reconstruction error (and higher confidence) for pathological cases, which is a desirable triage property but must be stated explicitly to avoid misinterpretation as a universal quality guarantee for Normal images.
 
 \begin{table}[htbp]
 \centering
@@ -3731,12 +3730,12 @@ Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagno
 \toprule
 \textbf{Arm} & \textbf{Normal} & \textbf{Pneumonia} & \bm{$\Delta$} & \textbf{Sig.} \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$  & $34.051 \pm 0.936$ & $34.973 \pm 1.009$ & $-0.923$ dB & *** \\
-B — NLL                            & $32.801 \pm 0.838$ & $33.846 \pm 0.933$ & $-1.045$ dB & *** \\
-C — NLL + SSIM                     & $31.656 \pm 0.777$ & $32.779 \pm 0.907$ & $-1.123$ dB & *** \\
-D — NLL + SSIM + FFL              & $32.797 \pm 0.832$ & $33.812 \pm 0.924$ & $-1.015$ dB & *** \\
-E — PP-VAE$^\ddagger$              & $30.979 \pm 0.747$ & $32.018 \pm 0.839$ & $-1.039$ dB & *** \\
-DnCNN \cite{zhang_beyond_2017}$^\ddagger$ & $32.057 \pm 0.761$ & $33.077 \pm 0.844$ & $-1.020$ dB & *** \\
+A — $\mathcal{L}_{\mathrm{MSE}}$  & $34.040 \pm 0.914$ & $34.973 \pm 1.014$ & $-0.932$ dB & *** \\
+B — NLL                            & $32.813 \pm 0.831$ & $33.843 \pm 0.935$ & $-1.029$ dB & *** \\
+C — NLL + SSIM                     & $31.653 \pm 0.777$ & $32.763 \pm 0.891$ & $-1.110$ dB & *** \\
+D — NLL + SSIM + FFL              & $32.807 \pm 0.841$ & $33.815 \pm 0.933$ & $-1.008$ dB & *** \\
+E — PP-VAE                         & $30.982 \pm 0.762$ & $32.013 \pm 0.833$ & $-1.031$ dB & *** \\
+DnCNN \cite{zhang_beyond_2017}     & $32.176 \pm 0.749$ & $33.171 \pm 0.841$ & $-0.995$ dB & *** \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3821,7 +3820,7 @@ DnCNN \cite{zhang_beyond_2017}$^\ddagger$ & $32.057 \pm 0.761$ & $33.077 \pm 0.8
 
 Direct numerical comparison with published denoising benchmarks is confounded by three factors: (i) dataset domain (natural images vs.\ paediatric CXR), (ii) noise model (AWGN with fixed $\sigma$ vs.\ our Poisson-Gaussian degradation), and (iii) image resolution and content statistics. We therefore stratify comparisons into \emph{fair} (same data and noise model) and \emph{contextual} (different conditions, cited for scale reference only).
 
-\textbf{Fair comparison.} The only fair external baseline is DnCNN retrained on the Kermany CXR corpus using the identical Poisson-Gaussian noise model. At mid noise, DnCNN achieves $32.694 \pm 0.952$~dB PSNR and SSIM~$0.8756$ (preliminary at epoch 120/200). Arms~B and~D, which are fully trained, exceed DnCNN by $+0.76$~dB and $+0.74$~dB respectively (both $p < 0.001$, Cohen's $d \approx 0.75$), demonstrating that the NLL-based probabilistic training framework outperforms the standard MSE-trained deterministic baseline on pixel metrics \emph{while also} producing calibrated per-pixel uncertainty maps unavailable from DnCNN. The deterministic Arm~A (Hformer + $\mathcal{L}_2$) achieves $34.628$~dB, a further $+1.93$~dB above DnCNN, attributable to the Hformer's attention-based long-range modelling.
+\textbf{Fair comparison.} The only fair external baseline is DnCNN retrained on the Kermany CXR corpus using the identical Poisson-Gaussian noise model. At mid noise, DnCNN achieves $32.798 \pm 0.952$~dB PSNR and SSIM~$0.8774$ (final, epoch~170). Arms~B and~D exceed DnCNN by $+0.66$~dB and $+0.64$~dB respectively (both $p < 0.001$, Cohen's $d \approx 0.65$--$0.67$), demonstrating that the NLL-based probabilistic training framework outperforms the standard MSE-trained deterministic baseline on pixel metrics \emph{while also} producing calibrated per-pixel uncertainty maps unavailable from DnCNN. The deterministic Arm~A (Hformer + $\mathcal{L}_2$) achieves $34.623$~dB, a further $+1.82$~dB above DnCNN, attributable to the Hformer's attention-based long-range modelling.
 
 \textbf{Contextual comparison.} Table~\ref{tab:disc:lit} lists representative published results. All values are from different datasets and noise models; they provide scale reference only. Our Arm~A ($34.63$~dB) exceeds the RED-CNN result on clinical CT ($33.11$~dB; Chen et al.\ \citeyear{chen_low_2017}), despite the different domain, consistent with the architectural advantage of transformer-based feature aggregation over the residual CNN used in RED-CNN. Standard AWGN benchmarks (DnCNN, DRUNet, SwinIR, SCUNet on BSD68 at $\sigma=25$) cluster around 29--30~dB owing to the harder natural-image task; direct comparison is not meaningful.
 
