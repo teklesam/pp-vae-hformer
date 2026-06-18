@@ -56,7 +56,11 @@
 \usetikzlibrary{arrows.meta,positioning,backgrounds,shapes.geometric,calc,fit,decorations.pathreplacing,shadows}
 \usepackage[edges]{forest}
 
-
+% Add this to your preamble if you haven't already:
+\usepackage{rotating}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{amssymb} % for \checkmark
 
 % ── Colours ─────────────────────────────────────────────────
 \definecolor{darkblue}{RGB}{0,51,102}
@@ -3197,7 +3201,7 @@ DnCNN \cite{zhang_beyond_2017}             & $32.487^\ddagger$ & $0.8756^\ddagge
 
 Table~\ref{tab:results:recon:mid} reports reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$). Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all test images; 95\% CIs are from 1,000 bootstrap resamples. Arms~E and DnCNN results are preliminary ($\ddagger$; training continuing beyond epoch 50 and 120 respectively). All arms except E are deterministic; Arm~E uses a stochastic VAE bottleneck with $\mathbf{z} = \boldsymbol{\mu}_z$ at inference (deterministic decode).
 
-\begin{table}[htbp]
+\begin{sidewaystable}[p]
 \centering
 \caption[Primary reconstruction results at mid noise level]{
   Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$).
@@ -3226,7 +3230,7 @@ DnCNN \cite{zhang_beyond_2017}    & ---        & $32.694 \pm 0.952^\ddagger$ {[3
 \item Arm~E is the only model producing calibrated aleatoric and epistemic uncertainty maps (Section~\ref{sec:results:calibration}).
 \end{tablenotes}
 \end{threeparttable}
-\end{table}
+\end{sidewaystable}
 
 \subsection{Statistical Comparisons}
 \label{sec:results:recon:stats}
