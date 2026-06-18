@@ -1794,6 +1794,19 @@ parameter count is particularly important in the medical imaging context, where
 computational resources during inference may be limited. Hformer serves as the backbone
 architecture for the proposed framework in this dissertation.
 
+Xu et al.\ \cite{xuLowdoseComputedTomography2025} proposed a closely related hybrid
+architecture for LDCT denoising that combines a stochastic block (StoBlock) with a
+residual dense network (RDN) and transformer attention. The stochastic block introduces
+input-adaptive noise routing during training, while the residual dense network enables
+dense feature connectivity for multi-scale local feature reuse; transformer attention layers
+aggregate global context at intermediate feature resolution. Evaluated on the Mayo LDCT
+dataset, this architecture achieves competitive performance on clinical quarter-dose CT
+scans, demonstrating that combining local dense connectivity with global transformer context
+is a broadly applicable strategy for medical image denoising. Like the architectures above,
+however, Xu et al.'s model produces a single deterministic reconstruction without any
+uncertainty estimate, and was not designed for the Poisson-dominated noise regime of
+paediatric chest radiography.
+
 Chen et al.\ \cite{chen_nafnet_2022} proposed NAFNet (Non-linear Activation Free
 Network), in which all non-linear activation functions\footnote{Non-linear activation
 functions introduce non-linearity into neural networks, allowing them to learn complex
@@ -1877,7 +1890,7 @@ Reading the progression in Table~\ref{tab:lit:architectures} carefully reveals a
 
 The Transformer generation narrows the CNN-to-Transformer step change further. SwinIR outperforms DRUNet by only 0.02\,dB at $\sigma = 25$, despite introducing a completely different computational paradigm and using three times fewer parameters \cite{liang_swinir_2021}. SCUNet, the current ceiling at 29.55\,dB, adds only 0.07\,dB over DRUNet by combining a Swin Transformer branch with a convolutional branch in each block \cite{zhang_scunet_2023}. These are real improvements, but they are not the step change the field needs.
 
-The critical observation is this: throughout this entire twelve-year progression from DnCNN (2017) to SCUNet (2023), the loss function has never changed. Every method uses L2, MAE, or Charbonnier, all of which are pixel-wise objectives that treat every pixel independently, assume symmetric homoscedastic residuals, and make no provision for the signal-dependent Poisson noise physics of low-dose X-ray imaging. Zhao et al.\ \cite{zhao_loss_2017} demonstrated in 2017, the same year as DnCNN, that replacing L2 with a composite structural loss yields consistent improvements of 0.5--1.0\,dB without any architecture change. This finding has not been adopted by any denoising architecture in the comparison hierarchy above. The loss function is, by the evidence of the table itself, the remaining unexploited lever in this field.
+The critical observation is this: throughout this entire twelve-year progression from DnCNN (2017) to SCUNet (2023), the loss function has never changed. Every method uses L2, MAE, or Charbonnier, all of which are pixel-wise objectives that treat every pixel independently, assume symmetric homoscedastic residuals, and make no provision for the signal-dependent Poisson noise physics of low-dose X-ray imaging. Blau and Michaeli \cite{blau_perception_2018} formalised this limitation through the perception-distortion tradeoff: they proved that any distortion-minimising objective (including L2) is Pareto-dominated by methods that also account for perceptual quality, and that optimising distortion metrics alone necessarily produces blurry, low-variance outputs. This theoretical bound explains why Table~\ref{tab:lit:architectures} plateaus: the architecture innovations shift the Pareto frontier marginally, but all methods remain anchored to the L2 side of the tradeoff. Zhao et al.\ \cite{zhao_loss_2017} demonstrated in 2017, the same year as DnCNN, that replacing L2 with a composite structural loss yields consistent improvements of 0.5--1.0\,dB without any architecture change. This finding has not been adopted by any denoising architecture in the comparison hierarchy above. The loss function is, by the evidence of the table itself, the remaining unexploited lever in this field.
 
 A second piece of evidence comes from neural network theory. Rahaman et al.\ \cite{rahaman_spectral_2019} demonstrated empirically that deep networks learn low-frequency components of any target function before high-frequency ones, a phenomenon they term the \emph{spectral bias}\footnote{Spectral bias (also called the frequency principle or F-principle) refers to the tendency of neural networks trained with gradient descent to fit the low-frequency components of the training data first. High-frequency information -- such as fine anatomical edges and trabecular bone texture in a chest X-ray -- is learned later and more poorly.} of gradient descent. This directly explains why L2-trained denoisers produce blurry outputs: the high-frequency clinical content (vessel margins, lung fissures, bronchial walls) is exactly the content that a network trained under L2 is slowest to learn and most prone to under-representing. Architectural changes that increase receptive field, add non-local attention, or introduce wavelet pooling do not remove the spectral bias -- they change the speed at which frequencies are learned, but the L2 objective still tells the network that every frequency component is equally important. Only a loss function that explicitly penalises high-frequency errors can override the gradient-descent frequency hierarchy and force the network to learn fine detail. The Focal Frequency Loss \cite{jiang_focal_2021} and the structural SSIM component \cite{zhao_loss_2017} both do this by design; they are the mechanisms through which the proposed framework addresses what twelve years of architectural innovation has left unresolved.
 
@@ -1901,6 +1914,7 @@ A second piece of evidence comes from neural network theory. Rahaman et al.\ \ci
     NAFNet       & Natural     & Real/AWGN        & \texttimes & \texttimes & \texttimes & \texttimes \\
     SCUNet       & Natural     & P-G + JPEG       & \texttimes & \texttimes & \texttimes & \texttimes \\
     Hformer      & CT          & Gaussian         & \texttimes & \texttimes & \texttimes & \texttimes \\
+    Xu et al.\ (2025) & CT   & Poisson-G        & \texttimes & \texttimes & \texttimes & \texttimes \\
     \midrule
     \textbf{PP-VAE-Hformer} & \textbf{Paed.\ CXR} & \textbf{Poisson-Gaussian} & 
     \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark} \\
@@ -3555,6 +3569,8 @@ Direct numerical comparison with published denoising benchmarks is confounded by
 
 \textbf{Contextual comparison.} Table~\ref{tab:disc:lit} lists representative published results. All values are from different datasets and noise models; they provide scale reference only. Our Arm~A ($34.63$~dB) exceeds the RED-CNN result on clinical CT ($33.11$~dB; Chen et al.\ \citeyear{chen_low_2017}), despite the different domain, consistent with the architectural advantage of transformer-based feature aggregation over the residual CNN used in RED-CNN. Standard AWGN benchmarks (DnCNN, DRUNet, SwinIR, SCUNet on BSD68 at $\sigma=25$) cluster around 29--30~dB owing to the harder natural-image task; direct comparison is not meaningful.
 
+The most architecturally comparable prior work is Xu et al.\ \cite{xuLowdoseComputedTomography2025}, who combined a residual dense network with transformer attention for LDCT denoising — a design closely paralleling PP-VAE-Hformer's hybrid backbone. The critical distinction is that their architecture is entirely deterministic: it produces a single point-estimate reconstruction with no mechanism for uncertainty quantification. PP-VAE-Hformer's VAE bottleneck provides calibrated per-pixel uncertainty maps (Figure~\ref{fig:results:uncertainty}), a capability unavailable in any deterministic hybrid architecture including Xu et al.\ \cite{xuLowdoseComputedTomography2025}, Hformer \cite{zhang_hformer_2023}, and SCUNet \cite{zhang_scunet_2023}. This uncertainty output is directly actionable in the paediatric CXR clinical workflow, where a radiologist can use a high-uncertainty reconstruction region as a flag to request a repeat exposure or a second opinion.
+
 \begin{table}[htbp]
 \centering
 \caption[Contextual literature comparison]{Contextual literature comparison. All values are from datasets and noise conditions \emph{different} from this study; they are provided for scale reference only and should not be interpreted as performance comparisons.}
@@ -3570,6 +3586,7 @@ DRUNet         & Zhang et al.\ \citeyear{zhang_plug_2021}   & 29.48 & ---    & B
 SwinIR         & Liang et al.\ \citeyear{liang_swinir_2021} & 29.50 & ---    & BSD68, AWGN $\sigma{=}25$ \\
 NAFNet         & Chen et al.\ \citeyear{chen_simple_2022}   & 40.30 & 0.9601 & SIDD, real sensor noise \\
 SCUNet         & Zhang et al.\ \citeyear{zhang_practical_2023} & 29.58 & --- & BSD68, AWGN $\sigma{=}25$ \\
+Xu et al.\ (hybrid Tr.+RDN) & \citeyear{xuLowdoseComputedTomography2025} & ---  & --- & Mayo LDCT, clinical quarter-dose \\
 \midrule
 \multicolumn{5}{l}{\textit{This study (Kermany CXR, Poisson-Gaussian, mid noise level)}} \\
 Arm A (Hformer + $\mathcal{L}_2$)    & ---  & 34.63 & 0.9137 & Same data, fair \\
