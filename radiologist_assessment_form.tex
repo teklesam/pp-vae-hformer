@@ -1,0 +1,185 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[top=1.8cm,bottom=1.8cm,left=2cm,right=2cm]{geometry}
+\usepackage{booktabs,array,tabularx,multirow,graphicx,xcolor,enumitem}
+\usepackage{hyperref,microtype,parskip,fancyhdr,mdframed}
+\usepackage[T1]{fontenc}
+\usepackage{bm}
+\usepackage{tabularx}
+\usepackage{mdframed}
+\usepackage{hyperref}
+
+\definecolor{cambridgeblue}{RGB}{163,193,173}
+\definecolor{darkblue}{RGB}{0,61,100}
+
+\pagestyle{fancy}\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\textcolor{darkblue}{\textbf{CONFIDENTIAL — RESEARCH USE ONLY}}}
+\fancyhead[R]{\small\textcolor{darkblue}{PP-VAE-Hformer Blinded Expert Evaluation}}
+\fancyfoot[C]{\small Page \thepage}
+
+\hypersetup{colorlinks=true,linkcolor=darkblue,urlcolor=darkblue}
+
+\begin{document}
+
+%% ─── HEADER ──────────────────────────────────────────────────────────────────
+\begin{minipage}[t]{0.28\textwidth}
+  \vspace{0pt}
+  % \includegraphics[height=1.4cm]{figures/cambridge_logo.png}
+  \framebox[3.8cm]{\rule{0pt}{1.2cm}\quad\textit{Cambridge logo}\quad}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.40\textwidth}
+  \vspace{0pt}\centering
+  {\large\bfseries\textcolor{darkblue}{Blinded Radiological Assessment}}\\[3pt]
+  {\small PP-VAE-Hformer Paediatric CXR Denoising}\\[2pt]
+  {\footnotesize MPhil Dissertation Study, University of Cambridge, 2026}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.24\textwidth}
+  \vspace{0pt}\raggedleft
+  % \includegraphics[height=1.4cm]{figures/bsu_logo.png}
+  \framebox[3.2cm]{\rule{0pt}{1.2cm}\quad\textit{BSU logo}\quad}
+\end{minipage}
+
+\vspace{0.4cm}{\color{darkblue}\hrule height 1.2pt}\vspace{0.35cm}
+
+%% ─── BACKGROUND ──────────────────────────────────────────────────────────────
+{\small
+\textbf{Background.}
+Paediatric chest X-rays (CXR) are frequently acquired at reduced radiation dose, producing
+increased quantum noise that can obscure diagnostic features.
+This study evaluates six deep-learning denoising methods trained on the Kermany paediatric
+CXR dataset~[1] under a Poisson-Gaussian noise model ($\eta=200$, mid-noise level).
+The scoring follows the EEDN forced-choice paradigm~[2]: for each pair the
+\textbf{Reference} (clean, high-quality) image is shown first and the \textbf{Reconstruction}
+is shown alongside it.
+\textbf{Method identities are blinded} — each method is labelled P/Q/R/S/T/U.
+The key will be revealed after all assessments are complete.
+
+\textbf{Cases:} 6 representative test images were selected (3 Normal, 3 Pneumonia)
+spanning easy / medium / hard reconstruction difficulty (stratified by PSNR decile).
+Each case is assessed against all 6 blinded methods (36 scored panels).
+Three panels are repeated at the end as intra-rater reliability checks (rows 37--39).
+}
+
+\vspace{0.22cm}
+
+%% ─── SCORING RUBRIC ──────────────────────────────────────────────────────────
+\begin{mdframed}[backgroundcolor=cambridgeblue!25,linewidth=0.5pt,
+                 innertopmargin=5pt,innerbottommargin=5pt]
+\textbf{Scoring Rubric} \textemdash{} for each pair
+(\textbf{Reference LEFT} $\mid$ \textbf{Reconstruction RIGHT}):
+\vspace{4pt}
+
+\begin{tabular}{>{\bfseries\centering}p{0.6cm}p{14.0cm}}
+  1   & \textbf{Diagnostically equivalent}: all features (lung markings, cardiac silhouette,
+        consolidation/infiltrates if present) preserved at same diagnostic confidence. \\[3pt]
+  0.5 & \textbf{Diagnostically acceptable}: minor degradation; would not change clinical
+        management or diagnostic conclusion. \\[3pt]
+  0   & \textbf{Diagnostically unacceptable}: blurring, artefacts, or feature loss that would
+        alter clinical interpretation. \\
+\end{tabular}
+\end{mdframed}
+
+\vspace{0.22cm}
+
+%% ─── MAIN ASSESSMENT TABLE ───────────────────────────────────────────────────
+% Make sure you have \usepackage{tabularx, booktabs} in your preamble
+
+{\small\textbf{Instructions:} Panels are printed separately (one per page).
+Reference on left, reconstruction on right.
+Circle score. Note observations.}
+
+\vspace{0.1cm}
+
+\noindent
+\begin{tabularx}{\textwidth}{@{} c c c c c c X @{}}
+\toprule
+\textbf{\#} & \textbf{Case} & \textbf{Class} & \textbf{Noise} &
+\textbf{Method} & \textbf{Score (1/0.5/0)} & \textbf{Observations} \\
+\midrule
+
+\multicolumn{7}{l}{\small\textit{Case C01 — Normal — Easy}} \\[1pt]
+1  & C01 & Normal & mid & \textbf{P} & 1\quad 0.5\quad 0 & \\[7pt]
+2  & C01 & Normal & mid & \textbf{Q} & 1\quad 0.5\quad 0 & \\[7pt]
+3  & C01 & Normal & mid & \textbf{R} & 1\quad 0.5\quad 0 & \\[7pt]
+4  & C01 & Normal & mid & \textbf{S} & 1\quad 0.5\quad 0 & \\[7pt]
+5  & C01 & Normal & mid & \textbf{T} & 1\quad 0.5\quad 0 & \\[7pt]
+6  & C01 & Normal & mid & \textbf{U} & 1\quad 0.5\quad 0 & \\[3pt]
+\midrule
+\multicolumn{7}{l}{\small\textit{Case C02 — Normal — Medium}} \\[1pt]
+7  & C02 & Normal & mid & \textbf{P} & 1\quad 0.5\quad 0 & \\[7pt]
+8  & C02 & Normal & mid & \textbf{Q} & 1\quad 0.5\quad 0 & \\[7pt]
+9  & C02 & Normal & mid & \textbf{R} & 1\quad 0.5\quad 0 & \\[7pt]
+10 & C02 & Normal & mid & \textbf{S} & 1\quad 0.5\quad 0 & \\[7pt]
+11 & C02 & Normal & mid & \textbf{T} & 1\quad 0.5\quad 0 & \\[7pt]
+12 & C02 & Normal & mid & \textbf{U} & 1\quad 0.5\quad 0 & \\[3pt]
+\midrule
+\multicolumn{7}{l}{\small\textit{Case C03 — Normal — Hard}} \\[1pt]
+13 & C03 & Normal & mid & \textbf{P} & 1\quad 0.5\quad 0 & \\[7pt]
+14 & C03 & Normal & mid & \textbf{Q} & 1\quad 0.5\quad 0 & \\[7pt]
+15 & C03 & Normal & mid & \textbf{R} & 1\quad 0.5\quad 0 & \\[7pt]
+16 & C03 & Normal & mid & \textbf{S} & 1\quad 0.5\quad 0 & \\[7pt]
+17 & C03 & Normal & mid & \textbf{T} & 1\quad 0.5\quad 0 & \\[7pt]
+18 & C03 & Normal & mid & \textbf{U} & 1\quad 0.5\quad 0 & \\[3pt]
+\midrule
+\multicolumn{7}{l}{\small\textit{Case C04 — Pneumonia — Easy}} \\[1pt]
+19 & C04 & Pneumonia & mid & \textbf{P} & 1\quad 0.5\quad 0 & \\[7pt]
+20 & C04 & Pneumonia & mid & \textbf{Q} & 1\quad 0.5\quad 0 & \\[7pt]
+21 & C04 & Pneumonia & mid & \textbf{R} & 1\quad 0.5\quad 0 & \\[7pt]
+22 & C04 & Pneumonia & mid & \textbf{S} & 1\quad 0.5\quad 0 & \\[7pt]
+23 & C04 & Pneumonia & mid & \textbf{T} & 1\quad 0.5\quad 0 & \\[7pt]
+24 & C04 & Pneumonia & mid & \textbf{U} & 1\quad 0.5\quad 0 & \\[3pt]
+\midrule
+\multicolumn{7}{l}{\small\textit{Case C05 — Pneumonia — Medium}} \\[1pt]
+25 & C05 & Pneumonia & mid & \textbf{P} & 1\quad 0.5\quad 0 & \\[7pt]
+26 & C05 & Pneumonia & mid & \textbf{Q} & 1\quad 0.5\quad 0 & \\[7pt]
+27 & C05 & Pneumonia & mid & \textbf{R} & 1\quad 0.5\quad 0 & \\[7pt]
+28 & C05 & Pneumonia & mid & \textbf{S} & 1\quad 0.5\quad 0 & \\[7pt]
+29 & C05 & Pneumonia & mid & \textbf{T} & 1\quad 0.5\quad 0 & \\[7pt]
+30 & C05 & Pneumonia & mid & \textbf{U} & 1\quad 0.5\quad 0 & \\[3pt]
+\midrule
+\multicolumn{7}{l}{\small\textit{Case C06 — Pneumonia — Hard}} \\[1pt]
+31 & C06 & Pneumonia & mid & \textbf{P} & 1\quad 0.5\quad 0 & \\[7pt]
+32 & C06 & Pneumonia & mid & \textbf{Q} & 1\quad 0.5\quad 0 & \\[7pt]
+33 & C06 & Pneumonia & mid & \textbf{R} & 1\quad 0.5\quad 0 & \\[7pt]
+34 & C06 & Pneumonia & mid & \textbf{S} & 1\quad 0.5\quad 0 & \\[7pt]
+35 & C06 & Pneumonia & mid & \textbf{T} & 1\quad 0.5\quad 0 & \\[7pt]
+36 & C06 & Pneumonia & mid & \textbf{U} & 1\quad 0.5\quad 0 & \\[3pt]
+\midrule
+\multicolumn{7}{l}{\small\textit{Reliability checks — score independently, do not refer back}} \\[1pt]
+37 & C01 & Normal    & mid & \textbf{[X]} & 1\quad 0.5\quad 0 & \\[7pt]
+38 & C04 & Pneumonia & mid & \textbf{[X]} & 1\quad 0.5\quad 0 & \\[7pt]
+39 & C03 & Normal    & mid & \textbf{[X]} & 1\quad 0.5\quad 0 & \\[3pt]
+\bottomrule
+\end{tabularx}
+
+\vspace{0.28cm}
+
+%% ─── CONSENT ─────────────────────────────────────────────────────────────────
+\begin{mdframed}[linewidth=0.8pt, innertopmargin=7pt, innerbottommargin=7pt, innerleftmargin=8pt, innerrightmargin=8pt]
+{\small
+\noindent\textbf{Declaration of Consent.} \\
+I confirm I am a qualified radiologist/radiographer providing this assessment voluntarily for academic research only. 
+(i)~Images are from the publicly available Kermany paediatric CXR dataset (no identifiable patient data); 
+(ii)~scores will be used solely in the MPhil dissertation of S.\,Tekle (\href{mailto:stm43@cam.ac.uk}{stm43@cam.ac.uk}), University of Cambridge; 
+(iii)~results may be reported in aggregate in academic publications; 
+(iv)~I may withdraw at any time. No NHS REC approval required (anonymised public data).
+
+\vspace{12pt}
+
+\noindent
+\begin{tabularx}{\textwidth}{@{} X X X @{}}
+\textbf{Name (print):}\dotfill & \textbf{GMC/GDC No.:}\dotfill & \textbf{Date:}\dotfill \\[18pt]
+\textbf{Signature:}\dotfill & \textbf{Institution:}\dotfill & \textbf{Specialty:}\dotfill \\
+\end{tabularx}
+}
+\end{mdframed}
+
+{\footnotesize\textbf{References.}\quad
+[1]~Kermany et al.\ (2018). \textit{Cell} 172(5):1122--1131.\quad
+[2]~Coup\'e et al.\ (2012). EEDN. \textit{IEEE TMI}.\quad
+[3]~Wang et al.\ (2004). SSIM. \textit{IEEE TIP}.\quad
+[4]~Zhang et al.\ (2018). LPIPS. \textit{CVPR}.}
+
+\end{document}

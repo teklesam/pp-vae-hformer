@@ -3235,6 +3235,8 @@ DnCNN \cite{zhang_beyond_2017}    & ---        & $32.694 \pm 0.952^\ddagger$ {[3
 \subsection{Statistical Comparisons}
 \label{sec:results:recon:stats}
 
+
+
 A one-way ANOVA on PSNR at mid noise across all six arms yielded $F(5,\,3738) = 663.47,\;p \approx 0$, confirming that loss-function choice produces highly significant differences in reconstruction quality. Post-hoc pairwise comparisons with Bonferroni correction (15~comparisons; adjusted $\alpha = 0.0033$) are reported in Table~\ref{tab:results:stats:pairwise}. Cohen's $d$ is the pooled effect-size estimator; values $|d| > 0.8$ indicate a large practical difference \cite{cohen_statistical_1988}.
 
 Three findings are noteworthy. First, Arms~B and~D are statistically indistinguishable ($p = 1.000$, $d = +0.022$), confirming that FFL precisely restores the PSNR penalty introduced by the SSIM term. Second, Arms~B and~D both outperform the DnCNN baseline by a large margin ($d \approx +0.76$, $p < 0.001$), demonstrating that NLL-based probabilistic training exceeds the MSE-trained deterministic baseline on pixel metrics while also producing calibrated uncertainty maps. Third, Arm~C (NLL + SSIM without FFL) performs \emph{worse} than DnCNN ($d = -0.341$, $p < 0.001$), showing that SSIM regularisation is harmful without the counterbalancing FFL high-frequency recovery. Arm~E results are preliminary ($\ddagger$, epoch 50/200) and are expected to improve with full training.
