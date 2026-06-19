@@ -3166,17 +3166,57 @@ Clinical & NPS & --- (curve) & All \\
 \section{Computational Environment}
 \label{sec:methods:compute}
 
-All experiments were implemented in Python 3.10 using PyTorch 2.0
-\cite{paszke_pytorch_2019}. Perceptual metrics (FSIM, MS-SSIM) were computed using
-the \texttt{piq} library; LPIPS was computed using the \texttt{lpips} library
-\cite{zhang_unreasonable_2018}. Statistical comparisons used SciPy 1.11
-\cite{virtanen_scipy_2020}. Training was conducted on the Cambridge Service for
-Data-Driven Discovery (CSD3) A100 GPU cluster.
+All experiments were conducted on the Cambridge Service for Data-Driven Discovery
+(CSD3) high-performance computing cluster, using nodes from the \texttt{ampere}
+partition. Each training job was allocated one NVIDIA A100 SXM4 80\,GB GPU. The
+host nodes are equipped with dual Intel Xeon Platinum 8368Q processors (76 physical
+cores, 2.60\,GHz) and 250\,GiB of system RAM. Jobs were submitted via SLURM using
+the \texttt{sbatch} scheduler, with one GPU allocated per ablation arm to ensure
+consistent training dynamics across all conditions.
 
-% TABLE PLACEHOLDER
-\tabplaceholder{Computational environment specification: GPU model and memory, Python
-version, key library versions (PyTorch, piq, lpips, SciPy), approximate training time per
-arm at 200 epochs, and total compute for the full ablation study.}
+All code was implemented in Python 3.12.0 using PyTorch 2.5.1 (CUDA 12.1 build)
+\cite{paszke_pytorch_2019} and torchvision 0.20.1. Perceptual metrics (FSIM,
+MS-SSIM) were computed using the \texttt{piq} library; LPIPS was computed using
+the \texttt{lpips} library \cite{zhang_unreasonable_2018}. Statistical comparisons
+used SciPy \cite{virtanen_scipy_2020}. Mixed-precision training used PyTorch's
+\texttt{autocast} context manager with a \texttt{GradScaler} (disabled for
+DRUNet due to FP16 underflow at the learning rates required for that architecture).
+
+Training wall times were approximately 9--10 hours per proposed arm (200 epochs,
+batch size 16) and approximately 14 hours per CNN baseline (200 epochs, batch
+size 16). SwinIR required a reduced batch size of 4 due to the quadratic memory
+scaling of windowed self-attention at $256 \times 256$ resolution (approximately
+5\,GB per image in the forward pass), and was trained for 150 epochs over
+approximately 35 hours. The full ablation study consumed approximately
+250\,A100 GPU-hours in total.
+
+\begin{table}[H]
+  \centering
+  \caption{Computational environment specification.}
+  \label{tab:methods:compute}
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Component} & \textbf{Specification} \\
+    \midrule
+    Cluster            & Cambridge CSD3 (\texttt{ampere} partition) \\
+    GPU                & NVIDIA A100 SXM4, 80\,GB HBM2e (1 per job) \\
+    CPU                & 2$\times$ Intel Xeon Platinum 8368Q @ 2.60\,GHz (76 cores) \\
+    System RAM         & 250\,GiB \\
+    \midrule
+    Python             & 3.12.0 \\
+    PyTorch            & 2.5.1+cu121 \\
+    torchvision        & 0.20.1+cu121 \\
+    CUDA runtime       & 12.1 \\
+    cuDNN              & 9.1.0 \\
+    NumPy              & 2.4.4 \\
+    \midrule
+    Proposed arm wall time   & $\approx$9--10\,h (200 epochs, batch 16) \\
+    CNN baseline wall time   & $\approx$14\,h (200 epochs, batch 16) \\
+    SwinIR wall time         & $\approx$35\,h (150 epochs, batch 4) \\
+    Total compute            & $\approx$250 A100 GPU-hours \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 % ============================================================
 % CHAPTER 4 — RESULTS
