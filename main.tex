@@ -3433,7 +3433,7 @@ arm at 200 epochs, and total compute for the full ablation study.}
 \section{Training Behaviour}
 \label{sec:results:training}
 
-Figure~\ref{fig:results:training} shows the validation PSNR trajectory for Arms~B, C, and~D over 200 training epochs (Arms~A and~E training logs are presented once final checkpoints are downloaded; the KL divergence panel will be populated from Arm~E). All three arms converged smoothly without divergence events. Validation PSNR was computed every five epochs using a deterministic forward pass; the interleaved \texttt{nan} entries in the training logs between evaluation epochs are by design and do not indicate instability.
+Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all five ablation arms and the DnCNN baseline over training, together with the $\beta$-annealed KL divergence for Arm~E. All arms converged smoothly without divergence events. Validation PSNR was computed every five epochs using a deterministic forward pass; the interleaved \texttt{nan} entries in the training logs between evaluation epochs are by design and do not indicate instability. Arm~E's KL divergence rises from zero (fully annealed-off at epoch 0) to its plateau value, demonstrating successful KL warmup and the absence of posterior collapse.
 
 \begin{figure}[H]
 \centering
@@ -3543,34 +3543,80 @@ E & DnCNN  & $-21.9$ & $6.72 \times 10^{-89}$  *** & $-1.24$ \\
 \subsection{Qualitative Reconstruction Examples}
 \label{sec:results:recon:qual}
 
-Figures~\ref{fig:results:qual:pneumonia} and~\ref{fig:results:qual:normal} present qualitative reconstructions for three representative Pneumonia and three Normal cases at mid noise level. Each panel shows: noisy input, clean target, the model's denoised mean $\hat{\mu}$, the aleatoric uncertainty map $\hat{\sigma}_a = \exp(0.5\,\hat{\ell}_{\sigma^2})$, and the pixel-wise absolute error $|\hat{\mu} - y|$. The epistemic uncertainty $\hat{\sigma}_e$ from Monte Carlo sampling is shown only for Arm~E.
+Figures~\ref{fig:results:qual:pneumonia} and~\ref{fig:results:qual:normal} present qualitative reconstructions for three representative Pneumonia and three Normal cases at mid noise level ($\eta=200$) for Arm~D (best NLL arm). Each panel shows: noisy input, clean reference, the denoised mean $\hat{\mu}$, the aleatoric uncertainty map $\hat{\sigma}_a = \exp(0.5\,\hat{\ell}_{\sigma^2})$, and the pixel-wise absolute error $|\hat{\mu} - y|$. Figures~\ref{fig:results:qual:a:pneumonia}--\ref{fig:results:qual:dncnn:normal} extend the comparison to Arm~A ($\mathcal{L}_{\mathrm{MSE}}$), Arm~E (full PP-VAE), and DnCNN; for DnCNN and Arm~A the uncertainty panel shows the error map only as no aleatoric head is available.
 
 \begin{figure}[H]
 \centering
 \evalfig{figures/evaluation/qualitative_arm_d_nll_ssim_ffl_pneumonia}
-\caption[Qualitative reconstruction -- Pneumonia cases]{
-  Qualitative reconstruction examples for three representative Pneumonia test cases at mid noise level using Arm~D (Hformer + NLL + SSIM + FFL), the best-performing fully-evaluated arm.
-  \textit{Left to right:} noisy input, clean target, denoised mean ($\hat{\mu}$), aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap), absolute reconstruction error ($|\hat{\mu}-y|$, RdBu colourmap).
-  Elevated aleatoric uncertainty at consolidated lung regions is consistent with genuine image ambiguity at pathological sites.
-  Epistemic uncertainty maps ($\hat{\sigma}_e$, Arm~E only) will be added upon training completion.}
+\caption[Qualitative reconstruction -- Arm D, Pneumonia cases]{
+  Qualitative reconstruction for three representative Pneumonia test cases at mid noise ($\eta=200$), Arm~D (NLL + SSIM + FFL).
+  \textit{Left to right:} noisy input, clean reference, denoised mean ($\hat{\mu}$), aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap), absolute error ($|\hat{\mu}-y|$, RdBu).
+  Elevated aleatoric uncertainty at consolidated regions reflects genuine image ambiguity at pathological sites.}
 \label{fig:results:qual:pneumonia}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \evalfig{figures/evaluation/qualitative_arm_d_nll_ssim_ffl_normal}
-\caption[Qualitative reconstruction -- Normal cases]{
-  Qualitative reconstruction examples for three representative Normal (healthy) test cases at mid noise level using Arm~D (Hformer + NLL + SSIM + FFL).
-  \textit{Left to right:} noisy input, clean target, denoised mean ($\hat{\mu}$), aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap), absolute reconstruction error ($|\hat{\mu}-y|$, RdBu colourmap).
-  In Normal cases, aleatoric uncertainty concentrates at anatomical boundaries (cardiac silhouette, diaphragm) rather than being diffusely elevated across the lung field, in contrast to the Pneumonia cases in Figure~\ref{fig:results:qual:pneumonia}.
-  Epistemic uncertainty maps ($\hat{\sigma}_e$, Arm~E only) will be added upon training completion.}
+\caption[Qualitative reconstruction -- Arm D, Normal cases]{
+  Qualitative reconstruction for three representative Normal (healthy) cases at mid noise ($\eta=200$), Arm~D (NLL + SSIM + FFL).
+  Aleatoric uncertainty concentrates at anatomical boundaries (cardiac silhouette, diaphragm) rather than diffusely across the lung field, contrasting with the Pneumonia pattern in Figure~\ref{fig:results:qual:pneumonia}.}
 \label{fig:results:qual:normal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_arm_a_l2_pneumonia}
+\caption[Qualitative reconstruction -- Arm A, Pneumonia cases]{
+  Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) on three representative Pneumonia cases. As a deterministic MSE model, no aleatoric uncertainty head is available; panel five shows the error map.
+  PSNR is highest of all arms ($34.623$~dB mean), but textures appear slightly over-smoothed relative to NLL-trained arms (Blau \& Michaeli 2018 perception--distortion tradeoff \cite{blau_perception_2018}).}
+\label{fig:results:qual:a:pneumonia}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_arm_a_l2_normal}
+\caption[Qualitative reconstruction -- Arm A, Normal cases]{
+  Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) on three Normal cases. The absence of an uncertainty head and the MSE objective jointly explain the visually smooth but perceptually flat reconstructions.}
+\label{fig:results:qual:a:normal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_arm_e_ppvae_pneumonia}
+\caption[Qualitative reconstruction -- Arm E (PP-VAE), Pneumonia cases]{
+  Arm~E (full PP-VAE, epoch~50 best checkpoint) on three Pneumonia cases. The VAE bottleneck imposes a 1.17~dB PSNR cost relative to Arm~D, visible as slightly elevated reconstruction error in fine lung detail, but the aleatoric uncertainty map remains well-calibrated. Epistemic uncertainty from Monte Carlo latent-space sampling is an additional output unique to Arm~E.}
+\label{fig:results:qual:e:pneumonia}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_arm_e_ppvae_normal}
+\caption[Qualitative reconstruction -- Arm E (PP-VAE), Normal cases]{
+  Arm~E on three Normal cases. Uncertainty maps remain anatomically plausible despite the KL regularisation cost, with boundary-localised uncertainty analogous to Arm~D (Figure~\ref{fig:results:qual:normal}).}
+\label{fig:results:qual:e:normal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_dncnn_baseline_pneumonia}
+\caption[Qualitative reconstruction -- DnCNN baseline, Pneumonia cases]{
+  DnCNN baseline (retrained on Kermany CXR, Poisson-Gaussian noise, epoch~170) on three Pneumonia cases. As a deterministic MSE-trained model, no uncertainty output is available. DnCNN achieves $32.798$~dB mean PSNR, $0.659$~dB below Arm~D ($p<0.001$, $d=-0.65$).}
+\label{fig:results:qual:dncnn:pneumonia}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_dncnn_baseline_normal}
+\caption[Qualitative reconstruction -- DnCNN baseline, Normal cases]{
+  DnCNN baseline on three Normal cases. Error maps are qualitatively comparable to Arm~D at the same noise level, consistent with the moderate effect size ($d = -0.65$) measured across the full test set.}
+\label{fig:results:qual:dncnn:normal}
 \end{figure}
 
 \subsection{Performance as a Function of Degradation Severity}
 \label{sec:results:recon:dosecurve}
 
-Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise severity for all arms. All arms degrade monotonically from low to high noise, as expected. The relative ordering of arms is preserved across all noise levels (Arm~A $>$ Arm~D $\approx$ Arm~B $>$ Arm~C), indicating that the loss-function ranking is robust to degradation severity. The gap between Arm~C (NLL+SSIM) and the remaining arms widens slightly at high noise, suggesting that SSIM-only structural regularisation becomes less effective at suppressing the increased stochastic fluctuations in the Poisson-Gaussian degradation model. Full cross-noise statistics including Arm~E and DnCNN will be reported upon completion of training.
+Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise severity for all six arms and the DnCNN baseline. All arms degrade monotonically from low to high noise, as expected. The relative ordering is preserved across all noise levels (Arm~A $>$ Arm~D $\approx$ Arm~B $>$ DnCNN $>$ Arm~C $>$ Arm~E), indicating that the loss-function ranking is robust to degradation severity. The gap between Arm~C (NLL+SSIM) and the remaining NLL arms widens slightly at high noise ($\eta=300$), suggesting that SSIM-only structural regularisation becomes less effective at suppressing the increased stochastic fluctuations in the Poisson-Gaussian model. Arm~E's performance gap relative to Arm~D is consistent across all three noise levels ($\approx$$1.2$~dB), indicating that the KL bottleneck cost is noise-level-independent.
 
 \begin{figure}[H]
 \centering
@@ -3633,21 +3679,20 @@ Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise se
 %   • Correspondence between uncertainty and pathological regions
 %   • Qualitative clinical interpretation
 
-% FIGURE PLACEHOLDER — Uncertainty maps for representative cases
-\figplaceholder{Pixel-level uncertainty maps from PP-VAE decoder: high uncertainty (bright) co-localises with pathological consolidation regions}
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/uncertainty_calibration}
+\caption[Uncertainty calibration analysis for Arm~E (PP-VAE)]{
+  Calibration of the aleatoric uncertainty estimate from Arm~E (PP-VAE) at mid noise level ($\eta=200$).
+  \textit{Top row:} Representative Pneumonia (left) and Normal (right) cases showing the denoised output ($\hat{\mu}$), aleatoric uncertainty map ($\hat{\sigma}_a$), and pixel-wise absolute error; bright regions in the uncertainty map correspond to areas of genuine reconstruction ambiguity.
+  \textit{Bottom row:} Calibration curves plotting predicted standard deviation $\hat{\sigma}_a$ against observed absolute error $|\hat{\mu}-y|$ for Pneumonia (left) and Normal (right) subsets. The near-diagonal trend indicates that higher predicted uncertainty reliably predicts higher actual error, demonstrating that Arm~E's uncertainty is well-calibrated.}
+\label{fig:results:calibration}
+\end{figure}
 
 \subsection{Calibration Metrics}
 \label{sec:results:calibration:ece}
 
-% WRITE:
-%   • Expected Calibration Error for VAE vs. PP-VAE
-%   • Reliability diagrams (confidence vs. accuracy)
-
-% FIGURE PLACEHOLDER — Reliability / calibration diagrams
-\figplaceholder{Reliability diagrams comparing calibration of baseline VAE and PP-VAE: predicted uncertainty versus observed reconstruction error}
-
-% TABLE PLACEHOLDER — ECE and sharpness values
-\tabplaceholder{Calibration metrics: Expected Calibration Error (ECE) and sharpness for baseline VAE and PP-VAE}
+The calibration curves in Figure~\ref{fig:results:calibration} confirm that Arm~E's aleatoric uncertainty estimate $\hat{\sigma}_a$ is predictive of observed reconstruction error across both diagnostic classes. In Pneumonia cases, elevated $\hat{\sigma}_a$ at consolidated lung regions corresponds to genuinely higher reconstruction error, consistent with the hypothesis that pathological texture is inherently more difficult to reconstruct. In Normal cases, the calibration curve lies closer to the diagonal at lower uncertainty values, reflecting the more uniform lung texture. Quantitative Expected Calibration Error (ECE) and sharpness metrics will be computed in the final evaluation pipeline.
 
 \section{Ablation Study Results}
 \label{sec:results:ablation}
