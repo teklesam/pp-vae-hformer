@@ -62,6 +62,11 @@
 \usepackage{threeparttable}
 \usepackage{amssymb} % for \checkmark
 
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usetikzlibrary{arrows.meta, decorations.pathreplacing, positioning}
+
 % ── Colours ─────────────────────────────────────────────────
 \definecolor{darkblue}{RGB}{0,51,102}
 \definecolor{cambridgeblue}{RGB}{163,193,173}
@@ -1564,7 +1569,7 @@ single cohort. Their main findings are summarised in Table~\ref{tab:lit:dose}.
     \bottomrule
   \end{tabular}
 
-  \vspace{0.3em}
+  \vspace{0.01em}
   {\footnotesize \textbf{Note:} The contrast between chest radiography and head CT---a factor 
   of over 800 in attributable risk---illustrates why preventing unnecessary escalation from 
   X-ray to CT is clinically meaningful. ERR = excess relative risk. Source: Smith-Bindman 
@@ -1640,7 +1645,7 @@ tier of that pathway.
 The primary dataset for this dissertation is the paediatric chest X-ray collection assembled
 by Kermany et al.\ \cite{kermany_identifying_2018} at the Guangzhou Women and Children's
 Medical Centre in China, published in \textit{Cell} in 2018. The collection comprises 5,856
-posterior-to-anterior chest radiographs from children aged one to five years, acquired and
+anterior-to-posterior\footnote{Anterior-to-posterior technique refers to radiation beam passing thru the front chest and the sensor plate being behind the shoulder blades as opposed to posterior-anterior,  the standard technique used in adults.} chest radiographs from children aged one to five years, acquired and
 labelled for binary clinical classification: pneumonia (bacterial or viral) versus normal. The
 dataset is publicly available and has been extensively used in applied machine learning
 research for respiratory disease classification \cite{kermany_identifying_2018}.
@@ -1661,9 +1666,9 @@ evaluated. Images are stored as JPEG files with variable native resolution rangi
 approximately 400 to 1,400 pixels in each dimension; all images are resized to
 256\,$\times$\,256 pixels for training to standardise computational requirements while
 retaining the full-resolution diagnostic content that distinguishes this dataset from
-the 28\,$\times$\,28 pixel MedMNIST version derived from the same source.
+the 28\,$\times$\,28 pixel MedMNIST \cite{yang_medmnist_2023} version derived from the same source.
 
-The choice of the full-resolution Kermany collection, rather than the smaller MedMNIST
+The choice of the full-resolution Kermany collection\cite{kermany_identifying_2018}, rather than the smaller MedMNIST\cite{yang_medmnist_2023}
 derivative, is motivated by two considerations. Paediatric chest radiograph denoising is a
 high-frequency recovery problem: the fine interstitial markings, pleural edges, and
 consolidation margins that carry diagnostic information about pneumonia exist at spatial
@@ -1671,7 +1676,7 @@ scales that are simply not present in a 28-pixel image. Demonstrating that the p
 framework operates at clinically relevant resolutions is a prerequisite for any claim of
 clinical utility. Additionally, the comparison architectures reviewed in
 Section~\ref{sec:lit:architectures} were all designed and benchmarked on full-resolution
-images; a fair comparison requires a shared resolution regime.
+images; a fair comparison requires a shared/similar resolution regime.
 
 % ============================================================
 \section{The Evolution of Image Denoising Architectures}
@@ -1731,7 +1736,7 @@ directly. DnCNN achieved 29.23\,dB on BSD68 at $\sigma = 25$, a gain of 0.66\,dB
 BM3D, and established residual learning as the standard paradigm for supervised
 denoising \cite{zhang_beyond_2017}.
 
-For medical imaging, Chen et al.\ \cite{chen_low-dose_2017} adapted the encoder-decoder
+For medical imaging, Chen et al.\ \cite{chen_low-dose_2017} adapted the encoder-decoder U-Net
 architecture of Ronneberger et al.\ \cite{ronneberger_u-net_2015} to produce RED-CNN
 (Residual Encoder-Decoder CNN) for low-dose CT denoising, demonstrating that skip
 connections between the encoder and decoder preserved fine anatomical structures that were
@@ -1743,7 +1748,7 @@ This encourages feature reuse and allows the network to maintain fine-grained in
 across many processing steps.} based on the DenseNet architecture \cite{huang_densely_2017}.
 A follow-up by the same group, the Edge-Enhancement DenseNet (EEDN) \cite{luo_eedn_2022},
 added a dedicated frequency-decomposition branch to recover high-frequency edge detail
-separately from low-frequency structural content.
+separately from low-frequency structural content following comments like "artificial looking lungs" from their former network's (UDDN) output images by blinded cardiologists.
 
 The most capable pure CNN denoiser is DRUNet \cite{zhang_drunet_2021}, a deep U-Net
 with 32.7 million parameters that accepts the noise level as an explicit input alongside the
@@ -1890,9 +1895,9 @@ Reading the progression in Table~\ref{tab:lit:architectures} carefully reveals a
 
 The Transformer generation narrows the CNN-to-Transformer step change further. SwinIR outperforms DRUNet by only 0.02\,dB at $\sigma = 25$, despite introducing a completely different computational paradigm and using three times fewer parameters \cite{liang_swinir_2021}. SCUNet, the current ceiling at 29.55\,dB, adds only 0.07\,dB over DRUNet by combining a Swin Transformer branch with a convolutional branch in each block \cite{zhang_scunet_2023}. These are real improvements, but they are not the step change the field needs.
 
-The critical observation is this: throughout this entire twelve-year progression from DnCNN (2017) to SCUNet (2023), the loss function has never changed. Every method uses L2, MAE, or Charbonnier, all of which are pixel-wise objectives that treat every pixel independently, assume symmetric homoscedastic residuals, and make no provision for the signal-dependent Poisson noise physics of low-dose X-ray imaging. Blau and Michaeli \cite{blau_perception_2018} formalised this limitation through the perception-distortion tradeoff: they proved that any distortion-minimising objective (including L2) is Pareto-dominated by methods that also account for perceptual quality, and that optimising distortion metrics alone necessarily produces blurry, low-variance outputs. This theoretical bound explains why Table~\ref{tab:lit:architectures} plateaus: the architecture innovations shift the Pareto frontier marginally, but all methods remain anchored to the L2 side of the tradeoff. Zhao et al.\ \cite{zhao_loss_2017} demonstrated in 2017, the same year as DnCNN, that replacing L2 with a composite structural loss yields consistent improvements of 0.5--1.0\,dB without any architecture change. This finding has not been adopted by any denoising architecture in the comparison hierarchy above. The loss function is, by the evidence of the table itself, the remaining unexploited lever in this field.
+The critical observation is this: throughout this entire twelve-year progression from DnCNN (2017) to SCUNet (2023), the loss function has never changed. Every method uses L2, MAE, or Charbonnier, all of which are pixel-wise objectives that treat every pixel independently, assume symmetric homoscedastic residuals, and make no provision for the signal-dependent Poisson noise physics of low-dose X-ray imaging. Blau and Michaeli \cite{blau_perception_2018} formalised this limitation through the perception-distortion tradeoff: they proved that any distortion-minimising objective (including L2) is Pareto-dominated\footnote{In economics and game theory, an outcome is Pareto-dominated if there is another available outcome that makes at least one person/party better off while making no one worse off. If an outcome is Pareto-dominated, it is considered inefficient because value is being left on the table.} by methods that also account for perceptual quality, and that optimising distortion metrics alone necessarily produces blurry, low-variance outputs. This theoretical bound explains why Table~\ref{tab:lit:architectures} plateaus: the architecture innovations shift the Pareto frontier marginally, but all methods remain anchored to the L2 side of the tradeoff. Zhao et al.\ \cite{zhao_loss_2017} from Nvidia Research demonstrated in 2017, the same year as DnCNN, that replacing L2 with a composite structural loss yields consistent improvements of 0.5--1.0\,dB without any architecture change. This finding has not been adopted by any denoising architecture in the comparison hierarchy above. The loss function is, by the evidence of the table itself, the remaining unexploited lever in this field.
 
-A second piece of evidence comes from neural network theory. Rahaman et al.\ \cite{rahaman_spectral_2019} demonstrated empirically that deep networks learn low-frequency components of any target function before high-frequency ones, a phenomenon they term the \emph{spectral bias}\footnote{Spectral bias (also called the frequency principle or F-principle) refers to the tendency of neural networks trained with gradient descent to fit the low-frequency components of the training data first. High-frequency information -- such as fine anatomical edges and trabecular bone texture in a chest X-ray -- is learned later and more poorly.} of gradient descent. This directly explains why L2-trained denoisers produce blurry outputs: the high-frequency clinical content (vessel margins, lung fissures, bronchial walls) is exactly the content that a network trained under L2 is slowest to learn and most prone to under-representing. Architectural changes that increase receptive field, add non-local attention, or introduce wavelet pooling do not remove the spectral bias -- they change the speed at which frequencies are learned, but the L2 objective still tells the network that every frequency component is equally important. Only a loss function that explicitly penalises high-frequency errors can override the gradient-descent frequency hierarchy and force the network to learn fine detail. The Focal Frequency Loss \cite{jiang_focal_2021} and the structural SSIM component \cite{zhao_loss_2017} both do this by design; they are the mechanisms through which the proposed framework addresses what twelve years of architectural innovation has left unresolved.
+A second piece of evidence comes from neural network theory. Rahaman et al.\ \cite{rahaman_spectral_2019} demonstrated empirically that deep networks learn low-frequency components of any target function before high-frequency ones, a phenomenon they term the \emph{spectral bias}\footnote{Spectral bias (also called the frequency principle or F-principle) refers to the tendency of neural networks trained with gradient descent to fit the low-frequency components of the training data first. High-frequency information -- such as fine anatomical edges and trabecular bone texture in a chest X-ray -- is learned later and more poorly.} of gradient descent. This directly explains why L2-trained denoisers produce blurry outputs: the high-frequency clinical content (vessel margins, lung fissures, bronchial walls) is exactly the content that a network trained under L2 is slowest to learn and most prone to under-representing. Architectural changes that increase receptive field, add non-local attention, or introduce wavelet pooling do not remove the spectral bias -- they change the speed at which frequencies are learned, but the L2 objective still tells the network that every frequency component is equally important. Only a loss function that explicitly penalises high-frequency errors can override the gradient-descent frequency hierarchy and force the network to learn fine detail from the outset. The Focal Frequency Loss \cite{jiang_focal_2021} and the structural SSIM component \cite{zhao_loss_2017} both do this by design; they are the mechanisms through which the proposed framework attempts to address what twelve years of architectural innovation has left unresolved.
 
 % ─── Cross-Cutting Limitations Table ─────────────────────────────────────────
 \begin{table}[H]
@@ -1951,7 +1956,7 @@ results across multiple quality metrics. Their central finding was that MSE-trai
 produce blurry images that score well on average pixel fidelity but poorly on structural
 and perceptual metrics. The mathematical explanation is straightforward: if a particular image
 patch is consistent with ten possible clean textures, the network trained under MSE will
-learn to output the average of those ten textures, which is blurrier than any individual one
+learn to output the average of those ten textures to avoid large penalities, which is blurrier than any individual one
 \cite{zhao_loss_2017}.
 
 Zhao et al.\ \cite{zhao_loss_2017} showed that replacing MSE with a combined MS-SSIM
@@ -2134,7 +2139,7 @@ tightly constrained by the data. The network's reconstruction in this regime is
 SNR is low (as it is in dark anatomical regions under paediatric ALARA-level doses) the
 likelihood is broad and the posterior is dominated by the prior $p(y)$. The network's
 reconstruction in this regime is \emph{prior sampling}: the output reflects what a clean
-chest X-ray tends to look like, not what this patient's anatomy looked like at this moment.
+chest X-ray \textit{tends} to look like, not what this patient's anatomy looked like at this moment.
 
 Critically, this is not a failure of the algorithm. Rahaman et al.\ \cite{rahaman_spectral_2019}
 showed that the spectral bias of gradient descent means that prior-learning always
@@ -2406,89 +2411,18 @@ The study proceeds through four sequential phases: (1) dataset preparation and n
 
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[
-  >=Stealth,
-  every node/.style={font=\small},
-  imgbox/.style={draw=gray!60, fill=gray!10, rounded corners=3pt,
-                 minimum width=1.4cm, minimum height=1.4cm, align=center},
-  procbox/.style={draw=blue!50!black, fill=blue!7, rounded corners=5pt,
-                  minimum width=2.6cm, minimum height=1.1cm, align=center,
-                  inner sep=5pt},
-  noisebox/.style={draw=orange!70!black, fill=orange!7, rounded corners=5pt,
-                   minimum width=2.2cm, minimum height=1.1cm, align=center,
-                   inner sep=5pt},
-  armbox/.style={draw=gray!50, fill=white, rounded corners=3pt,
-                 minimum width=2.5cm, minimum height=0.55cm, align=center,
-                 inner sep=3pt, font=\footnotesize},
-  outbox/.style={draw=teal!60!black, fill=teal!8, rounded corners=5pt,
-                 minimum width=2.6cm, minimum height=0.75cm, align=center,
-                 inner sep=4pt, font=\footnotesize},
-  arr/.style={->, thick, gray!70!black},
-  darr/.style={->, thick, teal!70!black},
-]
-
-%% ── Column positions ────────────────────────────────────────────
-\def\xA{0}\def\xB{2.3}\def\xC{5.0}\def\xD{8.3}\def\xE{11.8}
-
-%% ── Input image (placeholder box) ──────────────────────────────
-\node[imgbox] (cxr) at (\xA, 0) {\footnotesize CXR\\[-2pt]\footnotesize (clean)};
-\node[above=0.05cm of cxr, font=\footnotesize\itshape] {Kermany dataset};
-
-%% ── Noise simulation ────────────────────────────────────────────
-\node[noisebox] (noise) at (\xB, 0) {Poisson-Gaussian\\[-2pt]corruption\\[-2pt]$\eta \in \{50,100,200,300\}$};
-
-%% ── PP-VAE-Hformer (model) ──────────────────────────────────────
-\node[procbox] (model) at (\xC+1, 0) {\textbf{PP-VAE-Hformer}\\[-2pt]Encoder--Bottleneck--Decoder\\[-2pt](shared architecture)};
-
-%% ── Ablation arms panel ─────────────────────────────────────────
-\node[armbox, fill=blue!5,  draw=blue!40]   (armA) at (\xC+1,  1.65) {Arm A: $\mathcal{L}_2$};
-\node[armbox, fill=orange!5,draw=orange!40] (armB) at (\xC+1,  1.05) {Arm B: NLL};
-\node[armbox, fill=green!5, draw=green!40]  (armC) at (\xC+1,  0.45) {Arm C: NLL + SSIM};
-\node[armbox, fill=red!5,   draw=red!40]    (armD) at (\xC+1, -0.45) {Arm D: NLL + SSIM + FFL};
-\node[armbox, fill=purple!5,draw=purple!40,very thick] (armE) at (\xC+1, -1.05)
-      {Arm E: NLL + SSIM + FFL + KL \textbf{(VAE)}};
-
-\node[above=0.08cm of armA, font=\footnotesize\bfseries] {Loss function variant};
-
-%% ── Outputs ─────────────────────────────────────────────────────
-\node[outbox] (out1) at (\xE, 0.75)
-      {$\hat{\mu}_y$ \;Denoised image};
-\node[outbox] (out2) at (\xE, 0)
-      {$\log\hat{\sigma}^2_a$ \;Aleatoric map\\[-1pt](Arms B--E)};
-\node[outbox, draw=purple!60!black, fill=purple!6] (out3) at (\xE, -0.75)
-      {$\hat{\sigma}^2_e$ \;Epistemic map\\[-1pt](Arm E, MC sampling)};
-
-%% ── Arrows ──────────────────────────────────────────────────────
-\draw[arr] (cxr.east)   -- (noise.west);
-\draw[arr] (noise.east) -- (model.west);
-\draw[darr] (model.east) -- (out1.west);
-\draw[darr] (model.east) -- (out2.west);
-\draw[darr] (model.east) -- (out3.west);
-
-%% ── Brace spanning ablation arms ────────────────────────────────
-\draw[decorate, decoration={brace, amplitude=5pt, mirror},
-      gray!60, thick]
-  ([xshift=-1.4cm]armA.north west) -- ([xshift=-1.4cm]armE.south west)
-  node[midway, left=0.2cm, font=\footnotesize, align=right, text=gray!70!black]
-       {5 ablation\\[-2pt]arms};
-
-\end{tikzpicture}
-\caption[Experimental pipeline overview]{%
-  Overview of the experimental pipeline.
-  Clean paediatric chest radiographs from the Kermany dataset are corrupted by
-  simulated Poisson-Gaussian noise at four levels ($\eta \in \{50,100,200,300\}$).
-  The degraded images are processed by PP-VAE-Hformer, which is trained under five
-  ablation arms that differ only in loss function and the presence of the VAE
-  probabilistic bottleneck (Arm~E). All arms share the same encoder--decoder
-  architecture and training schedule. The model produces a denoised image
-  $\hat{\mu}_y$ (all arms), a per-pixel aleatoric uncertainty map
-  $\log\hat{\sigma}^2_a$ (Arms~B--E), and an epistemic uncertainty map
-  $\hat{\sigma}^2_e$ obtained by Monte Carlo sampling through the VAE bottleneck
-  (Arm~E only).}
+\includegraphics[width=\linewidth]{Experimental design.pdf} % or .png, .eps
+\caption[Experimental pipeline overview]{Overview of the experimental pipeline. Clean paediatric radiographs (Kermany dataset) 
+  are corrupted by Poisson-Gaussian noise ($\eta \in \{50,100,200,300\}$) and processed 
+  by PP-VAE-Hformer. The model is trained across five ablation arms sharing an 
+  encoder--decoder architecture but differing in loss functions and the VAE bottleneck 
+  (Arm~E). Outputs include a denoised image $\hat{\mu}_y$ (all arms), an aleatoric 
+  uncertainty map $\log\hat{\sigma}^2_a$ (Arms~B--E), and an epistemic uncertainty 
+  map $\hat{\sigma}^2_e$ via Monte Carlo sampling (Arm~E only)}
 \label{fig:methods:pipeline}
 \end{figure}
 
-% ============================================================
+============================================================
 \section{Dataset}
 \label{sec:methods:dataset}
 
@@ -2682,167 +2616,8 @@ image mean and a per-pixel aleatoric uncertainty map.
 
 \begin{figure}[htbp]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[
-  >=Stealth,
-  every node/.style={font=\footnotesize},
-  %% Block styles
-  imgnode/.style={draw=gray!60, fill=gray!12, rounded corners=3pt,
-                  minimum width=1.0cm, minimum height=1.8cm, align=center},
-  stemnode/.style={draw=blue!50!black, fill=blue!8, rounded corners=4pt,
-                   minimum width=1.5cm, minimum height=0.7cm, align=center, inner sep=3pt},
-  encnode/.style={draw=blue!60!black, fill=blue!12, rounded corners=4pt,
-                  minimum width=1.6cm, minimum height=1.4cm, align=center, inner sep=4pt},
-  downnode/.style={draw=blue!40, fill=blue!5, rounded corners=3pt,
-                   minimum width=0.55cm, minimum height=0.55cm, align=center},
-  botnode/.style={draw=teal!60!black, fill=teal!10, rounded corners=4pt,
-                  minimum width=1.7cm, minimum height=1.4cm, align=center, inner sep=4pt,
-                  very thick},
-  vaenode/.style={draw=purple!60!black, fill=purple!8, rounded corners=4pt,
-                  minimum width=1.6cm, minimum height=1.5cm, align=center, inner sep=4pt,
-                  dashed, thick},
-  decnode/.style={draw=orange!60!black, fill=orange!8, rounded corners=4pt,
-                  minimum width=1.6cm, minimum height=1.4cm, align=center, inner sep=4pt},
-  upnode/.style={draw=orange!40, fill=orange!5, rounded corners=3pt,
-                 minimum width=0.55cm, minimum height=0.55cm, align=center},
-  outnode/.style={draw=teal!60!black, fill=teal!8, rounded corners=4pt,
-                  minimum width=1.5cm, minimum height=0.7cm, align=center, inner sep=3pt},
-  %% HybridBlock inset
-  hbbox/.style={draw=gray!50, fill=gray!4, rounded corners=4pt,
-                minimum width=2.2cm, minimum height=1.0cm, align=center, inner sep=3pt},
-  %% Annotations
-  dimtag/.style={font=\tiny, text=gray!70!black, align=center},
-  arrmain/.style={->, thick, gray!70!black},
-  arrskip/.style={->, thick, gray!50, dashed},
-  arrvae/.style={->, thick, purple!70!black},
-]
-
-%% ════════════════════════════════════════════════════════════════
-%% COLUMN X-POSITIONS (left to right)
-%% ════════════════════════════════════════════════════════════════
-\def\xIn{0}
-\def\xStem{1.5}
-\def\xEone{3.4}     % Encoder 1
-\def\xEtwo{5.4}     % Encoder 2
-\def\xEthr{7.4}     % Encoder 3
-\def\xBot{9.5}      % Bottleneck
-\def\xVae{11.6}     % VAE (Arm E)
-\def\xDthr{13.7}    % Decoder 3
-\def\xDtwo{15.7}    % Decoder 2
-\def\xDone{17.7}    % Decoder 1
-\def\xOut{19.7}     % Output heads
-
-%% ── Input ──────────────────────────────────────────────────────
-\node[imgnode] (inp) at (\xIn, 0)
-      {$\mathbf{x}$\\[2pt]$1{\times}256$\\${\times}256$};
-\node[above=0.6cm of inp, dimtag] {Noisy\\CXR};
-
-%% ── Stem ────────────────────────────────────────────────────────
-\node[stemnode] (stem) at (\xStem, 0)
-      {Stem\\$3{\times}3$ conv};
-\node[below=0.05cm of stem, dimtag] {$64{\times}256{\times}256$};
-
-%% ── Encoder stages ──────────────────────────────────────────────
-\node[encnode] (enc1) at (\xEone, 0)
-      {\textbf{E1}\\HB$\times$2\\$+$Down};
-\node[below=0.05cm of enc1, dimtag] {$128{\times}128{\times}128$};
-
-\node[encnode] (enc2) at (\xEtwo, 0)
-      {\textbf{E2}\\HB$\times$2\\$+$Down};
-\node[below=0.05cm of enc2, dimtag] {$256{\times}64{\times}64$};
-
-\node[encnode] (enc3) at (\xEthr, 0)
-      {\textbf{E3}\\HB$\times$2\\$+$Down};
-\node[below=0.05cm of enc3, dimtag] {$512{\times}32{\times}32$};
-
-%% ── Bottleneck ──────────────────────────────────────────────────
-\node[botnode] (bot) at (\xBot, 0)
-      {\textbf{Bottleneck}\\HB$\times$2};
-\node[below=0.05cm of bot, dimtag] {$512{\times}32{\times}32$};
-
-%% ── VAE probabilistic bottleneck (Arm E only) ──────────────────
-\node[vaenode] (vae) at (\xVae, 0)
-      {\textbf{VAE}\\[2pt]$\mathbf{z}_\mu$, $\mathbf{z}_{\log\sigma^2}$\\[2pt]
-       $\mathbf{z} = \mathbf{z}_\mu + \boldsymbol{\varepsilon}\odot e^{\frac{1}{2}\mathbf{z}_{\log\sigma^2}}$\\[2pt]
-       (Arm E only)};
-\node[below=0.05cm of vae, dimtag] {$512{\times}32{\times}32$};
-
-%% ── Decoder stages ──────────────────────────────────────────────
-\node[decnode] (dec3) at (\xDthr, 0)
-      {\textbf{D3}\\Up$+$skip\\$+$HB$\times$2};
-\node[below=0.05cm of dec3, dimtag] {$256{\times}64{\times}64$};
-
-\node[decnode] (dec2) at (\xDtwo, 0)
-      {\textbf{D2}\\Up$+$skip\\$+$HB$\times$2};
-\node[below=0.05cm of dec2, dimtag] {$128{\times}128{\times}128$};
-
-\node[decnode] (dec1) at (\xDone, 0)
-      {\textbf{D1}\\Up$+$skip\\$+$HB$\times$2};
-\node[below=0.05cm of dec1, dimtag] {$64{\times}256{\times}256$};
-
-%% ── Dual output heads ───────────────────────────────────────────
-\node[outnode] (outmu) at (\xOut,  0.55)
-      {$\hat{\mu}_y$\\Denoised};
-\node[outnode, draw=orange!70!black, fill=orange!6]
-      (outsig) at (\xOut, -0.55)
-      {$\log\hat{\sigma}^2_a$\\Aleatoric};
-\node[above=0.5cm of outmu, dimtag] {Dual $3{\times}3$\\output head};
-
-%% ── Main flow arrows ────────────────────────────────────────────
-\draw[arrmain] (inp.east)  -- (stem.west);
-\draw[arrmain] (stem.east) -- (enc1.west);
-\draw[arrmain] (enc1.east) -- (enc2.west);
-\draw[arrmain] (enc2.east) -- (enc3.west);
-\draw[arrmain] (enc3.east) -- (bot.west);
-\draw[arrmain] (bot.east)  -- (vae.west);
-\draw[arrmain] (vae.east)  -- (dec3.west);
-\draw[arrmain] (dec3.east) -- (dec2.west);
-\draw[arrmain] (dec2.east) -- (dec1.west);
-\draw[arrmain] (dec1.east) -- (outmu.west);
-\draw[arrmain] (dec1.east) -- (outsig.west);
-
-%% ── Skip connections (curved, dashed) ──────────────────────────
-\def\skipY{-2.5}   % y-level of skip connection routing
-\draw[arrskip]
-  (enc1.south) -- ++(0,-0.7) -| node[pos=0.02,dimtag,below]{skip $s_1$} (\xDone, \skipY+0.2) -- (dec1.south);
-\draw[arrskip]
-  (enc2.south) -- ++(0,-1.1) -| node[pos=0.01,dimtag,below]{skip $s_2$} (\xDtwo, \skipY+0.2) -- (dec2.south);
-\draw[arrskip]
-  (enc3.south) -- ++(0,-1.5) -| node[pos=0.01,dimtag,below]{skip $s_3$} (\xDthr, \skipY+0.2) -- (dec3.south);
-
-%% ── Arms A–D: bypass the VAE ────────────────────────────────────
-\draw[arrmain, gray!40, bend left=30]
-  ([yshift=4pt]bot.north east) to
-  node[above, dimtag, text=gray!50]{Arms A--D (det.)}
-  ([yshift=4pt]dec3.north west);
-
-%% ════════════════════════════════════════════════════════════════
-%% HYBRIDBLOCK INSET (bottom-right callout)
-%% ════════════════════════════════════════════════════════════════
-\begin{scope}[shift={(\xEone-0.3,-4.5)}]
-  \node[hbbox, minimum width=5.5cm, minimum height=3.2cm] (hbframe) at (2.0,0) {};
-  \node[above=0.0cm of hbframe, font=\scriptsize\bfseries, text=gray!80] {HybridBlock (HB)};
-
-  \node[stemnode, minimum width=1.6cm] (rb)   at (0.4, 0.3)  {ResBlock\\$3{\times}3$ GN+GELU};
-  \node[stemnode, minimum width=1.6cm,
-        draw=purple!50!black, fill=purple!6]
-        (wa)   at (3.5, 0.3) {Window\\[-1pt]AttnBlock\\$8{\times}8$ window};
-  \node[stemnode, minimum width=0.6cm, draw=gray!50, fill=gray!8]
-        (add)  at (2.0, -0.8) {$+$};
-
-  \draw[arrmain, ->] (rb.east)   -- (wa.west);
-  \draw[arrmain, ->] (wa.south)  |- (add.east);
-  \draw[arrmain, ->] (rb.south)  |- (add.west);
-  \node[left=0.0cm of rb, dimtag] {$\mathbf{f}_{in}$};
-  \node[below=0.05cm of add, dimtag] {$\mathbf{f}_{out}$};
-
-  % Callout line to Encoder 1
-  \draw[gray!40, dashed, thin]
-    (hbframe.north) -- ([yshift=-1.4cm]enc1.south);
-\end{scope}
-
-\end{tikzpicture}
-}% end resizebox
+  % References your standalone compiled PDF file and fits it to the text width
+  \includegraphics[width=\textwidth]{architecture_diagram.pdf}
 \caption[PP-VAE-Hformer architecture]{%
   PP-VAE-Hformer encoder--decoder architecture.
   A $1\!\times\!256\!\times\!256$ noisy input passes through a stem convolution

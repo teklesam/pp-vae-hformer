@@ -1,0 +1,125 @@
+\documentclass[landscape, preview, border=10pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx} % Required for inserting your real images
+\usetikzlibrary{arrows.meta, decorations.pathreplacing, positioning}
+
+\begin{document}
+\begin{tikzpicture}[
+  >=Stealth,
+  node distance=0.5cm and 1.5cm,
+  every node/.style={font=\scriptsize},
+  block/.style={draw=gray!40, fill=gray!5, rounded corners=3pt, align=center, minimum height=0.9cm, inner sep=5pt},
+  noise/.style={draw=orange!40, fill=orange!5, rounded corners=3pt, align=center, minimum height=0.9cm, inner sep=5pt},
+  model/.style={draw=blue!60!black, fill=blue!5, rounded corners=4pt, minimum width=2.8cm, minimum height=1.4cm, align=center, font=\small},
+  arm/.style={draw=gray!30, fill=white, rounded corners=3pt, minimum width=2.2cm, minimum height=0.52cm, align=center, font=\tiny, inner sep=3pt},
+  out/.style={draw=teal!60!black, fill=teal!5, rounded corners=3pt, minimum width=3.2cm, minimum height=0.6cm, align=center, font=\tiny, inner sep=4pt},
+  outE/.style={draw=purple!60!black, fill=purple!5, rounded corners=3pt, minimum width=3.2cm, minimum height=0.6cm, align=center, font=\tiny, inner sep=4pt},
+  % Styles for image and architecture placeholders
+  imgframe/.style={draw=gray!40, dashed, fill=white, minimum width=1.6cm, minimum height=1.6cm, align=center, font=\tiny\itshape, text=gray},
+  noiseimg/.style={draw=orange!30, dashed, fill=white, minimum width=1.2cm, minimum height=1.2cm, align=center, font=\tiny\itshape, text=gray},
+  archframe/.style={draw=blue!40, dashed, fill=white, minimum width=2.8cm, minimum height=1.6cm, align=center, font=\tiny\itshape, text=gray},
+  outimg/.style={draw=teal!50, dashed, fill=white, minimum width=1.4cm, minimum height=1.4cm, align=center, font=\tiny\itshape, text=gray},
+  outimgE/.style={draw=purple!50, dashed, fill=white, minimum width=1.4cm, minimum height=1.4cm, align=center, font=\tiny\itshape, text=gray}
+]
+
+  % --- 1. INPUT & NOISE CORRUPTION (WITH TRIPLE NOISE IMAGE FRAMES) ---
+  \node[block] (input) {Kermany Dataset\\[2pt]\textbf{CXR (clean)}};
+  
+  \node[imgframe, below=0.7cm of input] (img_clean) {Clean\\CXR\\%
+    %\includegraphics[width=1.4cm]{clean_cxr.png}
+  };
+
+  \node[noise, right=2.0cm of input] (noise) {\textbf{Poisson-Gaussian Noise}\\$\eta\in\{50,100,200,300\}$};
+  
+  % Triple Noise Image Alignment directly underneath the noise stage
+  \node[noiseimg, below=0.7cm of noise] (img_noise2) {$\eta_2$\\CXR\\%
+    %\includegraphics[width=1.0cm]{noisy_cxr2.png}
+  };
+  \node[noiseimg, left=0.15cm of img_noise2] (img_noise1) {$\eta_1$\\CXR\\%
+    %\includegraphics[width=1.0cm]{noisy_cxr1.png}
+  };
+  \node[noiseimg, right=0.15cm of img_noise2] (img_noise3) {$\eta_3$\\CXR\\%
+    %\includegraphics[width=1.0cm]{noisy_cxr3.png}
+  };
+
+
+  % --- 2. 5 ABLATION ARMS ---
+  \node[arm, fill=blue!5,   draw=blue!40]   (armC) at (9.2,  0.0)  {C: +SSIM};
+  \node[arm, fill=orange!5, draw=orange!40] (armB) at (9.2,  0.8)  {B: NLL};
+  \node[arm, fill=blue!2,   draw=blue!30]   (armA) at (9.2,  1.6)  {A: $\mathcal{L}_2$};
+  \node[arm, fill=red!5,    draw=red!40]    (armD) at (9.2, -0.8)  {D: +FFL};
+  \node[arm, fill=purple!5, draw=purple!50, thick] (armE) at (9.2, -1.6) {E: +KL \textbf{(VAE)}};
+
+
+  % --- 3. CORE MODEL & INTERNAL ARCHITECTURE SPACE ---
+  \node[model, right=1.2cm of armC] (model) {\textbf{PP-VAE-Hformer}\\[2pt]\scriptsize Encoder--Decoder};
+  
+  % Dedicated architecture placeholder space directly under the model node
+  \node[archframe, below=0.7cm of model] (model_arch) {Insert Internal\\Architecture Diagram\\Here\\%
+    %\includegraphics[width=2.6cm]{hformer_block.png}
+  };
+
+
+  % --- 4. OUTPUT TEXT BLOCKS ---
+  \node[out, right=1.2cm of model] (out1) {$\hat{\mu}_y$ Denoised (All Arms)};
+  \node[out, above=1.2cm of out1] (out2) {$\log\hat{\sigma}^2_a$ Aleatoric (Arms B--E)};
+  \node[outE, below=1.2cm of out1] (out3) {$\hat{\sigma}^2_e$ Epistemic (Arm E)};
+
+
+  % --- 5. OUTPUT IMAGE PLACEHOLDERS ---
+  \node[outimg, right=0.4cm of out1] (img_out1) {Denoised\\Image\\%
+    %\includegraphics[width=1.2cm]{denoised_out.png}
+  };
+  
+  \node[outimg, right=0.4cm of out2] (img_out2) {Aleatoric\\Map\\%
+    %\includegraphics[width=1.2cm]{aleatoric_out.png}
+  };
+  
+  \node[outimgE, right=0.4cm of out3] (img_out3) {Epistemic\\Map\\%
+    %\includegraphics[width=1.2cm]{epistemic_out.png}
+  };
+
+
+  % --- CONNECTIONS & ARROWS ---
+  % Input / Noise tracking
+  \draw[->, thick, gray!60] (input) -- (noise);
+  \draw[->, dashed, gray!40] (input) -- (img_clean);
+  \draw[->, dashed, gray!40] (noise) -- (img_noise2); % Visual indicator to the center noisy frame
+  
+  % Model block down-pointer to its architecture view
+  \draw[->, dashed, blue!50] (model) -- (model_arch);
+
+  % Noise to Arms
+  \draw[->, thick, gray!50] (noise.east) -- (armA.west);
+  \draw[->, thick, gray!50] (noise.east) -- (armB.west);
+  \draw[->, thick, gray!50] (noise.east) -- (armC.west);
+  \draw[->, thick, gray!50] (noise.east) -- (armD.west);
+  \draw[->, thick, gray!50] (noise.east) -- (armE.west);
+
+  % Arms to Model
+  \draw[->, thick, gray!50] (armA.east) -- (model.145);
+  \draw[->, thick, gray!50] (armB.east) -- (model.165);
+  \draw[->, thick, gray!50] (armC.east) -- (model.west);
+  \draw[->, thick, gray!50] (armD.east) -- (model.195);
+  \draw[->, thick, gray!50] (armE.east) -- (model.215);
+
+  % Model to Output Text Blocks
+  \draw[->, thick, teal!60!black] (model.55) -- (out2.west);
+  \draw[->, thick, teal!60!black] (model.east) -- (out1.west);
+  \draw[->, thick, purple!60!black] (model.305) -- (out3.west);
+
+  % Output Text Blocks to Output Images
+  \draw[->, dashed, teal!60!black] (out2) -- (img_out2);
+  \draw[->, dashed, teal!60!black] (out1) -- (img_out1);
+  \draw[->, dashed, purple!60!black] (out3) -- (img_out3);
+
+
+  % --- THE OVERHEAD BRACE ---
+  \draw[decorate, decoration={brace, amplitude=4pt}, gray!60, thick]
+    ([xshift=-0.2cm, yshift=0.15cm]armA.north west) -- ([xshift=0.2cm, yshift=0.15cm]armA.north east)
+    node[midway, above=0.15cm, font=\tiny\bfseries, text=gray!80!black] {5 Ablation Arms};
+
+\end{tikzpicture}
+\end{document}
