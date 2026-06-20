@@ -3714,11 +3714,10 @@ Within this constraint, differences between arms are still informative. Arm~E (l
 \evalfig{figures/evaluation_v2/latent_space/latent_arm_h_kl_cyc_fb}
 \caption[Latent space projections -- Arm H (PP-VAE, cyc+fb KL)]{%
   Arm~H latent space (same layout as Figure~\ref{fig:results:latent:arm_e}).
-  The cyclical KL + free-bits schedule produces the widest latent dispersion of
-  all five VAE arms and the highest ARI score, reflecting the most structured
-  posterior. Class clusters remain overlapping, as expected under KL regularisation,
-  but the three-way Normal / Bacterial / Viral separation is marginally better
-  separated than in Arms~E, F, and~G.}
+  The cyclical KL + free-bits schedule produces wider latent dispersion than Arms~E, G, and~P,
+  but ARI ($0.187$) is lower than Arm~F ($0.310$): the free-bits KL floor clips the KL penalty,
+  partially suppressing the periodic latent-code release that drives Arm~F's superior class
+  separation. Class clusters remain overlapping, as expected under KL regularisation.}
 \label{fig:results:latent:arm_h}
 \end{figure}
 
@@ -3735,23 +3734,29 @@ Table~\ref{tab:results:latent:quant} summarises ARI and Silhouette Score for all
   Silhouette Score computed on ground-truth labels. $n=450$ images (150 per class).
   Higher is better for both metrics; ARI = 0 corresponds to chance-level clustering.}
 \label{tab:results:latent:quant}
-\begin{tabular}{lcccc}
+\begin{tabular}{lcccl}
 \toprule
 \textbf{Arm} & \textbf{KL Schedule} & \textbf{ARI} & \textbf{Silhouette} & \textbf{Interpretation} \\
 \midrule
-E & Linear (collapsed)  & \evalfig{figures/evaluation_v2/latent_space/ari_results} & --- & Near-collapse \\
-F & Cyclical            & ---  & --- & Partial recovery \\
-G & Free bits           & ---  & --- & Partial recovery \\
-H & Cyclical + free bits & ---  & --- & Best structured \\
-P & Cyclical + free bits + PReLU & --- & --- & Collapsed (PReLU) \\
+E & Linear (collapsed)       & $0.024$ & $0.008$ & Near-posterior-collapse; uninformative latent \\
+F & Cyclical only             & $\mathbf{0.310}$ & $\mathbf{0.105}$ & Best class separation; periodic KL release \\
+G & Free bits only            & $0.045$ & $0.036$ & Modest recovery; KL floor compresses code \\
+H & Cyclical + free bits      & $0.187$ & $0.064$ & Good separation; free bits partially offsets cyc benefit \\
+P & Cyc+fb + PReLU (full)     & $0.031$ & $0.048$ & Near-collapse; PReLU instability dominates \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}\small
-\item[a] ARI and Silhouette values filled from \texttt{latent\_ari\_comparison.png} after CSD3 job completion.
+\item Computed from 448 test images (150 Normal / 149 Bacterial / 149 Viral subsampled).
+  $k$-means ARI: $k=3$, random\_state=42. Latent vectors: global average pool of
+  $\mu_z \in \mathbb{R}^{64 \times 32 \times 32} \to \mathbb{R}^{64}$.
 \end{tablenotes}
 \end{table}
 
-The ARI scores are expected to be low across all arms (likely $< 0.05$) for the reasons described above: the KL term actively discourages class-discriminative latent structure. The key scientific question is not whether ARI is high, but whether it is higher for arms with better KL schedules. The hypothesis (consistent with Higgins et al.~\cite{higgins_beta_2017}) is that a cyclical schedule allows more information into the latent code, yielding a small but positive ARI improvement over linear annealing. Figure~\ref{fig:results:latent:ari} shows the ARI and Silhouette comparison across arms.
+Table~\ref{tab:results:latent:quant} reveals a striking and unexpected finding: Arm~F (cyclical KL \emph{only}) achieves by far the highest ARI ($0.310$) and Silhouette Score ($0.105$) of all five VAE arms, substantially exceeding Arm~H (cyclical + free-bits, ARI~$0.187$) despite Arm~H achieving higher reconstruction PSNR ($32.762$ vs.\ $32.734$~dB). This dissociation between reconstruction quality and latent class separation is a central result of the latent space analysis.
+
+The explanation lies in the interaction between cyclical KL and free-bits regularisation. The cyclical schedule periodically drives the KL weight to zero, releasing the posterior from the prior constraint and allowing the encoder to temporarily use the latent space for class-discriminative information. The free-bits mechanism, which clips the per-channel KL below a floor of $\lambda=0.25$ nats, partially counteracts this release: by maintaining a minimum KL pressure on every channel, it prevents the encoder from exploiting the low-KL phases of the cyclical schedule as freely. The net result is that Arm~F's unfettered cyclical schedule produces more class-structured posteriors than Arm~H's constrained one, even though Arm~H is more stable (fewer degenerate channels) and achieves better reconstruction.
+
+Figure~\ref{fig:results:latent:ari} shows the ARI and Silhouette comparison across all five arms.
 
 \begin{figure}[H]
 \centering
@@ -3768,7 +3773,15 @@ The ARI scores are expected to be low across all arms (likely $< 0.05$) for the 
 \subsection{Interpretation}
 \label{sec:results:latent:interp}
 
-The latent space analysis yields three conclusions relevant to the dissertation objectives. First, the VAE bottleneck does \emph{not} learn a class-discriminative representation --- this is theoretically expected under the ELBO and is not a limitation specific to this implementation. Second, among the five KL schedules tested, the cyclical + free-bits combination (Arm~H) produces the most structured posterior, as measured by ARI and Silhouette Score. This is consistent with the reconstruction quality finding that Arm~H achieves the highest PSNR among VAE arms ($32.762$~dB), and with the theoretical argument that cyclical KL allows the encoder to retain more image-specific information before the regulariser tightens. Third, Arm~E (linear KL) shows near-collapse, confirmed by both the flat latent projections and the near-zero ARI. This is strong evidence that linear KL annealing is insufficient for this dataset and architecture, supporting Objective~O3 as resolved: the cyclical + free-bits schedule is the necessary condition for non-degenerate VAE training on Kermany CXR.
+The latent space analysis yields four conclusions relevant to the dissertation objectives.
+
+First, the VAE bottleneck does \emph{not} learn a strongly class-discriminative representation in any arm, which is theoretically expected: the KL term penalises deviation from $\mathcal{N}(0,I)$, discouraging the encoder from reserving separate latent regions for each diagnostic class.
+
+Second, Arm~F (cyclical KL only, ARI~$=0.310$) achieves substantially higher class separation than all other arms, including Arm~H (ARI~$=0.187$). This is \emph{not} the arm with the best reconstruction quality (Arm~H outperforms F by $0.028$~dB), revealing a reconstruction-discrimination trade-off: the free-bits mechanism that improves Arm~H's reconstruction stability suppresses the latent class information that Arm~F retains. If downstream tasks require class-separable latent codes (e.g.\ for retrieval or anomaly detection), Arm~F's schedule is preferable; if reconstruction quality is the primary objective, Arm~H's combined schedule is preferable.
+
+Third, Arm~E (linear KL, ARI~$=0.024$) shows near-collapse confirmed by flat projections and near-zero ARI. Linear annealing is insufficient for this dataset and architecture.
+
+Fourth, Arm~P (PReLU full model, ARI~$=0.031$) also shows near-collapse despite using cyclical+free-bits scheduling, confirming that the PReLU instability documented in the reconstruction analysis (Section~\ref{sec:results:error}) corrupts latent space structure in addition to degrading reconstruction quality. PReLU therefore fails along both the reconstruction and latent structure axes simultaneously.
 
 \section{Calibration and Uncertainty Analysis}
 \label{sec:results:calibration}
