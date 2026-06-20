@@ -3875,20 +3875,6 @@ The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across 
 The calibration curves confirm that the NLL objective produces well-calibrated aleatoric uncertainty across both diagnostic classes. The key quantitative indicator is the mean NLL: Arms~B and~D achieve NLL $\approx -2.667$ nats per pixel at mid noise, versus NLL $= -\infty$ (undefined) for MSE-trained arms and NLL $\approx -2.470$ for Arm~H (the VAE bottleneck introduces a small calibration cost). Sharpness (mean $\hat{\sigma}_a$) is $0.0198$ for Arms~B and~D and $0.0214$ for Arm~H, with the slight increase for Arm~H reflecting the broader predictive distribution at pathological boundaries.
 
 
-\begin{figure} [H]
-\centering
-\evalfig{figures/evaluation_v2/uncertainty_arm_d_nll_ssim_ffl}
-\caption[Uncertainty calibration panel -- Arm D]{%
-  Pixel-level aleatoric uncertainty maps for Arm~D (NLL+SSIM+FFL) at mid noise ($\eta=200$),
-  four Bacterial Pneumonia cases.
-  \textit{Columns:} Noisy | Reference | $\hat{\mu}$ | $\hat{\sigma}_a$ (inferno, auto-scaled) | $|\hat{\mu}-y|$.
-  The colourmap range is set to the 99th-percentile of $\hat{\sigma}_a$ per panel, revealing
-  the well-calibrated sub-0.03 aleatoric spread. Higher $\hat{\sigma}_a$ concentrates at
-  consolidation margins and cardiac silhouette, confirming near-diagonal calibration between
-  predicted uncertainty and observed reconstruction error.}
-\label{fig:results:calibration}
-\end{figure}
-
 \section{Ablation Study Results}
 \label{sec:results:ablation}
 
