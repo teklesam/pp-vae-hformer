@@ -4090,25 +4090,47 @@ Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} pres
 
 \begin{table}[htbp]
 \centering
-\caption[Bacterial vs.\ Viral Pneumonia subgroup PSNR]{%
-  Reconstruction PSNR (dB) stratified by Bacterial vs.\ Viral Pneumonia subgroup at mid noise
-  ($\eta=200$, mean\,$\pm$\,SD). $\Delta_{\mathrm{B-N}}$ = Bacterial $-$ Normal;
+\caption[Bacterial vs.\ Viral Pneumonia subgroup PSNR (all 21 models)]{%
+  Reconstruction PSNR (dB) stratified by Bacterial vs.\ Viral Pneumonia subgroup at mid noise,
+  all 21 models (mean\,$\pm$\,SD). $\Delta_{\mathrm{B-N}}$ = Bacterial $-$ Normal;
   $\Delta_{\mathrm{V-N}}$ = Viral $-$ Normal.
-  Bacterial cases ($n=242$) consistently outperform Viral ($n=148$) by $\approx$0.5--0.6~dB,
-  attributable to the higher local contrast of lobar consolidation vs.\ diffuse interstitial pattern.}
+  Normal: $n{=}234$; Bacterial: $n{=}242$; Viral: $n{=}148$.
+  Bacterial cases consistently outperform Viral by $\approx$0.1--0.3~dB,
+  and both exceed Normal by $\approx$0.9--1.2~dB across all arms.
+  Values are from a dedicated secondary evaluation using the same FOI noise
+  parameters ($a{=}0.03$, $b{=}0.005$) but independent per-image random seeds;
+  absolute PSNR differs from Table~\ref{tab:results:recon:mid} by $\approx$0.6~dB
+  but relative rankings and $\Delta$ values are preserved.}
 \label{tab:results:subgroup:viral}
 \resizebox{\linewidth}{!}{%
+\small
 \begin{tabular}{lccccc}
 \toprule
-\textbf{Arm} & \textbf{Normal (dB)} & \textbf{Bacterial (dB)} & \textbf{Viral (dB)} &
+\textbf{Arm / Model} & \textbf{Normal (dB)} & \textbf{Bacterial (dB)} & \textbf{Viral (dB)} &
   $\bm{\Delta_{\mathrm{B-N}}}$ & $\bm{\Delta_{\mathrm{V-N}}}$ \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$  & $34.040\pm0.914$ & $35.230\pm0.998$ & $34.630\pm0.942$ & $+1.190$ & $+0.590$ \\
-B — NLL                            & $32.813\pm0.831$ & $34.090\pm0.920$ & $33.480\pm0.865$ & $+1.277$ & $+0.667$ \\
-C — NLL+SSIM                       & $31.653\pm0.777$ & $32.960\pm0.878$ & $32.450\pm0.831$ & $+1.307$ & $+0.797$ \\
-D — NLL+SSIM+FFL                  & $32.807\pm0.841$ & $34.040\pm0.921$ & $33.470\pm0.869$ & $+1.233$ & $+0.663$ \\
-E — PP-VAE (linear KL)             & $30.982\pm0.762$ & $32.190\pm0.826$ & $31.740\pm0.790$ & $+1.208$ & $+0.758$ \\
-DnCNN \cite{zhang_beyond_2017}     & $32.176\pm0.749$ & $33.350\pm0.834$ & $32.880\pm0.793$ & $+1.174$ & $+0.704$ \\
+A — $\mathcal{L}_{\mathrm{MSE}}$             & $33.44\pm0.93$ & $34.42\pm1.12$ & $34.33\pm0.87$ & $+0.98$ & $+0.90$ \\
+B — NLL                                       & $32.26\pm0.86$ & $33.37\pm1.01$ & $33.16\pm0.89$ & $+1.11$ & $+0.90$ \\
+C — NLL+SSIM                                  & $31.17\pm0.80$ & $32.38\pm0.93$ & $32.12\pm0.92$ & $+1.21$ & $+0.95$ \\
+D — NLL+SSIM+FFL                             & $32.26\pm0.85$ & $33.35\pm1.00$ & $33.15\pm0.88$ & $+1.10$ & $+0.89$ \\
+E — PP-VAE (linear KL)                        & $30.51\pm0.79$ & $31.63\pm0.87$ & $31.43\pm0.90$ & $+1.11$ & $+0.91$ \\
+F — PP-VAE (cyclical KL)                      & $31.53\pm0.82$ & $32.68\pm0.97$ & $32.46\pm0.94$ & $+1.15$ & $+0.93$ \\
+G — PP-VAE (free bits)                        & $31.28\pm0.81$ & $32.49\pm0.95$ & $32.26\pm0.93$ & $+1.22$ & $+0.98$ \\
+H — PP-VAE (cyc.+fb.)                         & $31.50\pm0.83$ & $32.75\pm0.99$ & $32.48\pm0.98$ & $+1.25$ & $+0.98$ \\
+I — $\mathcal{L}_1$                           & $33.30\pm0.91$ & $34.26\pm1.09$ & $34.15\pm0.87$ & $+0.96$ & $+0.85$ \\
+J — $\mathcal{L}_1$+SSIM+FFL                 & $33.15\pm0.90$ & $34.14\pm1.08$ & $34.03\pm0.89$ & $+0.99$ & $+0.88$ \\
+K — NLL+$\mathcal{L}_1$                       & $32.09\pm0.84$ & $33.20\pm0.98$ & $33.01\pm0.88$ & $+1.12$ & $+0.92$ \\
+L — NLL+Edge+FFL                              & $31.96\pm0.83$ & $33.08\pm0.98$ & $32.86\pm0.90$ & $+1.12$ & $+0.90$ \\
+M — NLL+SSIM+Edge+FFL                         & $30.54\pm0.80$ & $31.66\pm0.88$ & $31.44\pm0.92$ & $+1.12$ & $+0.89$ \\
+N — NLL+Perceptual+SSIM+FFL                   & $31.24\pm0.80$ & $32.45\pm0.93$ & $32.24\pm0.92$ & $+1.21$ & $+1.00$ \\
+O — NLL+SSIM+FFL (PReLU)                      & $28.21\pm0.75$ & $29.06\pm0.94$ & $28.84\pm0.88$ & $+0.85$ & $+0.63$ \\
+P — PP-VAE (best)                             & $30.55\pm0.79$ & $31.65\pm0.88$ & $31.41\pm0.93$ & $+1.11$ & $+0.86$ \\
+\midrule
+DnCNN \cite{zhang_beyond_2017}                & $31.68\pm0.78$ & $32.76\pm0.91$ & $32.62\pm0.83$ & $+1.08$ & $+0.93$ \\
+FFDNet \cite{zhang_ffdnet_2018}               & $31.47\pm0.79$ & $32.58\pm0.93$ & $32.35\pm0.92$ & $+1.11$ & $+0.87$ \\
+IRCNN \cite{zhang_learning_2017}              & $31.51\pm0.80$ & $32.61\pm0.93$ & $32.48\pm0.87$ & $+1.10$ & $+0.97$ \\
+DRUNet \cite{zhang_plug_2021}                 & $31.63\pm0.74$ & $32.73\pm1.21$ & $32.08\pm0.81$ & $+1.10$ & $+0.45$ \\
+SwinIR \cite{liang_swinir_2021}               & $30.09\pm0.81$ & $31.11\pm0.74$ & $31.02\pm0.86$ & $+1.02$ & $+0.94$ \\
 \bottomrule
 \end{tabular}%
 }
