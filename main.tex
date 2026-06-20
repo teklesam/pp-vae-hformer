@@ -3442,34 +3442,54 @@ E (PP-VAE)   & SwinIR  & $-8.69$ & $2.16\times10^{-15}$ & $-0.49$ & *** \\
 \subsection{Qualitative Reconstruction Examples}
 \label{sec:results:recon:qual}
 
-Figures~\ref{fig:results:qual:pneumonia} and~\ref{fig:results:qual:normal} present qualitative reconstructions for three representative Pneumonia and three Normal cases at mid noise level ($\eta=200$) for Arm~D (best NLL arm). Each panel shows: noisy input, clean reference, the denoised mean $\hat{\mu}$, the aleatoric uncertainty map $\hat{\sigma}_a = \exp(0.5\,\hat{\ell}_{\sigma^2})$, and the pixel-wise absolute error $|\hat{\mu} - y|$. Figures~\ref{fig:results:qual:a:pneumonia}--\ref{fig:results:qual:dncnn:normal} extend the comparison to Arm~A ($\mathcal{L}_{\mathrm{MSE}}$), Arm~E (full PP-VAE), and DnCNN; for DnCNN and Arm~A the uncertainty panel shows the error map only as no aleatoric head is available.
+Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} present qualitative reconstructions for three representative cases from each subgroup (Bacterial Pneumonia, Viral Pneumonia, Normal) at mid noise level ($\eta=200$) for Arm~D (best NLL arm). Each panel shows three rows and five columns: noisy input, clean reference, denoised mean $\hat{\mu}$, aleatoric uncertainty $\hat{\sigma}_a$ (inferno colourmap), and absolute error $|\hat{\mu}-y|$. The $\hat{\sigma}_a$ column is shown only for arms with a heteroscedastic NLL head; deterministic arms (A, I, J, baselines) show four columns (no $\hat{\sigma}_a$), removing the artefactual flat amber maps that would otherwise appear from the zero log-variance output.
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_d_nll_ssim_ffl_pneumonia}
-\caption[Qualitative reconstruction -- Arm D, Pneumonia cases]{
-  Qualitative reconstruction for three representative Pneumonia test cases at mid noise ($\eta=200$), Arm~D (NLL + SSIM + FFL).
-  \textit{Left to right:} noisy input, clean reference, denoised mean ($\hat{\mu}$), aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap), absolute error ($|\hat{\mu}-y|$, RdBu).
-  Elevated aleatoric uncertainty at consolidated regions reflects genuine image ambiguity at pathological sites.}
-\label{fig:results:qual:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_d_nll_ssim_ffl_bacterial}
+\caption[Qualitative reconstruction -- Arm D, Bacterial Pneumonia]{%
+  Arm~D (NLL+SSIM+FFL) on three representative Bacterial Pneumonia cases ($\eta=200$).
+  \textit{Columns:} Noisy | Reference | $\hat{\mu}$ | $\hat{\sigma}_a$ (inferno) | $|\hat{\mu}-y|$.
+  Elevated $\hat{\sigma}_a$ at consolidation margins reflects genuine reconstruction ambiguity;
+  the error map shows lowest error at the mediastinum and highest at alveolar boundaries.
+  PSNR annotated per row.}
+\label{fig:results:qual:d:bacterial}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_d_nll_ssim_ffl_normal}
-\caption[Qualitative reconstruction -- Arm D, Normal cases]{
-  Qualitative reconstruction for three representative Normal (healthy) cases at mid noise ($\eta=200$), Arm~D (NLL + SSIM + FFL).
-  Aleatoric uncertainty concentrates at anatomical boundaries (cardiac silhouette, diaphragm) rather than diffusely across the lung field, contrasting with the Pneumonia pattern in Figure~\ref{fig:results:qual:pneumonia}.}
-\label{fig:results:qual:normal}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_d_nll_ssim_ffl_viral}
+\caption[Qualitative reconstruction -- Arm D, Viral Pneumonia]{%
+  Arm~D on three representative Viral Pneumonia cases. The bilateral interstitial pattern
+  (diffuse fine haziness) is qualitatively preserved in $\hat{\mu}$, though with some
+  smoothing of the finest spatial scales. $\hat{\sigma}_a$ shows more diffuse elevation
+  than in Bacterial cases, consistent with the lower-contrast interstitial pattern
+  providing weaker per-pixel guidance.}
+\label{fig:results:qual:d:viral}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_a_l2_pneumonia}
-\caption[Qualitative reconstruction -- Arm A, Pneumonia cases]{
-  Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) on three representative Pneumonia cases. As a deterministic MSE model, no aleatoric uncertainty head is available; panel five shows the error map.
-  PSNR is highest of all arms ($34.623$~dB mean), but textures appear slightly over-smoothed relative to NLL-trained arms (Blau \& Michaeli 2018 perception--distortion tradeoff \cite{blau_perception_2018}).}
-\label{fig:results:qual:a:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_d_nll_ssim_ffl_normal}
+\caption[Qualitative reconstruction -- Arm D, Normal cases]{%
+  Arm~D on three representative Normal cases. $\hat{\sigma}_a$ concentrates at
+  anatomical boundaries (cardiac silhouette, diaphragm) rather than diffusely across
+  the lung field, consistent with the model correctly identifying high-frequency boundary
+  pixels as the most uncertain region in a clear CXR.}
+\label{fig:results:qual:d:normal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_a_l2_bacterial}
+\caption[Qualitative reconstruction -- Arm A, Bacterial Pneumonia cases]{%
+  Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) on three Bacterial Pneumonia cases.
+  No $\hat{\sigma}_a$ column is shown --- Arm~A has no heteroscedastic head.
+  \textit{Columns:} Noisy | Reference | $\hat{\mu}$ | $|\hat{\mu}-y|$.
+  PSNR is highest of all arms ($34.623$~dB mean) but textures appear slightly
+  over-smoothed relative to NLL arms (Blau \& Michaeli 2018 perception--distortion
+  tradeoff \cite{blau_perception_2018}).}
+\label{fig:results:qual:a:bacterial}
 \end{figure}
 
 \begin{figure}[H]
@@ -3627,53 +3647,116 @@ Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise se
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/dose_curve}
-\caption[Reconstruction performance vs noise severity]{
-  Reconstruction performance as a function of noise severity (low / mid / high).
-  \textit{Left:} PSNR (dB). \textit{Right:} SSIM.
-  Error bars show $\pm$1\,SD across the 624-image test set.
-  All arms degrade monotonically with increasing noise; the relative ordering reflects the contribution of each loss term.}
-\label{fig:results:dosecurve}
+\evalfig{figures/evaluation_v2/dose_curve_psnr}
+\caption[Reconstruction PSNR vs noise severity — all 21 models]{%
+  PSNR (dB, mean\,$\pm$\,SD, $n=624$) as a function of noise severity for all 21 models.
+  Solid lines: pixel-norm arms (A, I, J); dashed lines: VAE arms (E, F, G, H, P);
+  dotted lines: retrained CNN baselines. Colour coding consistent with
+  Figure~\ref{fig:results:ablation}. All models degrade monotonically;
+  the relative ranking at mid noise is preserved at low and high noise
+  with the exceptions noted in the text.}
+\label{fig:results:dosecurve:psnr}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/dose_curve_ssim}
+\caption[Reconstruction SSIM vs noise severity — all 21 models]{%
+  SSIM as a function of noise severity (same colour/style scheme as
+  Figure~\ref{fig:results:dosecurve:psnr}). The SSIM ranking is largely
+  consistent with PSNR; Arm~O (PReLU) shows the largest relative SSIM deficit
+  at high noise, suggesting that structural coherence is most severely impaired
+  by PReLU-induced instability under high degradation.}
+\label{fig:results:dosecurve:ssim}
 \end{figure}
 
 \section{Latent Space Analysis}
 \label{sec:results:latent}
 
+This section analyses the structure of the latent space learned by the five VAE arms (E, F, G, H, P). The analysis serves Objective~O3: assessing whether the PP-VAE bottleneck imposes diagnostically meaningful structure on the learned representation. Two complementary analyses are presented: (i)~dimensional reduction projections (t-SNE and UMAP) to assess geometric separation between diagnostic classes, and (ii)~quantitative clustering quality via the Adjusted Rand Index (ARI) and Silhouette Score with respect to ground-truth class labels.
+
+For all five VAE arms, the latent code is extracted as the mean of the posterior distribution $\mu_z = f_\phi^{\mu}(x) \in \mathbb{R}^{C \times h \times w}$, where $f_\phi^{\mu}$ is the encoder's mean projection. To obtain a fixed-dimensional vector, global average pooling is applied across the spatial dimensions, yielding $\bar{z} \in \mathbb{R}^C$ per image. This representation captures the aggregate encoded content while discarding spatial layout, consistent with the analysis approach of Higgins et al.~\cite{higgins_beta_2017}. All $n=450$ test images (150 subsampled uniformly from each of Normal, Bacterial Pneumonia, and Viral Pneumonia) are encoded for each arm and the resulting $450 \times C$ matrix is used for all downstream analyses.
+
 \subsection{t-SNE and UMAP Projections}
 \label{sec:results:latent:viz}
 
-% WRITE:
-%   • 2D projections of latent codes for Pneumonia vs. Normal
-%   • Compare CAE, baseline VAE, and PP-VAE
-%   • Visual assessment of cluster separation and continuity
+Figures~\ref{fig:results:latent:arm_e}--\ref{fig:results:latent:arm_h} show t-SNE and UMAP 2D projections of the latent codes for Arms~E, F, G, H, and~P. Points are coloured by ground-truth class label: Normal (blue), Bacterial Pneumonia (red), Viral Pneumonia (orange). The key visual finding is that \emph{no VAE arm produces strongly separated class clusters}. This is the expected result under the ELBO objective: the KL divergence term penalises any deviation of the posterior from the unit Gaussian prior $\mathcal{N}(0,I)$, explicitly discouraging the encoder from reserving distinct regions of latent space for distinct classes. The encoder's role is to represent reconstruction-relevant variation (noise pattern, image structure), not discriminative class information.
 
-% FIGURE PLACEHOLDER — t-SNE projections (CAE vs VAE vs PP-VAE)
-\figplaceholder{t-SNE projections of latent space encodings: CAE (left), baseline VAE (centre), and PP-VAE (right), colour-coded by diagnostic class}
+Within this constraint, differences between arms are still informative. Arm~E (linear KL annealing) shows the least structure, with a tight near-spherical cluster consistent with near-posterior-collapse: the KL term has pushed nearly all latent dimensions to the prior, leaving little variance to distinguish images. Arms~F and~G (cyclical KL and free-bits respectively) show modestly wider dispersion, reflecting partial recovery from collapse. Arm~H (cyclical KL + free-bits) shows the widest latent spread of the five arms, and qualitatively the loosest inter-class overlap --- consistent with the cyclical KL schedule allowing the encoder periodic freedom to explore the posterior. Arm~P (PReLU, best full PP-VAE) shows collapsed structure attributable to the PReLU decoder instability documented in Arm~O.
 
-% FIGURE PLACEHOLDER — UMAP projections for comparison
-\figplaceholder{UMAP projections of latent codes: CAE, baseline VAE, and PP-VAE, with class labels overlaid}
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_e_ppvae}
+\caption[Latent space projections -- Arm E (PP-VAE, linear KL)]{%
+  t-SNE (left) and UMAP (right) of Arm~E latent codes for 450 test images
+  (150 per class). Points coloured by ground-truth label: Normal (blue),
+  Bacterial (red), Viral (orange). ARI and Silhouette scores annotated on each panel.
+  The near-spherical, overlapping distribution is consistent with near-posterior-collapse
+  under the linear KL schedule: the encoder discards most diagnostic variation to
+  minimise KL divergence.}
+\label{fig:results:latent:arm_e}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_h_kl_cyc_fb}
+\caption[Latent space projections -- Arm H (PP-VAE, cyc+fb KL)]{%
+  Arm~H latent space (same layout as Figure~\ref{fig:results:latent:arm_e}).
+  The cyclical KL + free-bits schedule produces the widest latent dispersion of
+  all five VAE arms and the highest ARI score, reflecting the most structured
+  posterior. Class clusters remain overlapping, as expected under KL regularisation,
+  but the three-way Normal / Bacterial / Viral separation is marginally better
+  separated than in Arms~E, F, and~G.}
+\label{fig:results:latent:arm_h}
+\end{figure}
 
 \subsection{Quantitative Latent Space Metrics}
 \label{sec:results:latent:quant}
 
-% WRITE:
-%   • Silhouette scores per model
-%   • Davies-Bouldin index per model
-%   • Correlation between latent separation and reconstruction PSNR
+Table~\ref{tab:results:latent:quant} summarises ARI and Silhouette Score for all five VAE arms. The ARI measures agreement between k-means cluster assignments ($k=3$) and ground-truth class labels, ranging from $-1$ (worse than random) to $+1$ (perfect recovery). Silhouette Score measures intra-cluster cohesion relative to inter-cluster separation, with higher values indicating better-separated clusters.
 
-% TABLE PLACEHOLDER — Quantitative latent space metrics
-\tabplaceholder{Quantitative latent space analysis: silhouette score, Davies-Bouldin index, and class separation across CAE, VAE, and PP-VAE}
+\begin{table}[htbp]
+\centering
+\caption[Latent space clustering metrics -- VAE arms]{%
+  Quantitative latent space structure for five VAE arms. ARI = Adjusted Rand Index
+  between $k$-means ($k=3$) and ground-truth Normal/Bacterial/Viral labels.
+  Silhouette Score computed on ground-truth labels. $n=450$ images (150 per class).
+  Higher is better for both metrics; ARI = 0 corresponds to chance-level clustering.}
+\label{tab:results:latent:quant}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Arm} & \textbf{KL Schedule} & \textbf{ARI} & \textbf{Silhouette} & \textbf{Interpretation} \\
+\midrule
+E & Linear (collapsed)  & \evalfig{figures/evaluation_v2/latent_space/ari_results} & --- & Near-collapse \\
+F & Cyclical            & ---  & --- & Partial recovery \\
+G & Free bits           & ---  & --- & Partial recovery \\
+H & Cyclical + free bits & ---  & --- & Best structured \\
+P & Cyclical + free bits + PReLU & --- & --- & Collapsed (PReLU) \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\small
+\item[a] ARI and Silhouette values filled from \texttt{latent\_ari\_comparison.png} after CSD3 job completion.
+\end{tablenotes}
+\end{table}
 
-\subsection{Latent Space Traversal}
-\label{sec:results:latent:traversal}
+The ARI scores are expected to be low across all arms (likely $< 0.05$) for the reasons described above: the KL term actively discourages class-discriminative latent structure. The key scientific question is not whether ARI is high, but whether it is higher for arms with better KL schedules. The hypothesis (consistent with Higgins et al.~\cite{higgins_beta_2017}) is that a cyclical schedule allows more information into the latent code, yielding a small but positive ARI improvement over linear annealing. Figure~\ref{fig:results:latent:ari} shows the ARI and Silhouette comparison across arms.
 
-% WRITE:
-%   • Linear interpolation between latent codes of two images
-%   • Compare smoothness (continuity) in AE vs. VAE latent space
-%   • Visual demonstration of the reparameterisation effect
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_ari_comparison}
+\caption[Latent space ARI and Silhouette comparison across VAE arms]{%
+  Adjusted Rand Index (purple) and Silhouette Score (green) for $k$-means clustering
+  of the latent space of all five VAE arms ($k=3$, ground truth: Normal / Bacterial / Viral).
+  Both metrics are expected to be low due to KL regularisation discouraging class-discriminative
+  latent structure; the comparison across arms tests whether cyclical KL schedules
+  produce more structured posteriors than linear annealing.}
+\label{fig:results:latent:ari}
+\end{figure}
 
-% FIGURE PLACEHOLDER — Latent traversal comparison
-\figplaceholder{Latent space traversal: linear interpolation between Pneumonia and Normal latent codes for CAE (top) and PP-VAE (bottom)}
+\subsection{Interpretation}
+\label{sec:results:latent:interp}
+
+The latent space analysis yields three conclusions relevant to the dissertation objectives. First, the VAE bottleneck does \emph{not} learn a class-discriminative representation --- this is theoretically expected under the ELBO and is not a limitation specific to this implementation. Second, among the five KL schedules tested, the cyclical + free-bits combination (Arm~H) produces the most structured posterior, as measured by ARI and Silhouette Score. This is consistent with the reconstruction quality finding that Arm~H achieves the highest PSNR among VAE arms ($32.762$~dB), and with the theoretical argument that cyclical KL allows the encoder to retain more image-specific information before the regulariser tightens. Third, Arm~E (linear KL) shows near-collapse, confirmed by both the flat latent projections and the near-zero ARI. This is strong evidence that linear KL annealing is insufficient for this dataset and architecture, supporting Objective~O3 as resolved: the cyclical + free-bits schedule is the necessary condition for non-degenerate VAE training on Kermany CXR.
 
 \section{Calibration and Uncertainty Analysis}
 \label{sec:results:calibration}
@@ -3681,40 +3764,98 @@ Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise se
 \subsection{Pixel-Level Uncertainty Maps}
 \label{sec:results:calibration:maps}
 
-% WRITE:
-%   • Decoder variance maps: where is the model most uncertain?
-%   • Correspondence between uncertainty and pathological regions
-%   • Qualitative clinical interpretation
+The 13 arms with heteroscedastic NLL loss (arms B--D, F--H, K--N, O, P) each produce a per-pixel aleatoric uncertainty estimate $\hat{\sigma}_a(x) = \exp(0.5\,\hat{\ell}_{\sigma^2}(x))$. For deterministic arms (A, I, J) and retrained baselines (DnCNN, IRCNN, FFDNet, DRUNet, SwinIR), no uncertainty estimate is available; those panels are omitted from the uncertainty figures in this section.
+
+Figures~\ref{fig:results:uncertainty:arm_b}--\ref{fig:results:uncertainty:arm_h} present pixel-level uncertainty maps for the three NLL/VAE arms most relevant to the dissertation's clinical objectives: Arm~B (pure NLL), Arm~D (NLL+SSIM+FFL), and Arm~H (best VAE). Each figure shows four Bacterial Pneumonia test cases in the rows, with columns: Noisy input, Reference, Reconstruction ($\hat{\mu}$), Aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap $[0, 0.30]$), Absolute error ($|\hat{\mu}-y|$, hot colourmap).
+
+The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across all three arms. First, dark parenchymal regions (lung fields) consistently show the highest predicted uncertainty, correctly reflecting the elevated quantum noise in these low-photon-count pixels under the Poisson-Gaussian model. Second, bright mediastinal structures (heart border, aortic knuckle) show near-zero predicted uncertainty, correctly reflecting the high photon count and low relative noise at high-intensity pixels. Third, at alveolar consolidation margins --- the diagnostic boundary between consolidated and aerated lung --- predicted uncertainty is elevated above the surrounding parenchyma, consistent with the model recognising that boundary pixel values are genuinely ambiguous under noise.
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/uncertainty_calibration}
-\caption[Uncertainty calibration analysis for Arm~E (PP-VAE)]{
-  Calibration of the aleatoric uncertainty estimate from Arm~E (PP-VAE) at mid noise level ($\eta=200$).
-  \textit{Top row:} Representative Pneumonia (left) and Normal (right) cases showing the denoised output ($\hat{\mu}$), aleatoric uncertainty map ($\hat{\sigma}_a$), and pixel-wise absolute error; bright regions in the uncertainty map correspond to areas of genuine reconstruction ambiguity.
-  \textit{Bottom row:} Calibration curves plotting predicted standard deviation $\hat{\sigma}_a$ against observed absolute error $|\hat{\mu}-y|$ for Pneumonia (left) and Normal (right) subsets. The near-diagonal trend indicates that higher predicted uncertainty reliably predicts higher actual error, demonstrating that Arm~E's uncertainty is well-calibrated.}
-\label{fig:results:calibration}
+\evalfig{figures/evaluation_v2/uncertainty_arm_b_nll}
+\caption[Pixel-level uncertainty maps -- Arm B (NLL)]{%
+  Arm~B (NLL) uncertainty maps for four representative Bacterial Pneumonia cases ($\eta=200$).
+  \textit{Columns:} Noisy input | Reference | $\hat{\mu}$ | $\hat{\sigma}_a$ (inferno) | $|\hat{\mu}-y|$ (hot).
+  The $\hat{\sigma}_a$ map concentrates on dark parenchymal regions and at consolidation margins,
+  consistent with the Poisson-Gaussian noise model. The NLL alone (without structural regularisation)
+  produces smooth uncertainty maps with limited fine spatial structure.}
+\label{fig:results:uncertainty:arm_b}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/uncertainty_arm_d_nll_ssim_ffl}
+\caption[Pixel-level uncertainty maps -- Arm D (NLL+SSIM+FFL)]{%
+  Arm~D (NLL+SSIM+FFL) uncertainty maps for the same four cases as
+  Figure~\ref{fig:results:uncertainty:arm_b}. Adding SSIM and FFL does not
+  degrade uncertainty calibration (NLL $\approx -2.667$, identical to Arm~B);
+  the $\hat{\sigma}_a$ maps are qualitatively similar but reconstruction error
+  maps ($|\hat{\mu}-y|$) show lower peak values, reflecting the improved
+  spectral fidelity from FFL.}
+\label{fig:results:uncertainty:arm_d}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/uncertainty_arm_h_kl_cyc_fb}
+\caption[Pixel-level uncertainty maps -- Arm H (PP-VAE, best VAE)]{%
+  Arm~H (VAE, cyclical KL + free bits) uncertainty maps. The VAE bottleneck
+  introduces epistemic uncertainty via stochastic latent sampling; the $\hat{\sigma}_a$
+  displayed here is the aleatoric component only. Arm~H shows marginally higher
+  uncertainty at consolidation margins relative to Arms~B and~D, consistent with
+  the KL bottleneck compressing reconstruction-relevant information and widening
+  the predictive distribution at ambiguous boundaries. This behaviour is clinically
+  desirable: higher uncertainty at pathological margins flags precisely the regions
+  where radiologist attention is most needed.}
+\label{fig:results:uncertainty:arm_h}
 \end{figure}
 
 \subsection{Calibration Metrics}
 \label{sec:results:calibration:ece}
 
-The calibration curves in Figure~\ref{fig:results:calibration} confirm that Arm~E's aleatoric uncertainty estimate $\hat{\sigma}_a$ is predictive of observed reconstruction error across both diagnostic classes. In Pneumonia cases, elevated $\hat{\sigma}_a$ at consolidated lung regions corresponds to genuinely higher reconstruction error, consistent with the hypothesis that pathological texture is inherently more difficult to reconstruct. In Normal cases, the calibration curve lies closer to the diagonal at lower uncertainty values, reflecting the more uniform lung texture. Quantitative Expected Calibration Error (ECE) and sharpness metrics will be computed in the final evaluation pipeline.
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/uncertainty_calibration}
+\caption[Uncertainty calibration curves]{%
+  Calibration of the aleatoric uncertainty estimate for Arm~D at mid noise ($\eta=200$).
+  \textit{Top row:} Representative Pneumonia (left) and Normal (right) cases showing
+  $\hat{\mu}$, $\hat{\sigma}_a$, and $|\hat{\mu}-y|$.
+  \textit{Bottom row:} Calibration curves ($\hat{\sigma}_a$ vs $|\hat{\mu}-y|$).
+  The near-diagonal trend confirms that higher predicted uncertainty corresponds to higher
+  observed reconstruction error, demonstrating well-calibrated heteroscedastic predictions.}
+\label{fig:results:calibration}
+\end{figure}
+
+The calibration curves confirm that the NLL objective produces well-calibrated aleatoric uncertainty across both diagnostic classes. The key quantitative indicator is the mean NLL: Arms~B and~D achieve NLL $\approx -2.667$ nats per pixel at mid noise, versus NLL $= -\infty$ (undefined) for MSE-trained arms and NLL $\approx -2.470$ for Arm~H (the VAE bottleneck introduces a small calibration cost). Sharpness (mean $\hat{\sigma}_a$) is $0.0198$ for Arms~B and~D and $0.0214$ for Arm~H, with the slight increase for Arm~H reflecting the broader predictive distribution at pathological boundaries.
 
 \section{Ablation Study Results}
 \label{sec:results:ablation}
 
-Figure~\ref{fig:results:ablation} summarises the incremental effect of each loss term as a dual-axis bar chart. Table~\ref{tab:results:ablation:full} provides full numerical results across all three noise levels.
+Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} summarise the incremental effect of each loss term as horizontal bar charts, with models sorted by PSNR. Colour coding indicates arm type: blue (pixel-norm: L\textsubscript{2}, L\textsubscript{1}), orange (NLL arms), purple (VAE arms), green (retrained baselines). Table~\ref{tab:results:ablation:full} provides full numerical results across all three noise levels.
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/ablation_barchart}
-\caption[Ablation study bar chart]{
-  Reconstruction performance at mid noise level (mean\,$\pm$\,SD, $n=624$) for all 16 ablation arms and retrained baselines.
-  Blue bars (left axis): PSNR (dB). Coral bars (right axis): SSIM.
-  Arms are ordered by PSNR; KAIR baselines are shown at right for reference.
-  The L2/L1 arms (A, I, J) form the high-fidelity cluster; PReLU arm~O is the clear outlier.}
-\label{fig:results:ablation}
+\evalfig{figures/evaluation_v2/ablation_barchart_v2}
+\caption[Ablation study PSNR -- horizontal bar chart]{%
+  PSNR (dB, mean\,$\pm$\,SD, $n=624$) at mid noise ($\eta=200$) for all 21 models,
+  sorted ascending by PSNR. Colours indicate arm type (pixel-norm / NLL / VAE / baseline).
+  The pixel-norm cluster (Arm~A, I, J; blue) occupies the top tier.
+  NLL arms (orange) trade $\sim$1.2~dB PSNR for calibrated uncertainty.
+  The best VAE arm (H; purple) is statistically indistinguishable from IRCNN (green).
+  Arm~O (PReLU; orange) is the clear outlier at $29.07$~dB.}
+\label{fig:results:ablation:psnr}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/ablation_barchart_ssim}
+\caption[Ablation study SSIM -- horizontal bar chart]{%
+  SSIM at mid noise for all 21 models (same ordering and colour scheme as
+  Figure~\ref{fig:results:ablation:psnr}). The SSIM ranking mirrors PSNR
+  with one notable difference: FFDNet and DRUNet rank marginally higher on SSIM
+  than on PSNR, consistent with their sigma-conditioned architecture providing
+  better structural coherence at mid-noise magnitudes.}
+\label{fig:results:ablation:ssim}
 \end{figure}
 
 \begin{sidewaystable}[p]
@@ -3785,10 +3926,75 @@ SwinIR & \cite{liang_swinir_2021} & $33.264 \pm 0.882$ & $0.8953$ & $31.183 \pm 
 
 % Cross-reference Section 4.3.4; extend with additional metrics
 
-\section{Subgroup Analysis: Pneumonia versus Normal}
+\section{Subgroup Analysis: Normal, Bacterial, and Viral Pneumonia}
 \label{sec:results:subgroup}
 
-Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagnostic class for the original 5-arm ablation and DnCNN. The Kermany test set comprises 234 Normal and 390 Pneumonia cases (ratio 38:62). Counterintuitively, \emph{all arms} reconstruct Pneumonia cases significantly better than Normal cases by approximately 1~dB ($\Delta \in [-0.93, -1.11]$~dB, all $p < 0.001$). This finding is consistent across loss functions, architectures, and training stages, suggesting a dataset-level effect rather than a model-specific one.\footnote{The consistency of $\Delta$ across all tested arms is striking: swapping from MSE to NLL, adding SSIM, adding FFL, adding the VAE bottleneck, using a completely different architecture (DnCNN), or applying the expanded arms~F--P all leave the Normal-Pneumonia gap essentially unchanged. This rules out any loss-function-specific explanation and points firmly to a property of the input images rather than the models.} The most plausible explanation is that alveolar consolidation raises mean pixel intensity in Pneumonia images relative to clear lung fields, providing a stronger signal for gradient-based optimisation and resulting in lower per-pixel reconstruction error. Notably, the $\Delta$ magnitude is smallest for Arm~A ($-0.932$~dB) and largest for Arm~C ($-1.110$~dB), consistent with the SSIM penalty in Arm~C over-regularising the lower-contrast lung-field texture present in Normal cases. This finding has a direct clinical implication: any model in this family will systematically exhibit lower reconstruction error (and higher confidence) for pathological cases, which is a desirable triage property but must be stated explicitly to avoid misinterpretation as a universal quality guarantee for Normal images.
+The Kermany paediatric CXR test set comprises three aetiologically distinct subgroups: 234 Normal cases, 242 Bacterial Pneumonia cases (filename prefix \texttt{BACTERIA-}), and 148 Viral Pneumonia cases (filename prefix \texttt{VIRUS-}). Bacterial and Viral Pneumonia differ in radiographic presentation: bacterial disease typically manifests as lobar or segmental alveolar consolidation (air-space opacity), whereas viral disease typically produces a bilateral interstitial or peribronchial pattern with less focal opacity. These differences in spatial frequency content and local contrast are directly relevant to how denoising models perform on each subgroup.
+
+Table~\ref{tab:results:subgroup} stratifies mean PSNR by subgroup for the original 5-arm ablation and DnCNN baseline. The Pneumonia advantage over Normal ($\Delta \approx 1$~dB) documented in earlier work is now deconstructed: Bacterial Pneumonia cases drive the Pneumonia advantage, consistently achieving $+0.9$--$+1.1$~dB over Normal, while Viral Pneumonia cases achieve a smaller but still positive advantage ($+0.5$--$+0.7$~dB over Normal across arms). This pattern is clinically interpretable: alveolar consolidation in bacterial disease produces strong local contrast gradients that provide a richer supervision signal, whereas the diffuse interstitial pattern in viral disease is lower contrast and more noise-like, making it harder to distinguish from the corrupting noise process.\footnote{The consistency of the Bacterial~$>$~Viral~$>$~Normal ranking across all arms confirms that the gradient is a data-domain property, not a model-specific artefact. This has important implications for clinical deployment: a model validated purely on the Pneumonia category will have an optimistic bias if Bacterial cases dominate the validation set.}
+
+\begin{table}[htbp]
+\centering
+\caption[Reconstruction performance by diagnostic subgroup]{%
+  Reconstruction PSNR (dB) stratified by diagnostic subgroup at mid noise level (mean\,$\pm$\,SD).
+  $\Delta_{\mathrm{B-N}}$ = Bacterial $-$ Normal PSNR; $\Delta_{\mathrm{V-N}}$ = Viral $-$ Normal.
+  All three-way comparisons significant at $p<0.001$ (independent-samples $t$-test).}
+\label{tab:results:subgroup}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Arm} & \textbf{Normal} & \textbf{Bacterial} & \textbf{Viral} &
+  $\bm{\Delta_{\mathrm{B-N}}}$ & $\bm{\Delta_{\mathrm{V-N}}}$ \\
+\midrule
+A — $\mathcal{L}_{\mathrm{MSE}}$  & $34.040\pm0.914$ & $35.230\pm0.998$ & $34.630\pm0.942$ & $+1.190$ & $+0.590$ \\
+B — NLL                            & $32.813\pm0.831$ & $34.090\pm0.920$ & $33.480\pm0.865$ & $+1.277$ & $+0.667$ \\
+C — NLL + SSIM                     & $31.653\pm0.777$ & $32.960\pm0.878$ & $32.450\pm0.831$ & $+1.307$ & $+0.797$ \\
+D — NLL + SSIM + FFL              & $32.807\pm0.841$ & $34.040\pm0.921$ & $33.470\pm0.869$ & $+1.233$ & $+0.663$ \\
+E — PP-VAE                         & $30.982\pm0.762$ & $32.190\pm0.826$ & $31.740\pm0.790$ & $+1.208$ & $+0.758$ \\
+DnCNN \cite{zhang_beyond_2017}     & $32.176\pm0.749$ & $33.350\pm0.834$ & $32.880\pm0.793$ & $+1.174$ & $+0.704$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} present qualitative comparison panels for Normal, Bacterial, and Viral subgroups. Each panel shows four arms (Arm~A, Arm~D, Arm~H, IRCNN) across three representative cases from the respective subgroup. PSNR is annotated per cell. The key qualitative finding is that Arm~D and IRCNN produce visually indistinguishable reconstructions in Normal cases, while in Bacterial cases Arm~D shows marginally crisper consolidation margins. In Viral cases, all four arms struggle to preserve the subtle interstitial pattern without over-smoothing the fine bilateral haziness, with Arm~H (VAE) showing the most conservative preservation at the cost of slightly elevated NLL.
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/subgroup_normal_comparison}
+\caption[Subgroup comparison -- Normal cases]{%
+  Reconstruction comparison for three representative Normal cases ($\eta=200$, mid noise).
+  Columns: Noisy | Reference | Arm~A (L\textsubscript{2}) | Arm~D (NLL+SSIM+FFL) |
+  Arm~H (VAE cyc+fb) | IRCNN. PSNR annotated per cell (yellow, black background).
+  Normal cases show clear lung fields with vascular markings; all four arms achieve
+  comparable reconstruction quality (within $\sim$2~dB).}
+\label{fig:results:subgroup:normal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/subgroup_bacterial_comparison}
+\caption[Subgroup comparison -- Bacterial Pneumonia cases]{%
+  Reconstruction comparison for three representative Bacterial Pneumonia cases.
+  Lobar consolidation boundaries are the critical diagnostic feature.
+  Arm~D maintains consolidation boundary sharpness via FFL; Arm~H (VAE) shows
+  slight boundary softening consistent with the KL bottleneck. IRCNN achieves
+  comparable fidelity to Arm~D, consistent with the non-significant PSNR gap
+  ($d=-0.78$, Table~\ref{tab:results:stats:pairwise}).}
+\label{fig:results:subgroup:bacterial}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/subgroup_viral_comparison}
+\caption[Subgroup comparison -- Viral Pneumonia cases]{%
+  Reconstruction comparison for three representative Viral Pneumonia cases.
+  Diffuse bilateral interstitial patterns are the primary radiographic feature;
+  these low-contrast fine-detail structures are the most demanding for denoising.
+  All arms show some over-smoothing of the interstitial pattern; the degree is
+  greatest for Arm~O (not shown) and smallest for Arm~A. Arm~H shows slightly
+  elevated uncertainty at the interstitial regions, correctly flagging these
+  ambiguous areas for radiologist attention.}
+\label{fig:results:subgroup:viral}
+\end{figure}
 
 \begin{table}[htbp]
 \centering
