@@ -2408,7 +2408,7 @@ The 16 arms fall into five groups, summarised in Table~\ref{tab:methods:loss_sum
   NLL = negative log-likelihood; SSIM = structural similarity; FFL = focal frequency loss;
   KL = Kullback--Leibler divergence.}
 \end{table}
-The study proceeds through four sequential phases: (1) dataset preparation and noise simulation; (2) model training across all 16 arms and 4 retrained KAIR baselines; (3) quantitative evaluation on a held-out test set; and (4) calibration analysis of the uncertainty estimates produced by NLL-trained arms (B through P, except I, J). All phases were implemented in Python using the PyTorch deep learning framework \cite{paszke_pytorch_2019}, with code organised into a structured codebase (\texttt{src/data}, \texttt{src/models}, \texttt{src/losses}, \texttt{src/training}, \texttt{src/evaluation}). The full training pipeline is executable from a single command-line script (\texttt{scripts/train\_proposed.py}) for reproducibility.
+The study proceeds through four sequential phases: (1) dataset preparation and noise simulation; (2) model training across all 16 arms and 4 retrained KAIR\footnote{} baselines; (3) quantitative evaluation on a held-out test set; and (4) calibration analysis of the uncertainty estimates produced by NLL-trained arms (B through P, except I, J). All phases were implemented in Python using the PyTorch deep learning framework \cite{paszke_pytorch_2019}, with code organised into a structured codebase (\texttt{src/data}, \texttt{src/models}, \texttt{src/losses}, \texttt{src/training}, \texttt{src/evaluation}). The full training pipeline is executable from a single command-line script (\texttt{scripts/train\_proposed.py}) for reproducibility.
 
 \begin{figure}[htbp]
 \centering
