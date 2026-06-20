@@ -3872,8 +3872,10 @@ The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across 
 
 \subsection{Metrics}
 \label{sec:results:calibration:ece}
+The calibration curves confirm that the NLL objective produces well-calibrated aleatoric uncertainty across both diagnostic classes. The key quantitative indicator is the mean NLL: Arms~B and~D achieve NLL $\approx -2.667$ nats per pixel at mid noise, versus NLL $= -\infty$ (undefined) for MSE-trained arms and NLL $\approx -2.470$ for Arm~H (the VAE bottleneck introduces a small calibration cost). Sharpness (mean $\hat{\sigma}_a$) is $0.0198$ for Arms~B and~D and $0.0214$ for Arm~H, with the slight increase for Arm~H reflecting the broader predictive distribution at pathological boundaries.
 
-\begin{figure}[H]
+
+\begin{figure} [H]
 \centering
 \evalfig{figures/evaluation_v2/uncertainty_arm_d_nll_ssim_ffl}
 \caption[Uncertainty calibration panel -- Arm D]{%
@@ -3886,8 +3888,6 @@ The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across 
   predicted uncertainty and observed reconstruction error.}
 \label{fig:results:calibration}
 \end{figure}
-
-The calibration curves confirm that the NLL objective produces well-calibrated aleatoric uncertainty across both diagnostic classes. The key quantitative indicator is the mean NLL: Arms~B and~D achieve NLL $\approx -2.667$ nats per pixel at mid noise, versus NLL $= -\infty$ (undefined) for MSE-trained arms and NLL $\approx -2.470$ for Arm~H (the VAE bottleneck introduces a small calibration cost). Sharpness (mean $\hat{\sigma}_a$) is $0.0198$ for Arms~B and~D and $0.0214$ for Arm~H, with the slight increase for Arm~H reflecting the broader predictive distribution at pathological boundaries.
 
 \section{Ablation Study Results}
 \label{sec:results:ablation}
