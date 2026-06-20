@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pth
+*.pt
+*.pkl
+.env
+
+# LaTeX compiled outputs
+*.aux
+*.log
+*.toc
+*.out
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.run.xml
+*.pdf
+
+# Data — Kermany chest X-ray dataset (not redistributable)
+data/
+chest_xray/
+*.jpeg
+*.jpg
+!dissertation/figures/**/*.jpeg
+!dissertation/figures/**/*.jpg
+!dissertation/figures/**/*.png
+
+# Model weights (too large for git — stored on CSD3)
+trained_models/
+*.pth
+*.pt
+
+# Misc
+.DS_Store
+.Rhistory
+*.egg-info/
+dist/
+build/
+.ipynb_checkpoints/
+logs/
+wandb/

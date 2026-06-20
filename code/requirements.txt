@@ -1,0 +1,9 @@
+torch>=2.0.0
+torchvision>=0.15.0
+Pillow>=9.0.0
+numpy>=1.23.0
+# Perceptual metrics (install before HPC submission)
+piq>=0.8.0
+lpips>=0.1.4
+# Convenience
+tqdm>=4.64.0
