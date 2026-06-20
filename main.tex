@@ -3569,6 +3569,57 @@ Figures~\ref{fig:results:qual:pneumonia} and~\ref{fig:results:qual:normal} prese
 \label{fig:results:qual:swinir:pneumonia}
 \end{figure}
 
+\subsection{Region-of-Interest Comparison Panels}
+\label{sec:results:recon:roi}
+
+Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:uncertainty} present targeted Region-of-Interest (ROI) comparisons for three anatomical sites and an aleatoric uncertainty breakdown, all at mid noise level ($\eta=200$). Each comparison panel (Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:normal:pleural}) shows nine columns: noisy input, clean reference, Arm~A (L\textsubscript{2}), Arm~I (L\textsubscript{1}), Arm~D (NLL+SSIM+FFL), Arm~H (best VAE), IRCNN, SwinIR, and Arm~O (PReLU failure). The upper row shows the full $256\times256$ field with a red ROI bounding box; the lower row shows the zoomed crop at native pixel resolution. A red arrow within each crop marks the specific anatomical feature under assessment.
+
+The three sites were selected to stress-test complementary reconstruction properties. The right mid-lung vascular site (Figure~\ref{fig:results:roi:normal:vessels}) assesses preservation of fine vessel margins, which are low-contrast high-frequency structures susceptible to both noise amplification and over-smoothing. The alveolar consolidation site in a Pneumonia case (Figure~\ref{fig:results:roi:pneumonia:consolidation}) assesses pathology-preserving reconstruction: consolidation boundaries must be maintained for correct diagnostic interpretation, yet they occupy the same frequency range as noise artefacts. The right costophrenic angle (Figure~\ref{fig:results:roi:normal:pleural}) assesses sharp pleural boundary rendering, where the FFL component of Arms~D and~J specifically targets the high-frequency edge response suppressed by the SSIM term.
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/roi_panels_v2/fig_a_roi_comparison}
+\caption[ROI comparison -- Normal, right mid-lung vascular margins]{%
+  Nine-model ROI comparison at the right mid-lung vascular margin (Normal case, $\eta=200$, mid noise).
+  \textit{Upper row:} full $256{\times}256$ reconstruction with ROI bounding box.
+  \textit{Lower row:} $75{\times}75$ pixel crop at native resolution; arrow marks the primary vessel margin.
+  Columns: Noisy | Reference | Arm~A (L\textsubscript{2}, 34.62~dB) | Arm~I (L\textsubscript{1}) | Arm~D (NLL+SSIM+FFL) | Arm~H (VAE cyc+fb) | IRCNN | SwinIR | Arm~O (PReLU).
+  Arms~A and~I preserve vessel sharpness most faithfully at the cost of visible background noise retention;
+  Arm~D recovers spectral content via FFL while maintaining calibrated uncertainty;
+  SwinIR shows residual structured noise at vessel margins attributable to attention-based artefacts at fine spatial scales.}
+\label{fig:results:roi:normal:vessels}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/roi_panels_v2/fig_b_roi_comparison}
+\caption[ROI comparison -- Pneumonia, alveolar consolidation]{%
+  Nine-model ROI comparison at the alveolar consolidation margin (Pneumonia case, $\eta=200$, mid noise).
+  \textit{Lower row crop:} $85{\times}75$ pixel region centred on the primary consolidation front.
+  Arms~A and~I preserve consolidation boundary fidelity with highest PSNR; Arm~D maintains boundary sharpness with additional frequency detail at the alveolar margin; Arm~H (best VAE) shows slight boundary softening attributable to the KL bottleneck but retains clinically interpretable consolidation extent. IRCNN achieves comparable boundary fidelity to Arm~D despite having no explicit frequency or structural loss term, consistent with the statistically non-significant PSNR gap ($d = -0.78$, $p_{\mathrm{Bonf}}=0.002$ after correction). Arm~O (PReLU) catastrophically blurs the consolidation boundary, removing diagnostic information entirely.}
+\label{fig:results:roi:pneumonia:consolidation}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/roi_panels_v2/fig_c_roi_comparison}
+\caption[ROI comparison -- Normal, right costophrenic angle]{%
+  Nine-model ROI comparison at the right costophrenic angle (Normal case, $\eta=200$, mid noise).
+  \textit{Lower row crop:} $70{\times}65$ pixel region covering the costophrenic recess and inferior pleural boundary.
+  This site specifically probes FFL efficacy: the SSIM term in Arm~C suppresses the pleural edge response (spectral bias), which Arm~D's FFL component restores (+1.07~dB over Arm~C at this site). The pleural line is sharpest in Arms~A and~D, with Arm~H showing mild softening. SwinIR and Arm~O both exhibit pleural boundary blurring that would impair detection of small pleural effusions in a clinical setting.}
+\label{fig:results:roi:normal:pleural}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/roi_panels_v2/fig_d_uncertainty_maps}
+\caption[Aleatoric uncertainty maps -- Arms B, D, and H]{%
+  Aleatoric uncertainty panel for Arms~B (NLL), D (NLL+SSIM+FFL), and~H (best VAE), for a Normal case (rows 1--2) and a Pneumonia case (rows 3--4; $\eta=200$).
+  \textit{Columns:} Noisy input | Reference | Reconstruction ($\hat{\mu}$) | Aleatoric $\hat{\sigma}_a = \exp(0.5\,\hat{\ell}_{\sigma^2})$ (inferno colourmap, $[0, 0.30]$) | Absolute error $|\hat{\mu} - y|$ (hot colourmap) | ROI crop.
+  The $\hat{\sigma}_a$ maps for all three arms preserve the Poisson-Gaussian noise structure: highest uncertainty in dark parenchymal regions (high quantum noise) and lowest in bright mediastinal structures (high photon count, low relative noise). The Pneumonia rows show elevated aleatoric uncertainty at consolidated margins for Arm~H, consistent with the VAE bottleneck's additional structural regularisation producing conservative uncertainty at pathological sites. Mean NLL values are annotated on each $\hat{\sigma}_a$ panel; Arms~B and~D are nearly identical (NLL $\approx -2.667$), confirming that the FFL and SSIM additions do not perturb calibration.}
+\label{fig:results:roi:uncertainty}
+\end{figure}
+
 \subsection{Performance as a Function of Degradation Severity}
 \label{sec:results:recon:dosecurve}
 
