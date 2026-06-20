@@ -2438,13 +2438,7 @@ The study proceeds through four sequential phases: (1) dataset preparation and n
 \subsection{Kermany Paediatric Chest Radiograph Collection}
 \label{sec:methods:dataset:kermany}
 
-The dataset used in this study is the paediatric chest radiograph collection assembled by
-Kermany et al.\ \cite{kermany_identifying_2018} at the Guangzhou Women and Children's
-Medical Centre, China. The collection contains 5,856 anterior-posterior\footnote{An
-anterior-posterior radiograph is taken with the X-ray beam passing from the front of the
-chest to the back. This projection is standard for paediatric bedside and portable imaging.}
-chest radiographs acquired from children aged one to five years. All images are greyscale,
-acquired under routine clinical conditions using child-specific exposure settings.
+The dataset used in this study is the Kermany paediatric chest radiograph collection (described in Section~\ref{sec:lit:kermany}): 5,856 anterior-posterior chest radiographs from children aged one to five years, acquired under routine clinical conditions \cite{kermany_identifying_2018}. The following describes the preprocessing applied in this study.
 
 For this study, the original JPEG images were loaded from the official directory structure
 (\texttt{chest\_xray/train} and \texttt{chest\_xray/test}), converted to single-channel
@@ -2511,20 +2505,7 @@ for the original Kermany collection \cite{kermany_identifying_2018}.
 \subsection{Physical Basis: the Poisson-Gaussian Noise Model}
 \label{sec:methods:noise:model}
 
-Real X-ray images contain two physically distinct sources of noise. The first is quantum
-noise, also called quantum mottle: X-ray photons are discrete particles, and the number
-arriving at any detector pixel follows a Poisson distribution\footnote{A Poisson distribution
-describes the probability of counting discrete random events in a fixed interval. In X-ray
-imaging, the events are photon detections. Crucially, the variance of a Poisson count equals
-its mean -- so low-dose images, which count fewer photons, are intrinsically noisier.}. The
-key consequence is that this noise is signal-dependent: bright pixels (many photons
-counted) are less noisy than dark pixels (few photons counted). The second source is
-detector read-out noise: electronic fluctuations in the image sensor that are independent of
-the signal and can be modelled as additive Gaussian noise with fixed variance.
-
-The combined model, established by Foi et al.\ \cite{foi_practical_2008} and validated
-against real detector data, expresses the total noise variance at a pixel with expected
-intensity $y$ as:
+As established in Section~\ref{sec:intro:tradeoff}, radiographic noise comprises two physically distinct components: signal-dependent quantum (Poisson) noise and signal-independent detector read-out noise. The Foi et al.\ \cite{foi_practical_2008} model expresses the total noise variance at a pixel with expected intensity $y$ as:
 \begin{equation}
 \label{eq:methods:foi}
 \mathrm{Var}(z \mid y) = a \cdot y + b
@@ -2535,9 +2516,8 @@ signal-independent read-out noise. This affine\footnote{An affine function is a 
 $f(x) = ax + b$. The relationship between noise variance and signal intensity is therefore
 linear in the Foi model.} relationship makes a precise clinical prediction: dark regions of
 the radiograph (pleural spaces, lung bases obscured by the cardiac silhouette) are
-substantially noisier than bright regions (aerated lung parenchyma). Foi et al.\ validated this
-parametric form against real charge-coupled device sensor data, reporting $R^2 > 0.99$
-across a range of photon flux levels \cite{foi_practical_2008}.
+substantially noisier than bright regions (aerated lung parenchyma), with $R^2 > 0.99$
+fit to real CCD sensor data \cite{foi_practical_2008}.
 
 \subsection{Implementation}
 \label{sec:methods:noise:implementation}
@@ -2827,26 +2807,20 @@ equally uncertain, it provides no training signal for the aleatoric head $\log\h
 \label{sec:methods:loss:nll}
 
 Arm B replaces MSE with a heteroscedastic negative log-likelihood (NLL) loss, following
-Kendall and Gal \cite{kendall_what_2017}. The term heteroscedastic means that noise
-variance varies from pixel to pixel -- exactly the property of the Foi model. Rather than
-treating all pixels identically, the NLL loss asks the network to simultaneously predict the
-clean pixel value and the noise level at each position. If the predicted denoised value at
-pixel $i$ is $\hat{\mu}_y(i)$ and the predicted log-variance is $\hat{s}(i) \equiv \log\hat{\sigma}^2_a(i)$,
-then the negative log-likelihood under a Gaussian noise model is:
+Kendall and Gal \cite{kendall_what_2017} (see Section~\ref{sec:lit:losses:nll} for the
+theoretical motivation). The loss simultaneously trains the network to predict the clean pixel
+mean and a per-pixel noise variance. For predicted mean $\hat{\mu}_y(i)$ and
+log-variance $\hat{s}(i) \equiv \log\hat{\sigma}^2_a(i)$:
 \begin{equation}
 \label{eq:methods:nll}
 \mathcal{L}_{\mathrm{NLL}} = \frac{1}{HW}\sum_{i=1}^{HW}
   \left[\frac{\left(y(i) - \hat{\mu}_y(i)\right)^2}{2\exp\!\left(\hat{s}(i)\right)}
   + \frac{\hat{s}(i)}{2}\right]
 \end{equation}
-The first term penalises reconstruction error, scaled by the predicted noise level: a large
-predicted variance $\hat{\sigma}^2_a$ makes this term small, but the second term prevents
-the model from simply predicting very large variance everywhere (which would trivially
-minimise the first term). The two terms together force the network to be honest: it should
-predict high uncertainty only at pixels where reconstruction is genuinely difficult, and low
-uncertainty where the input provides a reliable signal. This is the mathematical
-operationalisation of the Foi noise physics: in dark regions where $ay+b$ is large, the
-optimal predicted $\hat{\sigma}^2_a$ is also large.
+The two-term structure (reconstruction error scaled by predicted variance, balanced by a
+variance regulariser to prevent degenerate solutions) is analysed in
+Section~\ref{sec:lit:losses:nll}. In the Foi model context: dark regions where $ay+b$ is
+large should elicit a correspondingly large predicted $\hat{\sigma}^2_a$.
 
 \subsection{Arm C: Multi-Scale Structural Similarity}
 \label{sec:methods:loss:ssim}
@@ -2872,23 +2846,14 @@ preserved in the reconstruction beyond what the pixel-level NLL alone enforces.
 \subsection{Arm D: Focal Frequency Loss}
 \label{sec:methods:loss:ffl}
 
-Arm D adds the Focal Frequency Loss (FFL) \cite{jiang_focal_2021}. Neural networks
-trained with pixel-domain losses exhibit spectral bias\footnote{Spectral bias, or frequency
-principle, is the tendency of gradient-based learning to fit low-frequency components of a
-signal first and high-frequency components last \cite{rahaman_spectral_2019}. In images,
-low frequencies correspond to broad intensity gradients, while high frequencies correspond
-to edges, fine texture, and vessel margins.} \cite{rahaman_spectral_2019}: they
-preferentially learn broad intensity patterns and underfit the fine edges and margins that are
-most clinically significant in a chest radiograph.
-
-FFL addresses this by computing the reconstruction error in the frequency
-domain\footnote{The frequency domain representation of an image, obtained via the
-two-dimensional discrete Fourier transform, decomposes the image into spatial frequency
-components. Each component describes how rapidly intensity varies across the image at a
-particular spatial scale and direction.} via the two-dimensional discrete Fourier transform,
-and applying an adaptive weight that is proportional to the current reconstruction error at
-each frequency component. Frequencies where the model performs poorly receive higher
-weight, directing gradient descent towards the components that remain most difficult:
+Arm D adds the Focal Frequency Loss (FFL) \cite{jiang_focal_2021}. As discussed in
+Section~\ref{sec:lit:losses:ffl}, spectral bias \cite{rahaman_spectral_2019} causes
+pixel-domain-trained networks to underfit high-frequency components --- fine edges, vessel
+margins, and consolidation boundaries --- precisely the structures most clinically significant
+in paediatric CXR. FFL addresses this by computing reconstruction error in the frequency
+domain via the two-dimensional discrete Fourier transform, with adaptive weights that
+concentrate gradient pressure on the frequency components the model currently reconstructs
+most poorly:
 \begin{equation}
 \label{eq:methods:ffl}
 \mathcal{L}_{\mathrm{FFL}} = \frac{1}{HW}\sum_{u,v}
