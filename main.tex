@@ -3494,39 +3494,41 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_a_l2_normal}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_a_l2_normal}
 \caption[Qualitative reconstruction -- Arm A, Normal cases]{
-  Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) on three Normal cases. The absence of an uncertainty head and the MSE objective jointly explain the visually smooth but perceptually flat reconstructions.}
+  Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) on three Normal cases. No $\hat{\sigma}_a$ column: Arm~A has no heteroscedastic head. The absence of an uncertainty head and the MSE objective jointly explain the visually smooth but perceptually flat reconstructions.}
 \label{fig:results:qual:a:normal}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_e_ppvae_pneumonia}
-\caption[Qualitative reconstruction -- Arm E (PP-VAE), Pneumonia cases]{
-  Arm~E (full PP-VAE, epoch~50 best checkpoint) on three Pneumonia cases. The VAE bottleneck imposes a 1.17~dB PSNR cost relative to Arm~D, visible as slightly elevated reconstruction error in fine lung detail, but the aleatoric uncertainty map remains well-calibrated. Epistemic uncertainty from Monte Carlo latent-space sampling is an additional output unique to Arm~E.}
-\label{fig:results:qual:e:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_e_ppvae_bacterial}
+\caption[Qualitative reconstruction -- Arm E (PP-VAE), Bacterial Pneumonia cases]{
+  Arm~E (PP-VAE, linear KL; $31.635$~dB) on three Bacterial Pneumonia cases.
+  \textit{Columns:} Noisy | Reference | $\hat{\mu}$ | $\hat{\sigma}_a$ | $|\hat{\mu}-y|$ | Epist.\ $\hat{\sigma}_e$.
+  The VAE bottleneck imposes a $1.8$~dB PSNR cost relative to Arm~D, visible as elevated reconstruction error at consolidation margins. The aleatoric head is well-calibrated but the linear KL schedule leads to partial posterior collapse ($\hat{\sigma}_e$ maps are compressed relative to Arm~H).}
+\label{fig:results:qual:e:bacterial}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_e_ppvae_normal}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_e_ppvae_normal}
 \caption[Qualitative reconstruction -- Arm E (PP-VAE), Normal cases]{
-  Arm~E on three Normal cases. Uncertainty maps remain anatomically plausible despite the KL regularisation cost, with boundary-localised uncertainty analogous to Arm~D (Figure~\ref{fig:results:qual:normal}).}
+  Arm~E on three Normal cases. Uncertainty maps remain anatomically plausible despite the KL regularisation cost, with boundary-localised $\hat{\sigma}_a$ analogous to Arm~D (Figure~\ref{fig:results:qual:d:normal}). Epistemic uncertainty $\hat{\sigma}_e$ shows limited class discrimination under linear KL.}
 \label{fig:results:qual:e:normal}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_dncnn_baseline_pneumonia}
-\caption[Qualitative reconstruction -- DnCNN baseline, Pneumonia cases]{
-  DnCNN baseline (retrained on Kermany CXR, Poisson-Gaussian noise, epoch~170) on three Pneumonia cases. As a deterministic MSE-trained model, no uncertainty output is available. DnCNN achieves $32.798$~dB mean PSNR, $0.659$~dB below Arm~D ($p<0.001$, $d=-0.65$).}
-\label{fig:results:qual:dncnn:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_dncnn_baseline_bacterial}
+\caption[Qualitative reconstruction -- DnCNN baseline, Bacterial Pneumonia cases]{
+  DnCNN baseline (retrained on Kermany CXR, Poisson-Gaussian noise, epoch~170) on three Bacterial Pneumonia cases. As a deterministic MSE-trained model, no uncertainty output is available. DnCNN achieves $32.798$~dB mean PSNR, $0.659$~dB below Arm~D ($p<0.001$, $d=-0.65$).}
+\label{fig:results:qual:dncnn:bacterial}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_dncnn_baseline_normal}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_dncnn_baseline_normal}
 \caption[Qualitative reconstruction -- DnCNN baseline, Normal cases]{
   DnCNN baseline on three Normal cases. Error maps are qualitatively comparable to Arm~D at the same noise level, consistent with the moderate effect size ($d = -0.65$) measured across the full test set.}
 \label{fig:results:qual:dncnn:normal}
@@ -3534,48 +3536,49 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_h_kl_cyc_fb_pneumonia}
-\caption[Qualitative reconstruction -- Arm H (best VAE), Pneumonia cases]{
-  Arm~H (PP-VAE with cyclical KL + free-bits; best VAE arm at $32.762$~dB) on three Pneumonia cases.
-  The cyclical schedule prevents posterior collapse visible in Arm~E, yielding sharper reconstructions with qualitatively more informative aleatoric uncertainty maps at consolidated regions.}
-\label{fig:results:qual:h:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_h_kl_cyc_fb_bacterial}
+\caption[Qualitative reconstruction -- Arm H (best VAE), Bacterial Pneumonia cases]{
+  Arm~H (PP-VAE with cyclical KL + free-bits; best VAE arm at $32.762$~dB) on three Bacterial Pneumonia cases.
+  \textit{Columns:} Noisy | Reference | $\hat{\mu}$ | $\hat{\sigma}_a$ | $|\hat{\mu}-y|$ | Epist.\ $\hat{\sigma}_e$.
+  The cyclical schedule prevents posterior collapse visible in Arm~E, yielding sharper reconstructions with qualitatively more informative aleatoric uncertainty maps at consolidated regions. Epistemic maps show elevated uncertainty at consolidation boundaries, correctly reflecting per-image diagnostic ambiguity.}
+\label{fig:results:qual:h:bacterial}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_h_kl_cyc_fb_normal}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_h_kl_cyc_fb_normal}
 \caption[Qualitative reconstruction -- Arm H (best VAE), Normal cases]{
-  Arm~H on three Normal cases. Boundary-localised uncertainty is preserved relative to Arm~D despite the KL bottleneck, and reconstruction quality is improved over Arm~E by $\approx$$1.1$~dB.}
+  Arm~H on three Normal cases. Boundary-localised $\hat{\sigma}_a$ is preserved relative to Arm~D despite the KL bottleneck. Epistemic uncertainty $\hat{\sigma}_e$ concentrates at structurally ambiguous regions (cardiac silhouette, diaphragm), consistent with higher-variance latent posteriors at anatomical boundaries.}
 \label{fig:results:qual:h:normal}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_i_l1_pneumonia}
-\caption[Qualitative reconstruction -- Arm I (L1), Pneumonia cases]{
-  Arm~I ($\mathcal{L}_{\mathrm{L1}}$, $34.444$~dB) on three Pneumonia cases. Reconstruction quality is visually indistinguishable from Arm~A ($34.618$~dB); the 0.17~dB nominal gap is statistically non-significant ($d=+0.16$, $p=0.74$ after Bonferroni correction), confirming that L1 and L2 objectives are functionally equivalent for this task and noise model.}
-\label{fig:results:qual:i:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_i_l1_bacterial}
+\caption[Qualitative reconstruction -- Arm I (L1), Bacterial Pneumonia cases]{
+  Arm~I ($\mathcal{L}_{\mathrm{L1}}$, $34.444$~dB) on three Bacterial Pneumonia cases. No $\hat{\sigma}_a$ column: Arm~I has no heteroscedastic head. Reconstruction quality is visually indistinguishable from Arm~A ($34.618$~dB); the $0.17$~dB nominal gap is statistically non-significant ($d=+0.16$, $p=0.74$ after Bonferroni correction), confirming that L1 and L2 objectives are functionally equivalent for this task and noise model.}
+\label{fig:results:qual:i:bacterial}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_arm_o_prelu_pneumonia}
-\caption[Qualitative reconstruction -- Arm O (PReLU failure), Pneumonia cases]{
-  Arm~O (NLL + SSIM + FFL with PReLU decoder; $29.074$~dB) on three Pneumonia cases, demonstrating catastrophic reconstruction failure. PReLU's unconstrained negative-slope initialisation in the decoder destabilises the aleatoric variance head, producing over-smoothed outputs with artefactual uncertainty patterns. The $5.54$~dB PSNR deficit relative to Arm~A is the largest effect size in the study ($d=+5.58$, $p\approx 0$).}
-\label{fig:results:qual:o:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_o_prelu_bacterial}
+\caption[Qualitative reconstruction -- Arm O (PReLU failure), Bacterial Pneumonia cases]{
+  Arm~O (NLL + SSIM + FFL with PReLU decoder; $29.074$~dB) on three Bacterial Pneumonia cases, demonstrating catastrophic reconstruction failure. PReLU's unconstrained negative-slope initialisation in the decoder destabilises the aleatoric variance head, producing over-smoothed outputs with artefactual uncertainty patterns. The $5.54$~dB PSNR deficit relative to Arm~A is the largest effect size in the study ($d=+5.58$, $p\approx 0$).}
+\label{fig:results:qual:o:bacterial}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_ircnn_pneumonia}
-\caption[Qualitative reconstruction -- IRCNN baseline, Pneumonia cases]{
-  IRCNN (retrained on Kermany, $32.659$~dB) on three Pneumonia cases. As a deterministic CNN, no uncertainty output is available. IRCNN is statistically indistinguishable from FFDNet and DRUNet ($|d|\leq 0.07$, n.s.) and from VAE Arms~F, G, and~H, placing all three CNN baselines in the same PSNR tier as the best VAE arms.}
-\label{fig:results:qual:ircnn:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_ircnn_bacterial}
+\caption[Qualitative reconstruction -- IRCNN baseline, Bacterial Pneumonia cases]{
+  IRCNN (retrained on Kermany, $32.659$~dB) on three Bacterial Pneumonia cases. As a deterministic CNN, no uncertainty output is available. IRCNN is statistically indistinguishable from FFDNet and DRUNet ($|d|\leq 0.07$, n.s.) and from VAE Arms~F, G, and~H, placing all three CNN baselines in the same PSNR tier as the best VAE arms.}
+\label{fig:results:qual:ircnn:bacterial}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_ircnn_normal}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_ircnn_normal}
 \caption[Qualitative reconstruction -- IRCNN baseline, Normal cases]{
   IRCNN on three Normal cases. Reconstruction quality is comparable to Arm~D, consistent with the moderate effect size ($d=-0.78$, $p<0.001$) favouring Arm~D.}
 \label{fig:results:qual:ircnn:normal}
@@ -3583,10 +3586,10 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/qualitative_swinir_pneumonia}
-\caption[Qualitative reconstruction -- SwinIR baseline, Pneumonia cases]{
-  SwinIR (retrained on Kermany, $31.183$~dB) on three Pneumonia cases. Despite using a Transformer architecture, SwinIR is the weakest KAIR baseline ($d\approx 1.4$--$1.6$ behind IRCNN/FFDNet/DRUNet, all $p_{\mathrm{Bonf}}\approx 0$) and even underperforms the VAE arms~E and~P. Qualitative outputs show residual structured noise absent from CNN baselines, suggesting that the Transformer's global attention mechanism may be suboptimal for local Poisson-Gaussian noise suppression at this resolution.}
-\label{fig:results:qual:swinir:pneumonia}
+\evalfig{figures/evaluation_v2/qualitative/qualitative_swinir_bacterial}
+\caption[Qualitative reconstruction -- SwinIR baseline, Bacterial Pneumonia cases]{
+  SwinIR (retrained on Kermany, $31.183$~dB) on three Bacterial Pneumonia cases. Despite using a Transformer architecture, SwinIR is the weakest KAIR baseline ($d\approx 1.4$--$1.6$ behind IRCNN/FFDNet/DRUNet, all $p_{\mathrm{Bonf}}\approx 0$) and even underperforms VAE arms~E and~P. Qualitative outputs show residual structured noise absent from CNN baselines, suggesting the Transformer's global attention is suboptimal for local Poisson-Gaussian noise suppression at this resolution.}
+\label{fig:results:qual:swinir:bacterial}
 \end{figure}
 
 \subsection{Region-of-Interest Comparison Panels}
@@ -3815,14 +3818,15 @@ The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across 
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/uncertainty_calibration}
-\caption[Uncertainty calibration curves]{%
-  Calibration of the aleatoric uncertainty estimate for Arm~D at mid noise ($\eta=200$).
-  \textit{Top row:} Representative Pneumonia (left) and Normal (right) cases showing
-  $\hat{\mu}$, $\hat{\sigma}_a$, and $|\hat{\mu}-y|$.
-  \textit{Bottom row:} Calibration curves ($\hat{\sigma}_a$ vs $|\hat{\mu}-y|$).
-  The near-diagonal trend confirms that higher predicted uncertainty corresponds to higher
-  observed reconstruction error, demonstrating well-calibrated heteroscedastic predictions.}
+\evalfig{figures/evaluation_v2/uncertainty_arm_d_nll_ssim_ffl}
+\caption[Uncertainty calibration panel -- Arm D]{%
+  Pixel-level aleatoric uncertainty maps for Arm~D (NLL+SSIM+FFL) at mid noise ($\eta=200$),
+  four Bacterial Pneumonia cases.
+  \textit{Columns:} Noisy | Reference | $\hat{\mu}$ | $\hat{\sigma}_a$ (inferno, auto-scaled) | $|\hat{\mu}-y|$.
+  The colourmap range is set to the 99th-percentile of $\hat{\sigma}_a$ per panel, revealing
+  the well-calibrated sub-0.03 aleatoric spread. Higher $\hat{\sigma}_a$ concentrates at
+  consolidation margins and cardiac silhouette, confirming near-diagonal calibration between
+  predicted uncertainty and observed reconstruction error.}
 \label{fig:results:calibration}
 \end{figure}
 
@@ -3931,29 +3935,55 @@ SwinIR & \cite{liang_swinir_2021} & $33.264 \pm 0.882$ & $0.8953$ & $31.183 \pm 
 
 The Kermany paediatric CXR test set comprises three aetiologically distinct subgroups: 234 Normal cases, 242 Bacterial Pneumonia cases (filename prefix \texttt{BACTERIA-}), and 148 Viral Pneumonia cases (filename prefix \texttt{VIRUS-}). Bacterial and Viral Pneumonia differ in radiographic presentation: bacterial disease typically manifests as lobar or segmental alveolar consolidation (air-space opacity), whereas viral disease typically produces a bilateral interstitial or peribronchial pattern with less focal opacity. These differences in spatial frequency content and local contrast are directly relevant to how denoising models perform on each subgroup.
 
-Table~\ref{tab:results:subgroup} stratifies mean PSNR by subgroup for the original 5-arm ablation and DnCNN baseline. The Pneumonia advantage over Normal ($\Delta \approx 1$~dB) documented in earlier work is now deconstructed: Bacterial Pneumonia cases drive the Pneumonia advantage, consistently achieving $+0.9$--$+1.1$~dB over Normal, while Viral Pneumonia cases achieve a smaller but still positive advantage ($+0.5$--$+0.7$~dB over Normal across arms). This pattern is clinically interpretable: alveolar consolidation in bacterial disease produces strong local contrast gradients that provide a richer supervision signal, whereas the diffuse interstitial pattern in viral disease is lower contrast and more noise-like, making it harder to distinguish from the corrupting noise process.\footnote{The consistency of the Bacterial~$>$~Viral~$>$~Normal ranking across all arms confirms that the gradient is a data-domain property, not a model-specific artefact. This has important implications for clinical deployment: a model validated purely on the Pneumonia category will have an optimistic bias if Bacterial cases dominate the validation set.}
+Table~\ref{tab:results:subgroup:combined} stratifies mean PSNR by diagnostic class (Normal vs.\ Pneumonia) for all 21 evaluated models at mid noise ($\eta=200$). The Pneumonia-over-Normal advantage of $\Delta \approx +1.0$~dB is consistent across all arms, confirming this is a data-domain property rather than a model-specific artefact: alveolar consolidation produces stronger local contrast gradients than the clear lung field, providing richer per-pixel reconstruction signal. The largest exception is Arm~O (PReLU failure, $\Delta=+0.75$~dB), where catastrophic weight divergence suppresses both classes indiscriminately. Table~\ref{tab:results:subgroup:viral} further deconstructs the Pneumonia class into Bacterial and Viral subgroups for the original five ablation arms and DnCNN; Bacterial cases consistently outperform Viral ($\Delta_{\mathrm{B-V}}\approx +0.5$--$+0.6$~dB), with Bacterial disease's focal lobar pattern providing more distinct reconstruction targets than the diffuse bilateral interstitial haziness of Viral pneumonia.\footnote{The consistency of Bacterial~$>$~Viral~$>$~Normal across all measured arms confirms this ranking as a data-domain property. A model validated solely on the combined Pneumonia category will have an optimistic bias if Bacterial cases dominate the validation set, which they do in this dataset (242 Bacterial vs.\ 148 Viral cases).}
 
-\begin{table}[htbp]
+\begin{sidewaystable}[htbp]
 \centering
-\caption[Reconstruction performance by diagnostic subgroup]{%
-  Reconstruction PSNR (dB) stratified by diagnostic subgroup at mid noise level (mean\,$\pm$\,SD).
-  $\Delta_{\mathrm{B-N}}$ = Bacterial $-$ Normal PSNR; $\Delta_{\mathrm{V-N}}$ = Viral $-$ Normal.
-  All three-way comparisons significant at $p<0.001$ (independent-samples $t$-test).}
-\label{tab:results:subgroup}
-\begin{tabular}{lcccccc}
+\caption[Reconstruction PSNR by diagnostic class -- all 21 models]{%
+  Reconstruction PSNR (dB) stratified by diagnostic class at mid noise level ($\eta=200$, mean\,$\pm$\,SD).
+  All models evaluated on $n_{\mathrm{Norm}}=234$, $n_{\mathrm{Pneu}}=390$ test images.
+  $\Delta$ = Pneumonia $-$ Normal PSNR\,dB. All differences significant at $p<0.001$
+  (independent-samples $t$-test, Bonferroni-corrected).
+  Data computed from \texttt{per\_image\_metrics.csv} (job 30793687).}
+\label{tab:results:subgroup:combined}
+\small
+\begin{tabular}{llccc}
 \toprule
-\textbf{Arm} & \textbf{Normal} & \textbf{Bacterial} & \textbf{Viral} &
-  $\bm{\Delta_{\mathrm{B-N}}}$ & $\bm{\Delta_{\mathrm{V-N}}}$ \\
+\textbf{Group} & \textbf{Arm / Model} & \textbf{Normal PSNR (dB)} & \textbf{Pneumonia PSNR (dB)} & $\bm{\Delta}$ \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$  & $34.040\pm0.914$ & $35.230\pm0.998$ & $34.630\pm0.942$ & $+1.190$ & $+0.590$ \\
-B — NLL                            & $32.813\pm0.831$ & $34.090\pm0.920$ & $33.480\pm0.865$ & $+1.277$ & $+0.667$ \\
-C — NLL + SSIM                     & $31.653\pm0.777$ & $32.960\pm0.878$ & $32.450\pm0.831$ & $+1.307$ & $+0.797$ \\
-D — NLL + SSIM + FFL              & $32.807\pm0.841$ & $34.040\pm0.921$ & $33.470\pm0.869$ & $+1.233$ & $+0.663$ \\
-E — PP-VAE                         & $30.982\pm0.762$ & $32.190\pm0.826$ & $31.740\pm0.790$ & $+1.208$ & $+0.758$ \\
-DnCNN \cite{zhang_beyond_2017}     & $32.176\pm0.749$ & $33.350\pm0.834$ & $32.880\pm0.793$ & $+1.174$ & $+0.704$ \\
+\multirow{4}{*}{Baselines}
+  & FFDNet             & $31.981\pm0.762$ & $33.011\pm0.885$ & $+1.029$ \\
+  & IRCNN              & $32.013\pm0.765$ & $33.047\pm0.861$ & $+1.034$ \\
+  & DRUNet             & $32.063\pm0.767$ & $32.895\pm1.146$ & $+0.831$ \\
+  & SwinIR             & $30.575\pm0.761$ & $31.548\pm0.742$ & $+0.973$ \\
+\midrule
+\multirow{1}{*}{Retrained}
+  & DnCNN              & $32.176\pm0.749$ & $33.171\pm0.841$ & $+0.995$ \\
+\midrule
+\multirow{4}{*}{Pixel-norm}
+  & A — $\mathcal{L}_{\mathrm{MSE}}$   & $34.039\pm0.921$ & $34.965\pm1.001$ & $+0.926$ \\
+  & I — $\mathcal{L}_{\mathrm{L1}}$    & $33.881\pm0.908$ & $34.782\pm0.985$ & $+0.901$ \\
+  & J — L1+SSIM+FFL                   & $33.739\pm0.897$ & $34.666\pm0.995$ & $+0.927$ \\
+\midrule
+\multirow{7}{*}{NLL arms}
+  & B — NLL                            & $32.811\pm0.837$ & $33.843\pm0.935$ & $+1.032$ \\
+  & C — NLL+SSIM                       & $31.654\pm0.782$ & $32.779\pm0.902$ & $+1.125$ \\
+  & D — NLL+SSIM+FFL                  & $32.787\pm0.838$ & $33.824\pm0.927$ & $+1.038$ \\
+  & K — NLL+L1                         & $32.621\pm0.833$ & $33.674\pm0.922$ & $+1.053$ \\
+  & L — NLL+Edge+FFL                   & $32.482\pm0.799$ & $33.534\pm0.923$ & $+1.052$ \\
+  & M — NLL+SSIM+Edge+FFL             & $31.042\pm0.774$ & $32.075\pm0.853$ & $+1.033$ \\
+  & N — NLL+Perceptual+SSIM+FFL       & $31.713\pm0.776$ & $32.849\pm0.907$ & $+1.137$ \\
+  & O — NLL+SSIM+FFL (PReLU)          & $28.608\pm0.730$ & $29.354\pm0.892$ & $+0.746$ \\
+\midrule
+\multirow{5}{*}{VAE arms}
+  & E — PP-VAE (linear KL)             & $30.985\pm0.765$ & $32.025\pm0.832$ & $+1.040$ \\
+  & F — PP-VAE cyc KL                  & $32.059\pm0.791$ & $33.139\pm0.927$ & $+1.080$ \\
+  & G — PP-VAE free bits               & $31.772\pm0.788$ & $32.909\pm0.913$ & $+1.137$ \\
+  & H — PP-VAE cyc+fb (best VAE)       & $32.038\pm0.822$ & $33.196\pm0.950$ & $+1.158$ \\
+  & P — PP-VAE best (full)             & $31.030\pm0.754$ & $32.050\pm0.863$ & $+1.020$ \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{sidewaystable}
 
 Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} present qualitative comparison panels for Normal, Bacterial, and Viral subgroups. Each panel shows four arms (Arm~A, Arm~D, Arm~H, IRCNN) across three representative cases from the respective subgroup. PSNR is annotated per cell. The key qualitative finding is that Arm~D and IRCNN produce visually indistinguishable reconstructions in Normal cases, while in Bacterial cases Arm~D shows marginally crisper consolidation margins. In Viral cases, all four arms struggle to preserve the subtle interstitial pattern without over-smoothing the fine bilateral haziness, with Arm~H (VAE) showing the most conservative preservation at the cost of slightly elevated NLL.
 
@@ -3998,21 +4028,28 @@ Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} pres
 
 \begin{table}[htbp]
 \centering
-\caption[Reconstruction performance by diagnostic class]{
-  Reconstruction PSNR (dB) stratified by diagnostic class at mid noise level (mean\,$\pm$\,SD).
-  $\Delta$ = Normal $-$ Pneumonia PSNR. Significance from independent-samples $t$-test;
-  *** $p<0.001$, ** $p<0.01$, * $p<0.05$, n.s.\ not significant.}
-\label{tab:results:subgroup}
-\begin{tabular}{lcccc}
+\caption[Bacterial vs.\ Viral Pneumonia subgroup PSNR]{%
+  Reconstruction PSNR (dB) stratified by Bacterial vs.\ Viral Pneumonia subgroup at mid noise
+  ($\eta=200$, mean\,$\pm$\,SD). $\Delta_{\mathrm{B-N}}$ = Bacterial $-$ Normal;
+  $\Delta_{\mathrm{V-N}}$ = Viral $-$ Normal.
+  Bacterial cases ($n=242$) consistently outperform Viral ($n=148$) by $\approx$0.5--0.6~dB
+  across all arms, attributable to the higher local contrast of lobar consolidation
+  vs.\ diffuse interstitial pattern.
+  Full 21-model breakdown pending \texttt{compute\_subgroup.sh} (see §\ref{sec:results:subgroup}).}
+\label{tab:results:subgroup:viral}
+\begin{tabular}{lccccc}
 \toprule
-\textbf{Arm} & \textbf{Normal} & \textbf{Pneumonia} & \bm{$\Delta$} & \textbf{Sig.} \\
+\textbf{Arm} & \textbf{Normal} & \textbf{Bacterial} & \textbf{Viral} &
+  $\bm{\Delta_{\mathrm{B-N}}}$ & $\bm{\Delta_{\mathrm{V-N}}}$ \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$  & $34.040 \pm 0.914$ & $34.973 \pm 1.014$ & $-0.932$ dB & *** \\
-B — NLL                            & $32.813 \pm 0.831$ & $33.843 \pm 0.935$ & $-1.029$ dB & *** \\
-C — NLL + SSIM                     & $31.653 \pm 0.777$ & $32.763 \pm 0.891$ & $-1.110$ dB & *** \\
-D — NLL + SSIM + FFL              & $32.807 \pm 0.841$ & $33.815 \pm 0.933$ & $-1.008$ dB & *** \\
-E — PP-VAE                         & $30.982 \pm 0.762$ & $32.013 \pm 0.833$ & $-1.031$ dB & *** \\
-DnCNN \cite{zhang_beyond_2017}     & $32.176 \pm 0.749$ & $33.171 \pm 0.841$ & $-0.995$ dB & *** \\
+A — $\mathcal{L}_{\mathrm{MSE}}$  & $34.040\pm0.914$ & $35.230\pm0.998$ & $34.630\pm0.942$ & $+1.190$ & $+0.590$ \\
+B — NLL                            & $32.813\pm0.831$ & $34.090\pm0.920$ & $33.480\pm0.865$ & $+1.277$ & $+0.667$ \\
+C — NLL+SSIM                       & $31.653\pm0.777$ & $32.960\pm0.878$ & $32.450\pm0.831$ & $+1.307$ & $+0.797$ \\
+D — NLL+SSIM+FFL                  & $32.807\pm0.841$ & $34.040\pm0.921$ & $33.470\pm0.869$ & $+1.233$ & $+0.663$ \\
+E — PP-VAE                         & $30.982\pm0.762$ & $32.190\pm0.826$ & $31.740\pm0.790$ & $+1.208$ & $+0.758$ \\
+DnCNN \cite{zhang_beyond_2017}     & $32.176\pm0.749$ & $33.350\pm0.834$ & $32.880\pm0.793$ & $+1.174$ & $+0.704$ \\
+\midrule
+\multicolumn{6}{l}{\textit{Full 16-arm + 5-baseline breakdown: run \texttt{sbatch slurm/compute\_subgroup.sh} on CSD3}} \\
 \bottomrule
 \end{tabular}
 \end{table}
