@@ -30,6 +30,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{float}
+\usepackage[section]{placeins}  % \FloatBarrier at section boundaries
 \usepackage{xcolor}
 \usepackage[hyphens]{url}
 \usepackage[colorlinks=true,
@@ -2944,6 +2945,7 @@ Table~\ref{tab:methods:loss_summary} summarises the loss configuration for all 1
 \caption[Loss components across all 16 ablation arms]{Loss components and architectural features active in each experimental arm. Rows are grouped by the primary design dimension: baseline (A), NLL deterministic (B--D), KL schedule (E--H), L1 substitution (I--K), structural loss variants (L--N), and activation/VAE ablation (O--P). $^\dagger$Arms O and P replace ReLU with PReLU activations in the decoder.}
 \label{tab:methods:loss_summary}
 \begin{threeparttable}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{lcccccccccc}
 \toprule
 & \multicolumn{10}{c}{\textbf{Loss term / architectural feature active?}} \\
@@ -2972,7 +2974,8 @@ N & NLL + Perc + SSIM + FFL & & & \checkmark & \checkmark & \checkmark & & \chec
 O & NLL + SSIM + FFL (PReLU) & & & \checkmark & \checkmark & \checkmark & & & — & \checkmark \\
 P & PP-VAE best (PReLU) & & & \checkmark & \checkmark & \checkmark & \checkmark & & cyc+fb & \checkmark \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \begin{tablenotes}
 \footnotesize
 \item A tick indicates that the term contributes a non-zero gradient during training. Arms E--H and P include a VAE bottleneck (structured latent space with KL regularisation); all other arms are fully deterministic. KL schedule: \emph{linear} = monotone warmup from 0 to $\beta_{\max}$ over 20 epochs; \emph{cyclic} = cosine annealing with periodic resets \cite{fu_cyclical_2019}; \emph{free-bits} = KL clipped below $\lambda=0.25$ nats per channel to prevent posterior collapse \cite{kingma_improving_2016}; \emph{cyc+fb} = both schedules applied jointly. $\mathcal{L}_{\mathrm{Edge}}$: Sobel-gradient L1 loss. $\mathcal{L}_{\mathrm{Perc}}$: VGG-16 perceptual loss (relu1\_2, relu2\_2, relu3\_3 layers, frozen weights).
@@ -3342,6 +3345,7 @@ Table~\ref{tab:results:recon:mid} reports final reconstruction performance on th
   LPIPS $\downarrow$ = lower is better (AlexNet backbone, \citeyear{zhang_unreasonable_2018}).}
 \label{tab:results:recon:mid}
 \begin{threeparttable}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{llccccc}
 \toprule
 \textbf{Arm} & \textbf{Loss / Architecture} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{MS-SSIM} & \textbf{LPIPS $\downarrow$} \\
@@ -3377,7 +3381,8 @@ FFDNet & \cite{zhang_ffdnet_2018}      & --- & $32.625 \pm 0.977$ {[32.55, 32.70
 DRUNet & \cite{zhang_drunet_2021}& --- & $32.583 \pm 1.097$ {[32.50, 32.67]} & $0.8655 \pm 0.0529$ & $0.9683$ & $0.1276$ \\
 SwinIR & \cite{liang_swinir_2021}      & --- & $31.183 \pm 0.885$ {[31.11, 31.25]} & $0.8525 \pm 0.0199$ & $0.9401$ & $0.2771$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \begin{tablenotes}
 \footnotesize
 \item PSNR and SSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN (not computed in evaluation pipeline). Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
@@ -3454,7 +3459,7 @@ E (PP-VAE)   & SwinIR  & $-8.69$ & $2.16\times10^{-15}$ & $-0.49$ & *** \\
 
 Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} present qualitative reconstructions for three representative cases from each subgroup (Bacterial Pneumonia, Viral Pneumonia, Normal) at mid noise level ($\eta=200$) for Arm~D (best NLL arm). Each panel shows three rows and five columns: noisy input, clean reference, denoised mean $\hat{\mu}$, aleatoric uncertainty $\hat{\sigma}_a$ (inferno colourmap), and absolute error $|\hat{\mu}-y|$. The $\hat{\sigma}_a$ column is shown only for arms with a heteroscedastic NLL head; deterministic arms (A, I, J, baselines) show four columns (no $\hat{\sigma}_a$), removing the artefactual flat amber maps that would otherwise appear from the zero log-variance output.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_d_nll_ssim_ffl_bacterial}
 \caption[Qualitative reconstruction -- Arm D, Bacterial Pneumonia]{%
@@ -3466,7 +3471,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:d:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_d_nll_ssim_ffl_viral}
 \caption[Qualitative reconstruction -- Arm D, Viral Pneumonia]{%
@@ -3478,7 +3483,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:d:viral}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_d_nll_ssim_ffl_normal}
 \caption[Qualitative reconstruction -- Arm D, Normal cases]{%
@@ -3489,7 +3494,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:d:normal}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_a_l2_bacterial}
 \caption[Qualitative reconstruction -- Arm A, Bacterial Pneumonia cases]{%
@@ -3502,7 +3507,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:a:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_a_l2_normal}
 \caption[Qualitative reconstruction -- Arm A, Normal cases]{
@@ -3510,7 +3515,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:a:normal}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_e_ppvae_bacterial}
 \caption[Qualitative reconstruction -- Arm E (PP-VAE), Bacterial Pneumonia cases]{
@@ -3520,7 +3525,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:e:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_e_ppvae_normal}
 \caption[Qualitative reconstruction -- Arm E (PP-VAE), Normal cases]{
@@ -3528,7 +3533,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:e:normal}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_dncnn_baseline_bacterial}
 \caption[Qualitative reconstruction -- DnCNN baseline, Bacterial Pneumonia cases]{
@@ -3536,7 +3541,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:dncnn:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_dncnn_baseline_normal}
 \caption[Qualitative reconstruction -- DnCNN baseline, Normal cases]{
@@ -3544,7 +3549,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:dncnn:normal}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_h_kl_cyc_fb_bacterial}
 \caption[Qualitative reconstruction -- Arm H (best VAE), Bacterial Pneumonia cases]{
@@ -3554,7 +3559,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:h:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_h_kl_cyc_fb_normal}
 \caption[Qualitative reconstruction -- Arm H (best VAE), Normal cases]{
@@ -3562,7 +3567,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:h:normal}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_i_l1_bacterial}
 \caption[Qualitative reconstruction -- Arm I (L1), Bacterial Pneumonia cases]{
@@ -3570,7 +3575,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:i:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_arm_o_prelu_bacterial}
 \caption[Qualitative reconstruction -- Arm O (PReLU failure), Bacterial Pneumonia cases]{
@@ -3578,7 +3583,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:o:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_ircnn_bacterial}
 \caption[Qualitative reconstruction -- IRCNN baseline, Bacterial Pneumonia cases]{
@@ -3586,7 +3591,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:ircnn:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_ircnn_normal}
 \caption[Qualitative reconstruction -- IRCNN baseline, Normal cases]{
@@ -3594,7 +3599,7 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:ircnn:normal}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/qualitative/qualitative_swinir_bacterial}
 \caption[Qualitative reconstruction -- SwinIR baseline, Bacterial Pneumonia cases]{
@@ -3609,7 +3614,7 @@ Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:uncertainty} 
 
 The three sites were selected to stress-test complementary reconstruction properties. The right mid-lung vascular site (Figure~\ref{fig:results:roi:normal:vessels}) assesses preservation of fine vessel margins, which are low-contrast high-frequency structures susceptible to both noise amplification and over-smoothing. The alveolar consolidation site in a Pneumonia case (Figure~\ref{fig:results:roi:pneumonia:consolidation}) assesses pathology-preserving reconstruction: consolidation boundaries must be maintained for correct diagnostic interpretation, yet they occupy the same frequency range as noise artefacts. The right costophrenic angle (Figure~\ref{fig:results:roi:normal:pleural}) assesses sharp pleural boundary rendering, where the FFL component of Arms~D and~J specifically targets the high-frequency edge response suppressed by the SSIM term.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/roi_panels_v2/fig_a_roi_comparison}
 \caption[ROI comparison -- Normal, right mid-lung vascular margins]{%
@@ -3623,7 +3628,7 @@ The three sites were selected to stress-test complementary reconstruction proper
 \label{fig:results:roi:normal:vessels}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/roi_panels_v2/fig_b_roi_comparison}
 \caption[ROI comparison -- Pneumonia, alveolar consolidation]{%
@@ -3633,7 +3638,7 @@ The three sites were selected to stress-test complementary reconstruction proper
 \label{fig:results:roi:pneumonia:consolidation}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/roi_panels_v2/fig_c_roi_comparison}
 \caption[ROI comparison -- Normal, right costophrenic angle]{%
@@ -3643,7 +3648,7 @@ The three sites were selected to stress-test complementary reconstruction proper
 \label{fig:results:roi:normal:pleural}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/roi_panels_v2/fig_d_uncertainty_maps}
 \caption[Aleatoric uncertainty maps -- Arms B, D, and H]{%
@@ -3658,7 +3663,7 @@ The three sites were selected to stress-test complementary reconstruction proper
 
 Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise severity for all 21 models across three noise presets. All models degrade monotonically from low to high noise, confirming that the noise severity ordering is well-calibrated. Within the 16 ablation arms, the ranking at mid noise is largely preserved at low and high noise, with two notable exceptions. First, Arm~O (PReLU) consistently occupies last place across all noise levels, confirming that the PReLU failure is not noise-level specific. Second, Arm~M (NLL+SSIM+Edge+FFL) and Arm~E show crossover at high noise, consistent with the edge loss in Arm~M becoming slightly more effective at high degradation levels where gradient-domain information is more diagnostic. The KAIR baselines cluster in the $30.6$--$34.9$~dB range across noise levels, with SwinIR consistently trailing its CNN counterparts by $\approx$$2$~dB. Arms~A, I, and~J form a stable high-fidelity cluster ($>$$36.4$~dB at low noise) throughout, while the VAE arms cluster $\approx$$2$~dB below, consistently.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/dose_curve_psnr}
 \caption[Reconstruction PSNR vs noise severity — all 21 models]{%
@@ -3671,7 +3676,7 @@ Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise se
 \label{fig:results:dosecurve:psnr}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/dose_curve_ssim}
 \caption[Reconstruction SSIM vs noise severity — all 21 models]{%
@@ -3693,33 +3698,62 @@ For all five VAE arms, the latent code is extracted as the mean of the posterior
 \subsection{t-SNE and UMAP Projections}
 \label{sec:results:latent:viz}
 
-Figures~\ref{fig:results:latent:arm_e}--\ref{fig:results:latent:arm_h} show t-SNE and UMAP 2D projections of the latent codes for Arms~E, F, G, H, and~P. Points are coloured by ground-truth class label: Normal (blue), Bacterial Pneumonia (red), Viral Pneumonia (orange). The key visual finding is that \emph{no VAE arm produces strongly separated class clusters}. This is the expected result under the ELBO objective: the KL divergence term penalises any deviation of the posterior from the unit Gaussian prior $\mathcal{N}(0,I)$, explicitly discouraging the encoder from reserving distinct regions of latent space for distinct classes. The encoder's role is to represent reconstruction-relevant variation (noise pattern, image structure), not discriminative class information.
+Figures~\ref{fig:results:latent:arm_e}--\ref{fig:results:latent:arm_p} show t-SNE and UMAP 2D projections of the latent codes for Arms~E, F, G, H, and~P. Points are coloured by ground-truth class label: Normal (blue), Bacterial Pneumonia (red), Viral Pneumonia (orange). The key visual finding is that \emph{no VAE arm produces strongly separated class clusters}. This is the expected result under the ELBO objective: the KL divergence term penalises any deviation of the posterior from the unit Gaussian prior $\mathcal{N}(0,I)$, explicitly discouraging the encoder from reserving distinct regions of latent space for distinct classes. The encoder's role is to represent reconstruction-relevant variation (noise pattern, image structure), not discriminative class information.
 
-Within this constraint, differences between arms are still informative. Arm~E (linear KL annealing) shows the least structure, with a tight near-spherical cluster consistent with near-posterior-collapse: the KL term has pushed nearly all latent dimensions to the prior, leaving little variance to distinguish images. Arms~F and~G (cyclical KL and free-bits respectively) show modestly wider dispersion, reflecting partial recovery from collapse. Arm~H (cyclical KL + free-bits) shows the widest latent spread of the five arms, and qualitatively the loosest inter-class overlap --- consistent with the cyclical KL schedule allowing the encoder periodic freedom to explore the posterior. Arm~P (PReLU, best full PP-VAE) shows collapsed structure attributable to the PReLU decoder instability documented in Arm~O.
+Within this constraint, differences between arms are still informative. Arm~E (linear KL annealing) shows the least structure, with a near-spherical, overlapping cluster consistent with near-posterior-collapse (ARI~$=0.024$): the KL term has driven nearly all latent dimensions to the prior, leaving little variance to distinguish images. Arm~F (cyclical KL only) achieves the widest class separation of all five arms (ARI~$=0.310$): the periodic KL resets allow the encoder to temporarily encode diagnostically relevant information before the KL pressure resumes. Arm~G (free-bits KL, ARI~$=0.045$) shows only modest recovery from collapse, as the KL floor maintains continuous pressure on every channel. Arm~H (cyclical + free-bits, ARI~$=0.187$) achieves the second-best separation: wide latent dispersion is visible, but the free-bits floor partially suppresses the periodic KL release that gives Arm~F its advantage. Arm~P (PReLU full model, ARI~$=0.031$) shows near-collapse despite using the same cyclical+free-bits schedule as Arm~H, confirming that the PReLU decoder instability corrupts latent structure alongside reconstruction quality.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \evalfig{figures/evaluation_v2/latent_space/latent_arm_e_ppvae}
 \caption[Latent space projections -- Arm E (PP-VAE, linear KL)]{%
-  t-SNE (left) and UMAP (right) of Arm~E latent codes for 450 test images
-  (150 per class). Points coloured by ground-truth label: Normal (blue),
-  Bacterial (red), Viral (orange). ARI and Silhouette scores annotated on each panel.
-  The near-spherical, overlapping distribution is consistent with near-posterior-collapse
-  under the linear KL schedule: the encoder discards most diagnostic variation to
-  minimise KL divergence.}
+  t-SNE (left) and UMAP (right) of Arm~E latent codes ($n=450$, 150 per class).
+  Points coloured by ground-truth label: Normal (blue), Bacterial (red), Viral (orange).
+  ARI~$=0.024$, Silhouette~$=0.008$. The near-spherical, overlapping distribution is
+  consistent with near-posterior-collapse under the linear KL schedule.}
 \label{fig:results:latent:arm_e}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_f_kl_cyc}
+\caption[Latent space projections -- Arm F (PP-VAE, cyclical KL)]{%
+  Arm~F latent space (same layout). ARI~$=\mathbf{0.310}$, Silhouette~$=0.105$ ---
+  the highest of all five VAE arms. The cyclical KL schedule periodically releases the
+  posterior constraint, allowing the encoder to retain diagnostically relevant variation.
+  Moderate cluster separation is visible between Normal (blue) and Pneumonia (red/orange),
+  though substantial overlap remains, as expected under KL regularisation.}
+\label{fig:results:latent:arm_f}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_g_kl_fb}
+\caption[Latent space projections -- Arm G (PP-VAE, free-bits KL)]{%
+  Arm~G latent space. ARI~$=0.045$, Silhouette~$=0.036$. The free-bits mechanism
+  clips per-channel KL below $\lambda=0.25$ nats, maintaining continuous compression
+  pressure and limiting class-discriminative content in the latent code.}
+\label{fig:results:latent:arm_g}
+\end{figure}
+
+\begin{figure}[htbp]
 \centering
 \evalfig{figures/evaluation_v2/latent_space/latent_arm_h_kl_cyc_fb}
 \caption[Latent space projections -- Arm H (PP-VAE, cyc+fb KL)]{%
-  Arm~H latent space (same layout as Figure~\ref{fig:results:latent:arm_e}).
-  The cyclical KL + free-bits schedule produces wider latent dispersion than Arms~E, G, and~P,
-  but ARI ($0.187$) is lower than Arm~F ($0.310$): the free-bits KL floor clips the KL penalty,
-  partially suppressing the periodic latent-code release that drives Arm~F's superior class
-  separation. Class clusters remain overlapping, as expected under KL regularisation.}
+  Arm~H latent space. ARI~$=0.187$, Silhouette~$=0.064$.
+  The cyclical + free-bits schedule produces wider latent dispersion than Arms~E, G, and~P,
+  but the free-bits KL floor partially suppresses the periodic release that drives
+  Arm~F's superior class separation (ARI $0.187$ vs.\ $0.310$).}
 \label{fig:results:latent:arm_h}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_p_best}
+\caption[Latent space projections -- Arm P (PP-VAE full model, PReLU)]{%
+  Arm~P latent space. ARI~$=0.031$, Silhouette~$=0.048$.
+  Near-collapse despite using the cyclical+free-bits schedule, confirming that
+  PReLU decoder instability corrupts latent structure alongside reconstruction quality.}
+\label{fig:results:latent:arm_p}
 \end{figure}
 
 \subsection{Quantitative Latent Space Metrics}
@@ -3796,7 +3830,7 @@ Figures~\ref{fig:results:uncertainty:arm_b}--\ref{fig:results:uncertainty:arm_h}
 
 The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across all three arms. First, dark parenchymal regions (lung fields) consistently show the highest predicted uncertainty, correctly reflecting the elevated quantum noise in these low-photon-count pixels under the Poisson-Gaussian model. Second, bright mediastinal structures (heart border, aortic knuckle) show near-zero predicted uncertainty, correctly reflecting the high photon count and low relative noise at high-intensity pixels. Third, at alveolar consolidation margins --- the diagnostic boundary between consolidated and aerated lung --- predicted uncertainty is elevated above the surrounding parenchyma, consistent with the model recognising that boundary pixel values are genuinely ambiguous under noise.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/uncertainty_arm_b_nll}
 \caption[Pixel-level uncertainty maps -- Arm B (NLL)]{%
@@ -3808,7 +3842,7 @@ The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across 
 \label{fig:results:uncertainty:arm_b}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/uncertainty_arm_d_nll_ssim_ffl}
 \caption[Pixel-level uncertainty maps -- Arm D (NLL+SSIM+FFL)]{%
@@ -3821,7 +3855,7 @@ The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across 
 \label{fig:results:uncertainty:arm_d}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/uncertainty_arm_h_kl_cyc_fb}
 \caption[Pixel-level uncertainty maps -- Arm H (PP-VAE, best VAE)]{%
@@ -3890,6 +3924,7 @@ Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} summ
 \small
 \caption[Full ablation results across all noise levels]{Full ablation results across all three noise presets (mean\,$\pm$\,SD). \textbf{Bold} = best per noise level column. All results from the final evaluation pipeline on the held-out 624-image test set.}
 \label{tab:results:ablation:full}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{llcccccc}
 \toprule
 & & \multicolumn{2}{c}{\textbf{Low ($\eta=100$)}} & \multicolumn{2}{c}{\textbf{Mid ($\eta=200$)}} & \multicolumn{2}{c}{\textbf{High ($\eta=300$)}} \\
@@ -3921,7 +3956,8 @@ FFDNet & \cite{zhang_ffdnet_2018} & $34.640 \pm 0.988$ & $0.9190$ & $32.625 \pm 
 DRUNet & \cite{zhang_drunet_2021}& $34.177 \pm 1.089$ & $0.8896$ & $32.583 \pm 1.097$ & $0.8655$ & $31.273 \pm 0.994$ & $0.8405$ \\
 SwinIR & \cite{liang_swinir_2021} & $33.264 \pm 0.882$ & $0.8953$ & $31.183 \pm 0.885$ & $0.8525$ & $29.007 \pm 0.894$ & $0.7882$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{sidewaystable}
 
 \section{Sensitivity Analysis}
@@ -4011,7 +4047,7 @@ Table~\ref{tab:results:subgroup:combined} stratifies mean PSNR by diagnostic cla
 
 Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} present qualitative comparison panels for Normal, Bacterial, and Viral subgroups. Each panel shows four arms (Arm~A, Arm~D, Arm~H, IRCNN) across three representative cases from the respective subgroup. PSNR is annotated per cell. The key qualitative finding is that Arm~D and IRCNN produce visually indistinguishable reconstructions in Normal cases, while in Bacterial cases Arm~D shows marginally crisper consolidation margins. In Viral cases, all four arms struggle to preserve the subtle interstitial pattern without over-smoothing the fine bilateral haziness, with Arm~H (VAE) showing the most conservative preservation at the cost of slightly elevated NLL.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/subgroup_normal_comparison}
 \caption[Subgroup comparison -- Normal cases]{%
@@ -4023,7 +4059,7 @@ Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} pres
 \label{fig:results:subgroup:normal}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/subgroup_bacterial_comparison}
 \caption[Subgroup comparison -- Bacterial Pneumonia cases]{%
@@ -4036,7 +4072,7 @@ Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} pres
 \label{fig:results:subgroup:bacterial}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
 \centering
 \evalfig{figures/evaluation_v2/subgroup_viral_comparison}
 \caption[Subgroup comparison -- Viral Pneumonia cases]{%
@@ -4056,26 +4092,24 @@ Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} pres
   Reconstruction PSNR (dB) stratified by Bacterial vs.\ Viral Pneumonia subgroup at mid noise
   ($\eta=200$, mean\,$\pm$\,SD). $\Delta_{\mathrm{B-N}}$ = Bacterial $-$ Normal;
   $\Delta_{\mathrm{V-N}}$ = Viral $-$ Normal.
-  Bacterial cases ($n=242$) consistently outperform Viral ($n=148$) by $\approx$0.5--0.6~dB
-  across all arms, attributable to the higher local contrast of lobar consolidation
-  vs.\ diffuse interstitial pattern.
-  Full 21-model breakdown pending \texttt{compute\_subgroup.sh} (see §\ref{sec:results:subgroup}).}
+  Bacterial cases ($n=242$) consistently outperform Viral ($n=148$) by $\approx$0.5--0.6~dB,
+  attributable to the higher local contrast of lobar consolidation vs.\ diffuse interstitial pattern.}
 \label{tab:results:subgroup:viral}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
-\textbf{Arm} & \textbf{Normal} & \textbf{Bacterial} & \textbf{Viral} &
+\textbf{Arm} & \textbf{Normal (dB)} & \textbf{Bacterial (dB)} & \textbf{Viral (dB)} &
   $\bm{\Delta_{\mathrm{B-N}}}$ & $\bm{\Delta_{\mathrm{V-N}}}$ \\
 \midrule
 A — $\mathcal{L}_{\mathrm{MSE}}$  & $34.040\pm0.914$ & $35.230\pm0.998$ & $34.630\pm0.942$ & $+1.190$ & $+0.590$ \\
 B — NLL                            & $32.813\pm0.831$ & $34.090\pm0.920$ & $33.480\pm0.865$ & $+1.277$ & $+0.667$ \\
 C — NLL+SSIM                       & $31.653\pm0.777$ & $32.960\pm0.878$ & $32.450\pm0.831$ & $+1.307$ & $+0.797$ \\
 D — NLL+SSIM+FFL                  & $32.807\pm0.841$ & $34.040\pm0.921$ & $33.470\pm0.869$ & $+1.233$ & $+0.663$ \\
-E — PP-VAE                         & $30.982\pm0.762$ & $32.190\pm0.826$ & $31.740\pm0.790$ & $+1.208$ & $+0.758$ \\
+E — PP-VAE (linear KL)             & $30.982\pm0.762$ & $32.190\pm0.826$ & $31.740\pm0.790$ & $+1.208$ & $+0.758$ \\
 DnCNN \cite{zhang_beyond_2017}     & $32.176\pm0.749$ & $33.350\pm0.834$ & $32.880\pm0.793$ & $+1.174$ & $+0.704$ \\
-\midrule
-\multicolumn{6}{l}{\textit{Full 16-arm + 5-baseline breakdown: run \texttt{sbatch slurm/compute\_subgroup.sh} on CSD3}} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \section{Error Analysis and Failure Cases}
@@ -4162,11 +4196,11 @@ The VAE arms (F, H: $32.7$--$32.8$~dB) lie a further $\approx 0.7$~dB below the 
 \subsection{Latent Space Structure and the KL Schedule}
 \label{sec:disc:findings:latent}
 
-Direct geometric analysis of the VAE latent space (t-SNE / UMAP visualisation) was not completed within this study's scope due to the computational cost of extracting and projecting the full $624$-image test set through all VAE arms. However, the NLL and sharpness metrics provide indirect evidence about latent space quality, since a well-regularised latent distribution produces better-calibrated uncertainty outputs.
+Direct geometric analysis of the VAE latent space via t-SNE and UMAP projections is reported in Section~\ref{sec:results:latent}. The central finding is striking: Arm~F (cyclical KL only, ARI~$=0.310$) achieves substantially higher diagnostic class separation than all other VAE arms, including Arm~H (cyclical + free-bits, ARI~$=0.187$), despite Arm~H yielding higher reconstruction PSNR ($32.762$ vs.\ $32.734$~dB). This dissociation between reconstruction quality and latent class separation is explained by the interaction between cyclical KL and free-bits regularisation. The free-bits KL floor ($\lambda=0.25$ nats/channel) maintains minimum KL pressure across all channels continuously, partially suppressing the periodic latent-code release that the cyclical schedule is designed to produce. As a result, Arm~H's latent space is more stable (fewer degenerate channels, better PSNR) but less class-informative than Arm~F's.
 
-Arms~F and~H (cyclic and cyc+fb KL schedules) achieve the best NLL values among VAE arms ($-2.538$ and $-2.556$~nats/px respectively) and the lowest aleatoric sharpness values ($\sigma_a = 0.0214$ and $0.0218$), indicating tighter, more confident uncertainty predictions. Arm~E (linear KL collapse, $-2.364$~nats/px, $\sigma_a = 0.0247$) and Arm~P (PReLU failure, $-2.385$~nats/px, $\sigma_a = 0.0258$) show worse calibration alongside their lower PSNR. This is consistent with Bowman et al.~\cite{bowman_generating_2016} and Fu et al.~\cite{fu_cyclical_2019}: when the KL term collapses, the latent code $\mathbf{z}$ carries no information about the input, and the decoder reconstructs from prior samples alone. The encoded latent mean $\boldsymbol{\mu}_z$ becomes approximately constant across test images, erasing the pathology-specific structure that would enable uncertainty co-localisation with diagnostic features.
+Arms~F and~H (cyclic and cyc+fb KL schedules) achieve the best NLL values among VAE arms ($-2.538$ and $-2.556$~nats/px respectively) and the lowest aleatoric sharpness values ($\hat{\sigma}_a = 0.0214$ and $0.0218$), indicating tighter, more confident uncertainty predictions. Arm~E (linear KL collapse, $-2.364$~nats/px, $\hat{\sigma}_a = 0.0247$) and Arm~P (PReLU failure, $-2.385$~nats/px, $\hat{\sigma}_a = 0.0258$) show worse calibration alongside their lower PSNR. This is consistent with Bowman et al.~\cite{bowman_generating_2016} and Fu et al.~\cite{fu_cyclical_2019}: when the KL term collapses, the latent code $\mathbf{z}$ carries no information about the input, the decoder reconstructs from prior samples alone, and $\hat{\sigma}^2_e$ from MC sampling loses its spatial specificity.
 
-The cyclical KL schedule (Arms~F, H) prevents this collapse by periodically resetting $\beta \to 0$ and allowing the encoder to re-engage with the data before the KL penalty forces compression. At the end of training, the latent space retains input-specific structure, evidenced by the improved NLL calibration. This latent structure is a prerequisite for the epistemic uncertainty functionality: MC sampling of $\mathbf{z} \sim \mathcal{N}(\boldsymbol{\mu}_z, \exp(\boldsymbol{\sigma}^2_z))$ produces informative reconstruction variance only if $\boldsymbol{\sigma}^2_z$ carries spatial or content-specific information, rather than converging to the unit prior. Future work should confirm this via latent space visualisation on the Kermany CXR test set, quantifying class separation between Normal and Pneumonia encodings as a proxy for the diagnostically relevant latent structure.
+The cyclical KL schedule (Arms~F, H) prevents this collapse by periodically resetting $\beta \to 0$ and allowing the encoder to re-engage with the data before the KL penalty forces compression. The latent space visualisations (Figures~\ref{fig:results:latent:arm_e}--\ref{fig:results:latent:arm_p}) confirm this: Arms~E and~P show near-spherical, class-indistinguishable clouds, while Arms~F and~H show measurably wider class dispersion. The practical implication is that if downstream tasks require class-separable latent codes (e.g.\ for retrieval or anomaly detection), Arm~F's unfettered cyclical schedule is preferable; if reconstruction quality is the primary objective, Arm~H's combined schedule is preferable.
 
 \subsection{Uncertainty Calibration}
 \label{sec:disc:findings:calibration}
@@ -4266,7 +4300,7 @@ Each term corresponds to a distinct domain prior: the NLL enforces the Gaussian 
 
   \item \textbf{Binary pathology labels.} The Kermany dataset provides only Normal/Pneumonia labels. Multi-class pathology evaluation (pleural effusion, pneumothorax, cardiomegaly) and fine-grained lesion segmentation are required before clinical deployment claims can be substantiated.
 
-  \item \textbf{Latent space analysis incomplete.} The t-SNE/UMAP latent space visualisations (Section~\ref{sec:results:latent}) remain placeholders; the geometric structure of the VAE latent space has not been quantified. This limits our ability to claim that the PP-VAE provides better pathology-class separation, which was part of the original design motivation.
+  \item \textbf{Latent class separation is weak.} While t-SNE/UMAP visualisations (Section~\ref{sec:results:latent}) confirm that Arm~F achieves the highest latent class separation (ARI~$=0.310$), all five VAE arms show substantial inter-class overlap. The KL divergence term inherently suppresses class-discriminative latent content, meaning the PP-VAE cannot simultaneously optimise reconstruction quality and latent class separability. This limits the architecture's utility for latent-space retrieval and anomaly detection tasks without architectural modifications (e.g.\ a semi-supervised latent classifier head).
 
   \item \textbf{Sensitivity analysis limited.} The loss weight sensitivity grid ($\lambda_{\mathrm{SSIM}}$, $\lambda_{\mathrm{FFL}}$, $\lambda_{\mathrm{edge}}$, $\lambda_{\mathrm{perc}}$) was not exhaustively explored due to compute constraints. The values used ($0.5$, $0.1$, $0.1$, $0.05$) were selected from pilot experiments and may not be globally optimal.
 
@@ -4303,7 +4337,7 @@ Ranked by estimated clinical impact:
 
   \item \textbf{Full-resolution DICOM validation.} Validation on full-resolution ($\geq 1024 \times 1024$~px) raw DICOM CXR data from clinical PACS systems using real low-dose acquisitions (not simulated degradation) is required for deployment credibility. MIMIC-CXR-JPG~\cite{johnson_mimic_2019} with matched-dose pairs from clinical protocols at partner institutions is the recommended testbed.
 
-  \item \textbf{Latent space visualisation and quantification.} Completing the t-SNE/UMAP analysis of the VAE latent codes for Arms~E, F, G, H, and~P, with quantification of Normal/Pneumonia class separation (silhouette score, Davies-Bouldin index), would close the open Section~\ref{sec:results:latent} and validate the claim that cyclical KL scheduling preserves diagnostically meaningful latent structure.
+  \item \textbf{Latent space regularisation for class separation.} The completed t-SNE/UMAP analysis (Section~\ref{sec:results:latent}) confirms that ARI remains low ($\leq 0.310$) across all arms due to KL regularisation. Future work should explore weakly-supervised or disentangled VAE variants (e.g.\ $\beta$-TCVAE~\cite{chen_isolating_2018}, Factor-VAE) that can preserve class-relevant latent structure without sacrificing reconstruction quality, or augment the existing architecture with a latent classifier head trained jointly with the ELBO to encourage class-discriminative posteriors.
 
   \item \textbf{Diffusion decoder with PP-VAE encoder.} A promising architectural extension is to replace the deterministic Hformer decoder with a conditional diffusion model conditioned on the PP-VAE latent code $\mathbf{z}$. This would leverage the perceptual quality advantages of score-based generation (no regression-to-mean) while retaining the calibrated uncertainty output of the VAE encoder.
 
@@ -4370,7 +4404,7 @@ The longer-term translational pathway --- reader study, full-resolution DICOM va
 \section{Future Work}
 \label{sec:conc:future}
 
-Three priorities are established by the findings of this study. First, the latent space analysis (Section~\ref{sec:results:latent}) must be completed, confirming that cyclical KL scheduling preserves diagnostically relevant class separation in the VAE latent space. Second, the Charbonnier arm (Arm~Q) must be evaluated, closing the pixel-norm comparison and confirming the equivalence of L1, L2, and Charbonnier on Poisson-Gaussian CXR. Third, a prospective reader study should be conducted to establish whether the aleatoric uncertainty maps of Arms~D and~H translate to measurable improvements in radiologist diagnostic confidence on real low-dose CXR acquisitions.
+Three priorities are established by the findings of this study. First, the completed latent space analysis (Section~\ref{sec:results:latent}) confirms that cyclical KL scheduling preserves diagnostically relevant class separation (Arm~F ARI~$=0.310$), but exposes a reconstruction--discrimination trade-off: future work should investigate weakly-supervised or disentangled VAE variants that can achieve both simultaneously. Second, the Charbonnier arm (Arm~Q) should be evaluated, closing the pixel-norm comparison and confirming the equivalence of L1, L2, and Charbonnier on Poisson-Gaussian CXR. Third, a prospective reader study should be conducted to establish whether the aleatoric uncertainty maps of Arms~D and~H translate to measurable improvements in radiologist diagnostic confidence on real low-dose CXR acquisitions.
 
 \section{Closing Statement}
 \label{sec:conc:closing}
