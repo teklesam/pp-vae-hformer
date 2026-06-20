@@ -2488,13 +2488,12 @@ Test & 624 & Final evaluation only (never seen during training) \\
 \subsection{Justification of Dataset Choice}
 \label{sec:methods:dataset:justification}
 
-The Kermany collection was selected for three reasons. First, it is the only publicly available
-large-scale paediatric chest radiograph dataset, making it the natural substrate for a study
+The Kermany collection was selected for three reasons. First, it is one of the publicly available
+high quality large-scale paediatric chest radiograph dataset, making it the natural substrate for a study
 that specifically addresses the paediatric imaging domain gap identified by Laborie et al.\
 \cite{laborie_scoping_2026}. Second, at $256 \times 256$ pixels the images retain
 sufficient spatial resolution to represent diagnostically relevant anatomy -- rib margins, lung
-fields, cardiac silhouette, and diaphragm -- while remaining computationally tractable for a
-five-arm ablation study run on a single GPU. Third, the images originate from real clinical
+fields, cardiac silhouette, and diaphragm -- while remaining computationally tractable for an ablation study. Third, the images originate from real clinical
 acquisitions of children aged one to five, precisely the population at highest radiosensitivity
 \cite{smith-bindman_hematologic_2025}, which ensures that training data reflects the
 anatomical morphology (barrel-shaped chest wall, elevated diaphragm, cardiac silhouette
