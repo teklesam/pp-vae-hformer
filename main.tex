@@ -1454,8 +1454,8 @@ this dissertation is structured as follows:
         (PSNR, SSIM, FSIM, LPIPS, ECE) \cite{kendall_what_2017, jiang_focal_2021,
         zhang_fsim_2011}.
 
-  \item \textbf{Chapter 4 (Results):} Presents ablation results across all five arms at
-        three noise levels, comparison against DnCNN, DRUNet, SwinIR, NAFNet, and SCUNet,
+  \item \textbf{Chapter 4 (Results):} Presents ablation results across all 16 arms at
+        three noise levels, comparison against retrained KAIR baselines (FFDNet, IRCNN, DRUNet, SwinIR) and DnCNN,
         uncertainty map visualisations showing aleatoric and epistemic outputs, and
         calibration analysis via Expected Calibration Error.
 
@@ -2381,12 +2381,12 @@ in a vulnerable population.
 \section{Study Design Overview}
 \label{sec:methods:overview}
 
-This study evaluates a new image restoration framework for paediatric chest radiography through a controlled ablation\footnote{An ablation study is an experiment that systematically removes or adds individual components of a model to measure what each contributes to overall performance.} experiment. Five experimental arms were defined, each differing only in the loss function\footnote{A loss function is a mathematical expression that the training algorithm minimises. It measures how far the model's outputs are from the desired outputs, and its gradient is used to update the model's internal parameters.} used during training. Every other aspect of the experiment -- the dataset, the model architecture, the optimiser, the number of training epochs, and the evaluation protocol -- was held constant across all five arms. This design ensures that observed differences in performance can be attributed specifically to the loss-function change, rather than to differences in data, model capacity, or computational budget, following the methodology used in prior denoising benchmarks \cite{zhang_beyond_2017, liang_swinir_2021}.
+This study evaluates a new image restoration framework for paediatric chest radiography through a controlled ablation\footnote{An ablation study is an experiment that systematically removes or adds individual components of a model to measure what each contributes to overall performance.} experiment. Sixteen experimental arms were defined, each differing only in the loss function\footnote{A loss function is a mathematical expression that the training algorithm minimises. It measures how far the model's outputs are from the desired outputs, and its gradient is used to update the model's internal parameters.} used during training or a specific architectural choice (KL schedule, activation function). Every other aspect of the experiment -- the dataset, the model architecture backbone, the optimiser, the number of training epochs, and the evaluation protocol -- was held constant across all 16 arms. This design ensures that observed differences in performance can be attributed specifically to the loss-function or KL-schedule change, rather than to differences in data, model capacity, or computational budget, following the methodology used in prior denoising benchmarks \cite{zhang_beyond_2017, liang_swinir_2021}.
 
-The five arms form a cumulative sequence, summarised in Table~\ref{tab:methods:arms}. Arm A is the baseline: it uses mean squared error, which is the loss function used by DnCNN \cite{zhang_beyond_2017} and Hformer \cite{zhang_hformer_2023}. Each subsequent arm adds one component to the loss function, so that adjacent arms can be compared to isolate the contribution of each addition. Arm E is the full proposed model, PP-VAE-Hformer (Pathology-Preserving Variational Autoencoder with Hformer-inspired backbone), which uses all four loss components and includes a probabilistic bottleneck that enables two types of uncertainty estimation.
+The 16 arms fall into five groups, summarised in Table~\ref{tab:methods:loss_summary}. Arms~A--E form the core cumulative sequence (Table~\ref{tab:methods:arms}): Arm~A is the MSE baseline, each subsequent arm adds one component (NLL, SSIM, FFL, VAE bottleneck), and Arm~E is the initial PP-VAE-Hformer proposal. Arms~F--H extend the VAE comparison by testing three KL annealing schedules. Arms~I--K investigate L1 versus L2 loss and hybrid NLL+L1 objectives. Arms~L--N add structural regularisation terms (Sobel edge loss, VGG-16 perceptual loss) to the NLL framework. Arms~O--P ablate PReLU activations, with Arm~P combining the best-performing loss terms and VAE schedule.
 \begin{table}[htbp]
   \centering
-  \caption{The five experimental arms for loss function and bottleneck ablation.}
+  \caption{Core five experimental arms (A--E): the primary cumulative ablation sequence. Arms~F--P extending this design are described in Table~\ref{tab:methods:loss_summary}.}
   \label{tab:methods:arms}
   \small
   \begin{tabular}{c p{3.8cm} c p{4.5cm}}
@@ -2395,30 +2395,30 @@ The five arms form a cumulative sequence, summarised in Table~\ref{tab:methods:a
     \midrule
     A & MSE only                                 & No  & Baseline (replicates DnCNN / Hformer) \\
     B & NLL                                      & No  & Heteroscedastic uncertainty loss \\
-    C & NLL + MS-SSIM                            & No  & Structural fidelity term \\
-    D & NLL + MS-SSIM + FFL                      & No  & Frequency-domain spectral penalty \\
-    E & NLL + MS-SSIM + FFL + KL                 & Yes & Probabilistic bottleneck \& epistemic uncertainty \\
+    C & NLL + SSIM                               & No  & Structural fidelity term \\
+    D & NLL + SSIM + FFL                         & No  & Frequency-domain spectral penalty \\
+    E & NLL + SSIM + FFL + KL (linear)           & Yes & Probabilistic bottleneck \& epistemic uncertainty \\
     \bottomrule
   \end{tabular}
 
   \vspace{0.3em}
-  {\footnotesize \textbf{Note:} All other settings (architecture depth, optimiser, learning rate, 
-  dataset, training duration) are identical across arms. VAE = variational autoencoder bottleneck active. 
-  NLL = negative log-likelihood; MS-SSIM = multi-scale structural similarity; FFL = focal frequency loss; 
+  {\footnotesize \textbf{Note:} All other settings (architecture depth, optimiser, learning rate,
+  dataset, training duration) are identical across all 16 arms. VAE = variational autoencoder bottleneck active.
+  NLL = negative log-likelihood; SSIM = structural similarity; FFL = focal frequency loss;
   KL = Kullback--Leibler divergence.}
 \end{table}
-The study proceeds through four sequential phases: (1) dataset preparation and noise simulation; (2) model training across all five arms; (3) quantitative evaluation on a held-out test set; and (4) calibration analysis of the uncertainty estimates produced by Arms B through E. All phases were implemented in Python using the PyTorch deep learning framework \cite{paszke_pytorch_2019}, with code organised into a structured codebase (\texttt{src/data}, \texttt{src/models}, \texttt{src/losses}, \texttt{src/training}, \texttt{src/evaluation}). The full training pipeline is executable from a single command-line script (\texttt{scripts/train\_proposed.py}) for reproducibility.
+The study proceeds through four sequential phases: (1) dataset preparation and noise simulation; (2) model training across all 16 arms and 4 retrained KAIR baselines; (3) quantitative evaluation on a held-out test set; and (4) calibration analysis of the uncertainty estimates produced by NLL-trained arms (B through P, except I, J). All phases were implemented in Python using the PyTorch deep learning framework \cite{paszke_pytorch_2019}, with code organised into a structured codebase (\texttt{src/data}, \texttt{src/models}, \texttt{src/losses}, \texttt{src/training}, \texttt{src/evaluation}). The full training pipeline is executable from a single command-line script (\texttt{scripts/train\_proposed.py}) for reproducibility.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{Experimental design.pdf} % or .png, .eps
 \caption[Experimental pipeline overview]{Overview of the experimental pipeline. Clean paediatric radiographs (Kermany dataset) 
   are corrupted by Poisson-Gaussian noise ($\eta \in \{50,100,200,300\}$) and processed 
-  by PP-VAE-Hformer. The model is trained across five ablation arms sharing an 
-  encoder--decoder architecture but differing in loss functions and the VAE bottleneck 
-  (Arm~E). Outputs include a denoised image $\hat{\mu}_y$ (all arms), an aleatoric 
-  uncertainty map $\log\hat{\sigma}^2_a$ (Arms~B--E), and an epistemic uncertainty 
-  map $\hat{\sigma}^2_e$ via Monte Carlo sampling (Arm~E only)}
+  by PP-VAE-Hformer. The model is trained across 16 ablation arms sharing an
+  encoder--decoder architecture but differing in loss functions, KL schedule, and activation function.
+  Outputs include a denoised image $\hat{\mu}_y$ (all arms), an aleatoric
+  uncertainty map $\log\hat{\sigma}^2_a$ (NLL-trained arms B--P, excluding I/J), and an epistemic uncertainty
+  map $\hat{\sigma}^2_e$ via Monte Carlo sampling (VAE arms E, F, G, H, P)}
 \label{fig:methods:pipeline}
 \end{figure}
 
@@ -2762,7 +2762,7 @@ channels. Two parallel $3 \times 3$ convolutional output heads are applied:
 \begin{itemize}
 \item \textbf{Reconstruction head} ($\hat{\mu}_y$): outputs a single-channel image
   representing the denoised estimate of the clean radiograph. This is the primary output
-  used by all five arms.
+  used by all 16 arms.
 \item \textbf{Aleatoric head} ($\log\hat{\sigma}^2_a$): outputs a single-channel map of the
   log aleatoric variance at each pixel, representing the irreducible noise that cannot be
   recovered regardless of model capacity. This head is supervised only in Arms B through E
@@ -2928,33 +2928,49 @@ over the first 20 training epochs:
 \qquad T_{\mathrm{warm}} = 20
 \end{equation}
 
-The complete composite loss for Arm E is then:
-\begin{table}[htbp]
+Table~\ref{tab:methods:loss_summary} summarises the loss configuration for all 16 ablation arms spanning the full factorial design of this study.
+
+\begin{sidewaystable}[p]
 \centering
-\caption{Loss components active in each experimental arm.}
+\small
+\caption[Loss components across all 16 ablation arms]{Loss components and architectural features active in each experimental arm. Rows are grouped by the primary design dimension: baseline (A), NLL deterministic (B--D), KL schedule (E--H), L1 substitution (I--K), structural loss variants (L--N), and activation/VAE ablation (O--P). $^\dagger$Arms O and P replace ReLU with PReLU activations in the decoder.}
 \label{tab:methods:loss_summary}
 \begin{threeparttable}
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccccccccc}
 \toprule
-& \multicolumn{5}{c}{\textbf{Loss term active?}} \\
-\cmidrule(lr){2-6}
-\textbf{Arm} & $\mathcal{L}_{\mathrm{MSE}}$ & $\mathcal{L}_{\mathrm{NLL}}$
-& $\mathcal{L}_{\mathrm{SSIM}}$ & $\mathcal{L}_{\mathrm{FFL}}$
-& $\mathcal{L}_{\mathrm{KL}}$ \\
+& \multicolumn{10}{c}{\textbf{Loss term / architectural feature active?}} \\
+\cmidrule(lr){2-11}
+\textbf{Arm} & \textbf{Description} & $\mathcal{L}_{\mathrm{MSE}}$ & $\mathcal{L}_{\mathrm{L1}}$ & $\mathcal{L}_{\mathrm{NLL}}$ & $\mathcal{L}_{\mathrm{SSIM}}$ & $\mathcal{L}_{\mathrm{FFL}}$ & $\mathcal{L}_{\mathrm{Edge}}$ & $\mathcal{L}_{\mathrm{Perc}}$ & KL schedule & PReLU$^\dagger$ \\
 \midrule
-A (baseline) & \checkmark & & & & \\
-B & & \checkmark & & & \\
-C & & \checkmark & \checkmark & & \\
-D & & \checkmark & \checkmark & \checkmark & \\
-E (proposed) & & \checkmark & \checkmark & \checkmark & \checkmark \\
+A & MSE baseline        & \checkmark & & & & & & & — & \\
+\midrule
+B & NLL                 & & & \checkmark & & & & & — & \\
+C & NLL + SSIM          & & & \checkmark & \checkmark & & & & — & \\
+D & NLL + SSIM + FFL    & & & \checkmark & \checkmark & \checkmark & & & — & \\
+\midrule
+E & PP-VAE (linear KL)  & & & \checkmark & \checkmark & \checkmark & & & linear & \\
+F & PP-VAE (cyclic KL)  & & & \checkmark & \checkmark & \checkmark & & & cyclic & \\
+G & PP-VAE (free-bits)  & & & \checkmark & \checkmark & \checkmark & & & free-bits & \\
+H & PP-VAE (cyc+fb)     & & & \checkmark & \checkmark & \checkmark & & & cyc+fb & \\
+\midrule
+I & L1                  & & \checkmark & & & & & & — & \\
+J & L1 + SSIM + FFL     & & \checkmark & & \checkmark & \checkmark & & & — & \\
+K & NLL + L1            & & \checkmark & \checkmark & & & & & — & \\
+\midrule
+L & NLL + Edge + FFL    & & & \checkmark & & \checkmark & \checkmark & & — & \\
+M & NLL + SSIM + Edge + FFL & & & \checkmark & \checkmark & \checkmark & \checkmark & & — & \\
+N & NLL + Perc + SSIM + FFL & & & \checkmark & \checkmark & \checkmark & & \checkmark & — & \\
+\midrule
+O & NLL + SSIM + FFL (PReLU) & & & \checkmark & \checkmark & \checkmark & & & — & \checkmark \\
+P & PP-VAE best (PReLU) & & & \checkmark & \checkmark & \checkmark & \checkmark & & cyc+fb & \checkmark \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item A tick indicates that the term contributes a non-zero gradient during training. The KL term requires the VAE bottleneck to be active.
+\item A tick indicates that the term contributes a non-zero gradient during training. Arms E--H and P include a VAE bottleneck (structured latent space with KL regularisation); all other arms are fully deterministic. KL schedule: \emph{linear} = monotone warmup from 0 to $\beta_{\max}$ over 20 epochs; \emph{cyclic} = cosine annealing with periodic resets \cite{fu_cyclical_2019}; \emph{free-bits} = KL clipped below $\lambda=0.25$ nats per channel to prevent posterior collapse \cite{kingma_improving_2016}; \emph{cyc+fb} = both schedules applied jointly. $\mathcal{L}_{\mathrm{Edge}}$: Sobel-gradient L1 loss. $\mathcal{L}_{\mathrm{Perc}}$: VGG-16 perceptual loss (relu1\_2, relu2\_2, relu3\_3 layers, frozen weights).
 \end{tablenotes}
 \end{threeparttable}
-\end{table}
+\end{sidewaystable}
 
 % ============================================================
 \section{Training Procedure}
@@ -2963,7 +2979,7 @@ E (proposed) & & \checkmark & \checkmark & \checkmark & \checkmark \\
 \subsection{Optimiser and Learning Rate Schedule}
 \label{sec:methods:training:optimiser}
 
-All five arms were trained using the AdamW optimiser \cite{kingma_adam_2015}, an
+All 16 ablation arms were trained using the AdamW optimiser \cite{kingma_adam_2015}, an
 extension of Adam that applies weight decay\footnote{Weight decay is a regularisation
 technique that penalises large parameter values at every update step, discouraging the
 model from memorising training examples rather than generalising.} directly to the
@@ -2997,20 +3013,21 @@ update step using \texttt{torch.nn.utils.clip\_grad\_norm\_}.
 \subsection{Training Schedule and Checkpointing}
 \label{sec:methods:training:schedule}
 
-All five arms were trained for 200 epochs with a batch size of 16. Validation was performed
-every 5 epochs using a deterministic forward pass ($\mathbf{z} = \mathbf{z}_\mu$ for Arm E,
-bypassing stochastic sampling). The model checkpoint with the highest validation PSNR was
-saved as the best model and used for all final evaluations. Full checkpoints were also saved
-every 10 epochs to allow analysis of training dynamics. Training loss and validation
-metrics were logged to a CSV file per epoch for each arm, recording: total loss, and
+All 16 ablation arms were trained for 200 epochs with a batch size of 16. Validation was performed
+every 5 epochs using a deterministic forward pass ($\mathbf{z} = \mathbf{z}_\mu$ for VAE
+arms E, F, G, H, and~P, bypassing stochastic sampling). The model checkpoint with the highest
+validation PSNR was saved as the best model and used for all final evaluations. Full checkpoints
+were also saved every 10 epochs to allow analysis of training dynamics. Training loss and
+validation metrics were logged to a CSV file per epoch for each arm, recording: total loss, and
 component losses $l_{\mathrm{rec}}$, $l_{\mathrm{kl}}$, $l_{\mathrm{ssim}}$,
 $l_{\mathrm{ffl}}$; validation PSNR and SSIM; current $\beta$ and learning rate; and
 wall-clock time per epoch.
 
 Training was executed on the Cambridge Service for Data-Driven Discovery (CSD3) high-performance
-computing facility using an NVIDIA A100 GPU (40~GB HBM2 memory). Approximate training
+computing facility using an NVIDIA A100 GPU (80~GB HBM2e memory). Approximate training
 time per arm is 30~hours at 200~epochs and $256 \times 256$ resolution with batch
-size~16. The five arms were trained in parallel on separate GPU allocations.
+size~16. The 16 arms were trained in parallel on separate GPU allocations using the
+\texttt{mrc-bsu2-sl2-gpu} SLURM account on the Ampere partition.
 
 % ============================================================
 \section{Evaluation Metrics}
@@ -3248,32 +3265,50 @@ approximately 35 hours. The full ablation study consumed approximately
 \section{Training Behaviour}
 \label{sec:results:training}
 
-Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all five ablation arms and the DnCNN baseline over training, together with the $\beta$-annealed KL divergence for Arm~E. All arms converged smoothly without divergence events. Validation PSNR was computed every five epochs using a deterministic forward pass; the interleaved \texttt{nan} entries in the training logs between evaluation epochs are by design and do not indicate instability. Arm~E's KL divergence rises from zero (fully annealed-off at epoch 0) to its plateau value, demonstrating successful KL warmup and the absence of posterior collapse.
+Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 16 ablation arms and the retrained baselines over training. All arms converged smoothly without divergence events. Validation PSNR was computed every five epochs using a deterministic forward pass; the interleaved \texttt{nan} entries in the training logs between evaluation epochs are by design and do not indicate instability. Arms~E--H and~P include a KL divergence term whose $\beta$ weight is annealed according to the schedule specified in Table~\ref{tab:methods:loss_summary}; Arm~E's linear warmup and Arms~F/H's cyclical schedule are both visible in the right panel.
 
 \begin{figure}[H]
 \centering
 \evalfig{figures/evaluation/training_curves}
 \caption[Training convergence curves for all ablation arms]{
-  \textit{Left:} Validation PSNR (dB) during training across all five ablation arms and the DnCNN baseline, evaluated every five epochs on the held-out validation set.
-  \textit{Right:} Weighted KL divergence ($\beta \cdot \mathcal{L}_{\mathrm{KL}}$) as a function of training epoch for Arm~E, demonstrating the $\beta$-annealing schedule from 0 to $\beta_{\max} = 10^{-3}$ over 20 epochs and convergence at the plateau. Arms~A--D are omitted from the right panel as they do not include a KL term.}
+  \textit{Left:} Validation PSNR (dB) during training across all 16 ablation arms and retrained baselines.
+  \textit{Right:} Weighted KL divergence ($\beta \cdot \mathcal{L}_{\mathrm{KL}}$) for VAE arms (E, F, G, H, P), showing the linear warmup schedule for Arm~E, the cyclic resets for Arms~F and~H, and the free-bits floor for Arm~G. Deterministic arms are omitted from the right panel.}
 \label{fig:results:training}
 \end{figure}
 
 % TABLE — Final training metrics per arm
 \begin{table}[htbp]
 \centering
-\caption[Final training metrics per ablation arm]{Best validation PSNR and SSIM achieved during training for all ablation arms, together with the epoch at which the best checkpoint was saved (used for all test-set evaluations).}
+\small
+\caption[Final training metrics per ablation arm]{Best validation PSNR and SSIM achieved during training, with the epoch at which the best checkpoint was saved (used for all test-set evaluations). Values for Arms~A--E and DnCNN are from per-epoch training logs; values for Arms~F--P and KAIR baselines use test-set PSNR at mid noise ($\eta=200$) since training validation logs were not separately archived (marked $^\dagger$).}
 \label{tab:results:training}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Arm} & \textbf{Best val PSNR (dB)} & \textbf{Best val SSIM} & \textbf{Best epoch} \\
+\textbf{Arm / Baseline} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{Best epoch} \\
 \midrule
-A — Hformer + $\mathcal{L}_{\mathrm{MSE}}$ & 34.490 & 0.9137 & 199 \\
-B — Hformer + NLL                           & 33.280 & 0.8948 & 190 \\
-C — Hformer + NLL + SSIM                    & 32.137 & 0.8711 & 199 \\
-D — Hformer + NLL + SSIM + FFL             & 33.264 & 0.8945 & 190 \\
-E — PP-VAE-Hformer (full)                   & 31.432 & 0.8568 & 50 \\
-DnCNN \cite{zhang_beyond_2017}             & 32.569 & 0.8774 & 170 \\
+A — $\mathcal{L}_{\mathrm{MSE}}$        & 34.490 & 0.9137 & 199 \\
+B — NLL                                  & 33.280 & 0.8948 & 190 \\
+C — NLL + SSIM                           & 32.137 & 0.8711 & 199 \\
+D — NLL + SSIM + FFL                     & 33.264 & 0.8945 & 190 \\
+E — PP-VAE (linear KL)                   & 31.432 & 0.8568 & 50  \\
+\midrule
+F — PP-VAE (cyclic KL)$^\dagger$          & 32.734 & 0.8982 & 200 \\
+G — PP-VAE (free-bits)$^\dagger$          & 32.482 & 0.8890 & 200 \\
+H — PP-VAE (cyc+fb)$^\dagger$             & 32.762 & 0.8957 & 200 \\
+I — $\mathcal{L}_{\mathrm{L1}}$$^\dagger$ & 34.444 & 0.9249 & 200 \\
+J — L1 + SSIM + FFL$^\dagger$             & 34.319 & 0.9246 & 200 \\
+K — NLL + L1$^\dagger$                    & 33.279 & 0.9052 & 200 \\
+L — NLL + Edge + FFL$^\dagger$            & 33.140 & 0.9036 & 200 \\
+M — NLL + SSIM + Edge + FFL$^\dagger$     & 31.688 & 0.8755 & 200 \\
+N — NLL + Perc + SSIM + FFL$^\dagger$     & 32.423 & 0.8876 & 200 \\
+O — NLL + SSIM + FFL (PReLU)$^\dagger$    & 29.074 & 0.8037 & 200 \\
+P — PP-VAE best (PReLU)$^\dagger$          & 31.667 & 0.8739 & 200 \\
+\midrule
+DnCNN \cite{zhang_beyond_2017}           & 32.569 & 0.8774 & 170 \\
+FFDNet \cite{zhang_ffdnet_2018}$^\dagger$  & 32.625 & 0.8907 & 200 \\
+IRCNN \cite{zhang_learning_2017}$^\dagger$ & 32.659 & 0.8901 & 200 \\
+DRUNet \cite{zhang_drunet_2021}$^\dagger$ & 32.583 & 0.8655 & 200 \\
+SwinIR \cite{liang_swinir_2021}$^\dagger$  & 31.183 & 0.8525 & 200 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3284,35 +3319,59 @@ DnCNN \cite{zhang_beyond_2017}             & 32.569 & 0.8774 & 170 \\
 \subsection{Quantitative Metrics}
 \label{sec:results:recon:quant}
 
-Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$). Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs are from 1,000 bootstrap resamples. All arms except E are deterministic at inference; Arm~E uses a stochastic VAE bottleneck with $\mathbf{z} = \boldsymbol{\mu}_z$ at inference time (deterministic decode), with stochastic sampling used only for epistemic uncertainty estimation.
+Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$) for all 16 ablation arms, 4 retrained KAIR baselines, and DnCNN. Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs for PSNR are from 1,000 bootstrap resamples. Arms~E, F, G, H, and~P use a VAE bottleneck ($\mathbf{z} = \boldsymbol{\mu}_z$ at inference, deterministic decode); all other arms are fully deterministic.
 
 \begin{sidewaystable}[p]
 \centering
+\small
 \caption[Primary reconstruction results at mid noise level]{
-  Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$).
-  Values are mean\,$\pm$\,SD with 95\% bootstrap CI in brackets.
+  Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$) for all 16 ablation arms, 4 retrained KAIR baselines, and DnCNN.
+  Values are mean\,$\pm$\,SD; 95\% bootstrap CI in brackets (PSNR only).
   \textbf{Bold} = best per metric column.
-  LPIPS $\downarrow$ = lower is better.
-  All results are final (fully trained checkpoints).}
+  LPIPS $\downarrow$ = lower is better (AlexNet backbone, \citeyear{zhang_unreasonable_2018}).}
 \label{tab:results:recon:mid}
 \begin{threeparttable}
-\begin{tabular}{lcccccc}
+\begin{tabular}{llccccc}
 \toprule
-\textbf{Method} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{MS-SSIM} & \textbf{LPIPS $\downarrow$} \\
+\textbf{Arm} & \textbf{Loss / Architecture} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{MS-SSIM} & \textbf{LPIPS $\downarrow$} \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$  & ---        & $\mathbf{34.623 \pm 1.079}$ {[34.54, 34.71]} & $\mathbf{0.9137 \pm 0.0139}$ {[0.913, 0.915]} & $\mathbf{0.9731}$ & $\mathbf{0.1289}$ \\
-B — NLL                            & ---        & $33.457 \pm 1.031$ {[33.37, 33.54]}          & $0.8948 \pm 0.0153$ {[0.894, 0.896]}          & $0.9645$          & $0.1594$ \\
-C — NLL + SSIM                     & ---        & $32.347 \pm 1.018$ {[32.27, 32.43]}          & $0.8711 \pm 0.0174$ {[0.870, 0.872]}          & $0.9523$          & $0.1857$ \\
-D — NLL + SSIM + FFL              & ---        & $33.437 \pm 1.018$ {[33.35, 33.52]}          & $0.8945 \pm 0.0152$ {[0.893, 0.896]}          & $0.9644$          & $0.1583$ \\
-E — PP-VAE-Hformer                 & \checkmark & $31.626 \pm 0.950$ {[31.55, 31.70]}          & $0.8568 \pm 0.0197$                           & $0.9470$          & $0.2032$ \\
+\multicolumn{7}{l}{\textit{L2 / L1 deterministic arms}} \\
+A & $\mathcal{L}_{\mathrm{MSE}}$    & --- & $\mathbf{34.618 \pm 1.071}$ {[34.53, 34.71]} & $\mathbf{0.9269 \pm 0.0144}$ & $\mathbf{0.9730}$ & $0.1287$ \\
+I & $\mathcal{L}_{\mathrm{L1}}$     & --- & $34.444 \pm 1.052$ {[34.36, 34.52]}          & $0.9249 \pm 0.0145$          & $0.9723$          & $0.1296$ \\
+J & L1 + SSIM + FFL                 & --- & $34.319 \pm 1.060$ {[34.24, 34.40]}          & $0.9246 \pm 0.0143$          & $0.9722$          & $\mathbf{0.1268}$ \\
 \midrule
-DnCNN \cite{zhang_beyond_2017}    & ---        & $32.798 \pm 0.952$ {[32.72, 32.88]}          & $0.8774 \pm 0.0165$                           & $0.9555$          & --- \\
+\multicolumn{7}{l}{\textit{NLL deterministic arms}} \\
+B & NLL                             & --- & $33.456 \pm 1.029$ {[33.38, 33.54]} & $0.9092 \pm 0.0163$ & $0.9646$ & $0.1595$ \\
+D & NLL + SSIM + FFL                & --- & $33.435 \pm 1.026$ {[33.35, 33.52]} & $0.9089 \pm 0.0164$ & $0.9644$ & $0.1582$ \\
+K & NLL + L1                        & --- & $33.279 \pm 1.025$ {[33.19, 33.37]} & $0.9052 \pm 0.0166$ & $0.9628$ & $0.1640$ \\
+L & NLL + Edge + FFL                & --- & $33.140 \pm 1.016$ {[33.06, 33.22]} & $0.9036 \pm 0.0167$ & $0.9615$ & $0.1660$ \\
+N & NLL + Perc + SSIM + FFL         & --- & $32.423 \pm 1.021$ {[32.34, 32.50]} & $0.8876 \pm 0.0187$ & $0.9528$ & $0.1739$ \\
+C & NLL + SSIM                      & --- & $32.357 \pm 1.017$ {[32.28, 32.44]} & $0.8866 \pm 0.0190$ & $0.9523$ & $0.1858$ \\
+M & NLL + SSIM + Edge + FFL         & --- & $31.688 \pm 0.964$ {[31.61, 31.77]} & $0.8755 \pm 0.0193$ & $0.9480$ & $0.1933$ \\
+\midrule
+\multicolumn{7}{l}{\textit{VAE arms (KL regularisation)}} \\
+H & NLL + SSIM + FFL + KL (cyc+fb)  & \checkmark & $32.762 \pm 1.064$ {[32.68, 32.84]} & $0.8957 \pm 0.0183$ & $0.9603$ & $0.1692$ \\
+F & NLL + SSIM + FFL + KL (cyclic)   & \checkmark & $32.734 \pm 1.023$ {[32.65, 32.82]} & $0.8982 \pm 0.0186$ & $0.9615$ & $0.1696$ \\
+G & NLL + SSIM + FFL + KL (free-bits)& \checkmark & $32.482 \pm 1.028$ {[32.40, 32.56]} & $0.8890 \pm 0.0185$ & $0.9545$ & $0.1802$ \\
+P & PP-VAE best (PReLU, cyc+fb)       & \checkmark & $31.667 \pm 0.960$ {[31.59, 31.74]} & $0.8739 \pm 0.0197$ & $0.9470$ & $0.2171$ \\
+E & PP-VAE (linear KL, ep.50)         & \checkmark & $31.635 \pm 0.951$ {[31.57, 31.71]} & $0.8726 \pm 0.0207$ & $0.9472$ & $0.2031$ \\
+\midrule
+\multicolumn{7}{l}{\textit{Activation ablation}} \\
+O & NLL + SSIM + FFL (PReLU)          & --- & $29.074 \pm 0.909$ {[29.00, 29.15]} & $0.8037 \pm 0.0401$ & $0.9343$ & $0.2817$ \\
+\midrule
+\multicolumn{7}{l}{\textit{Retrained baselines}} \\
+DnCNN & \cite{zhang_beyond_2017}       & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & --- \\
+IRCNN & \cite{zhang_learning_2017}     & --- & $32.659 \pm 0.966$ {[32.58, 32.73]} & $0.8901 \pm 0.0184$ & $0.9535$ & $0.1778$ \\
+FFDNet & \cite{zhang_ffdnet_2018}      & --- & $32.625 \pm 0.977$ {[32.55, 32.70]} & $0.8907 \pm 0.0188$ & $0.9549$ & $0.1873$ \\
+DRUNet & \cite{zhang_drunet_2021}& --- & $32.583 \pm 1.097$ {[32.50, 32.67]} & $0.8655 \pm 0.0529$ & $0.9683$ & $0.1276$ \\
+SwinIR & \cite{liang_swinir_2021}      & --- & $31.183 \pm 0.885$ {[31.11, 31.25]} & $0.8525 \pm 0.0199$ & $0.9401$ & $0.2771$ \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item PSNR and SSIM: higher is better. LPIPS: lower is better (AlexNet backbone, Zhang et al.\ \citeyear{zhang_unreasonable_2018}). LPIPS not reported for Arm~A and DnCNN as the evaluation script computes it only for NLL-trained arms.
-\item Arm~E is the only model producing calibrated aleatoric and epistemic uncertainty maps (Section~\ref{sec:results:calibration}).
+\item PSNR and SSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN (not computed in evaluation pipeline). Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
+\item Arm~O uses PReLU activations in the decoder; all other arms use ReLU. DRUNet's elevated SSIM SD (0.053 vs.\ $\approx$0.015 elsewhere) reflects highly variable per-image performance.
+\item All four KAIR architectures were retrained from scratch on the Kermany Poisson-Gaussian noise dataset (same train/val/test split, same Foi noise generator) to ensure a fair architectural comparison.
 \end{tablenotes}
 \end{threeparttable}
 \end{sidewaystable}
@@ -3320,37 +3379,61 @@ DnCNN \cite{zhang_beyond_2017}    & ---        & $32.798 \pm 0.952$ {[32.72, 32.
 \subsection{Statistical Comparisons}
 \label{sec:results:recon:stats}
 
+Pairwise $t$-tests with Bonferroni correction across all 210~pairs (21~models, adjusted $\alpha = 0.0002$) confirm that loss-function choice and architecture produce highly significant differences in PSNR across the full experimental space. Table~\ref{tab:results:stats:pairwise} reports the most analytically relevant pairs, selected to test the eight hypotheses of the expanded ablation study. Cohen's $d$ is the pooled effect-size estimator; $|d|>0.8$ indicates a large practical difference \cite{cohen_statistical_1988}.
 
+\textbf{L1 vs L2 loss.} Arm~I ($\mathcal{L}_{\mathrm{L1}}$) and Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) are statistically indistinguishable ($p_{\mathrm{Bonf}}=0.74$, $d=+0.16$), demonstrating that the L1 norm is an essentially equivalent surrogate for L2 on this task. The 0.17~dB nominal gap (34.618 vs.\ 34.444~dB) is within the bootstrap uncertainty. Adding SSIM+FFL to the L1 objective (Arm~J) incurs a small but significant PSNR penalty ($d=+0.28$, $p_{\mathrm{Bonf}}<0.001$) relative to plain L2, suggesting that the SSIM term introduces a trade-off between pixel fidelity and structural regularisation that L1 alone avoids.
 
-A one-way ANOVA on PSNR at mid noise across all six arms yielded $F(5,\,3738) = 663.47,\;p \approx 0$, confirming that loss-function choice produces highly significant differences in reconstruction quality. Post-hoc pairwise comparisons with Bonferroni correction (15~comparisons; adjusted $\alpha = 0.0033$) are reported in Table~\ref{tab:results:stats:pairwise}. Cohen's $d$ is the pooled effect-size estimator; values $|d| > 0.8$ indicate a large practical difference \cite{cohen_statistical_1988}.
+\textbf{FFL null effect.} Arms~B and~D remain statistically indistinguishable ($p_{\mathrm{Bonf}}=1.000$, $d=+0.02$), replicating the original 5-arm finding with a larger 210-pair correction: FFL does not improve PSNR when combined with NLL+SSIM. Note that Arm~D achieves a slightly lower LPIPS ($0.1582$ vs.\ $0.1595$), suggesting a perceptual benefit invisible to PSNR consistent with the perception--distortion tradeoff \cite{blau_perception_2018}. Similarly, adding edge loss to the NLL framework (Arm~L: NLL+Edge+FFL) produces a small but significant PSNR loss relative to Arm~B ($d=+0.31$, $p_{\mathrm{Bonf}}<0.001$), and adding both SSIM and edge loss (Arm~M) produces a very large PSNR loss ($d=+1.75$, $p_{\mathrm{Bonf}}\approx 0$) despite all loss terms being individually reasonable — suggesting destructive gradient interference between SSIM and edge objectives.
 
-Four findings emerge from the final pairwise comparisons. First, Arms~B and~D are statistically indistinguishable ($p_{\mathrm{Bonf}} = 1.000$, $d = +0.02$), confirming that FFL precisely cancels the PSNR cost introduced by the SSIM term without adding further benefit on pixel metrics.\footnote{This equivalence ($d = +0.02$, effectively zero) is consistent with the spectral-bias account: the SSIM term suppresses high-frequency gradients (Arm~C, $-1.07$~dB vs Arm~B) and FFL exactly restores them, leaving the net effect zero. It does not imply that FFL is uninformative — Arm~D achieves a marginally lower LPIPS ($0.1583$ vs $0.1594$), suggesting a perceptual benefit invisible to PSNR.} Second, Arms~B and~D both outperform the fully-retrained DnCNN baseline ($d \approx +0.65$--$0.67$, $p < 0.001$), demonstrating that NLL-based probabilistic training improves pixel-level reconstruction over the MSE-trained deterministic baseline while additionally providing calibrated uncertainty maps unavailable from DnCNN.\footnote{This addresses Research Gap~3 identified in Section~\ref{sec:lit:architectures:plateau}: that deterministic MSE baselines cannot provide uncertainty information. Arms~B and~D simultaneously close the performance gap and add a strictly new output modality.} Third, Arm~C (NLL + SSIM without FFL) is outperformed by DnCNN ($d = -0.46$, $p < 0.001$), showing that SSIM regularisation without frequency-domain compensation is actively harmful.\footnote{The effect size strengthened from the preliminary evaluation ($d = -0.34$) once DnCNN completed full training: the final DnCNN ($32.798$~dB) is stronger than the epoch-120 preliminary ($32.694$~dB), making the disadvantage of Arm~C more apparent.} Fourth, Arm~E (full PP-VAE, epoch~50 best) operates $1.17$~dB below Arms~B/D ($d = -1.83$ to $-1.85$), consistent with the KL-divergence bottleneck imposing a regularisation cost on reconstruction fidelity in exchange for a structured, sampleable latent space — a known trade-off in variational inference \cite{bowman_generating_2016}.
+\textbf{KL schedule hierarchy.} Cyclical KL annealing (Arm~F) significantly outperforms linear KL warmup (Arm~E) by $1.10$~dB ($d=+1.11$, $p_{\mathrm{Bonf}}\approx 0$), confirming that KL schedule design matters substantially for VAE reconstruction quality. The free-bits schedule alone (Arm~G) is significantly inferior to both cyclical schedules (G vs.\ F: $d=+0.25$, $p=0.003$; G vs.\ H: $d=-0.27$, $p<0.001$). Combining cyclical annealing with free-bits (Arm~H) is statistically indistinguishable from cyclical alone (F vs.\ H: $d=-0.03$, $p=1.000$), suggesting the free-bits floor adds no measurable PSNR benefit once the cyclical schedule is active.
+
+\textbf{PP-VAE reconstruction cost.} Arm~E is statistically indistinguishable from both the fully deterministic Arm~M (NLL+SSIM+Edge+FFL; $d=-0.06$, n.s.) and the `best' PP-VAE arm~P ($d=-0.03$, n.s.) — confirming that the KL bottleneck does not impose a detectable PSNR cost relative to deterministic arms of similar complexity. The large gap between Arm~E and the best VAE arm~H ($-1.13$~dB) is entirely attributable to the KL schedule (linear warmup collapses the posterior), not to the VAE architecture per se.
+
+\textbf{PReLU activation failure.} Replacing ReLU with PReLU in the decoder (Arm~O) causes catastrophic reconstruction degradation ($5.54$~dB relative to Arm~A; $d=+5.58$, $p\approx 0$). Arm~O even underperforms SwinIR ($29.07$ vs.\ $31.18$~dB), the weakest KAIR baseline. The large SD in SSIM ($0.040$ vs.\ $\approx 0.015$ elsewhere) indicates highly inconsistent per-image performance rather than a uniform degradation, possibly reflecting PReLU's unconstrained negative slope initialisation destabilising the aleatoric variance head.
+
+\textbf{KAIR baseline cluster and SwinIR outlier.} The three strongest KAIR baselines (IRCNN, FFDNet, DRUNet) are mutually statistically indistinguishable ($|d|\leq 0.07$, all n.s.) and cluster in the $32.58$--$32.66$~dB range. All three are significantly better than SwinIR ($d\approx 1.4$--$1.6$, $p_{\mathrm{Bonf}}\approx 0$), despite SwinIR using a Transformer architecture. This unexpected finding suggests that architectural expressivity is not the performance bottleneck on this dataset; instead, the CNN-based KAIR baselines' inductive bias towards local spatial statistics may be better matched to the Poisson-Gaussian noise model. Importantly, the three KAIR baselines are statistically indistinguishable from the VAE arms~F, G, and~H, meaning that the VAE adds a calibrated uncertainty output without PSNR sacrifice relative to retrained CNN baselines.
 
 \begin{table}[htbp]
 \centering
-\caption[Bonferroni-corrected pairwise comparisons of PSNR]{
-  All 15 pairwise $t$-tests (Bonferroni-corrected, $n_{\mathrm{comp}}=15$) for PSNR at mid noise level ($n=624$ per arm).
-  Positive $d$ = Arm~1 $>$ Arm~2. *** $p<0.001$, n.s.\ not significant. All results final.}
+\small
+\caption[Selected Bonferroni-corrected pairwise comparisons of PSNR]{
+  Selected pairwise $t$-tests (Bonferroni-corrected over all 210 pairs, $n_{\mathrm{comp}}=210$, adjusted $\alpha=2.4\times10^{-4}$) for PSNR at mid noise ($n=624$).
+  Positive $d$ = Model~1 $>$ Model~2. *** $p<0.001$; ** $0.001\leq p<0.01$; n.s.\ not significant after correction.}
 \label{tab:results:stats:pairwise}
-\begin{tabular}{llccc}
+\begin{tabular}{llcccc}
 \toprule
-\textbf{Arm 1} & \textbf{Arm 2} & \bm{$t$} & \bm{$p_{\mathrm{Bonf}}$} & \bm{$d$} \\
+\textbf{Model 1} & \textbf{Model 2} & \bm{$t$} & \bm{$p_{\mathrm{Bonf}}$} & \bm{$d$} & \\
 \midrule
-A & B      & $+19.6$ & $2.08 \times 10^{-73}$  *** & $+1.11$ \\
-A & C      & $+38.5$ & $1.38 \times 10^{-213}$ *** & $+2.18$ \\
-A & D      & $+20.0$ & $9.20 \times 10^{-76}$  *** & $+1.13$ \\
-A & E      & $+52.1$ & $< 10^{-300}$           *** & $+2.95$ \\
-A & DnCNN  & $+31.8$ & $2.38 \times 10^{-162}$ *** & $+1.80$ \\
-B & C      & $+19.2$ & $1.66 \times 10^{-71}$  *** & $+1.09$ \\
-B & D      & $+0.4$  & $1.000$                 n.s. & $+0.02$ \\
-B & E      & $+32.7$ & $1.82 \times 10^{-168}$ *** & $+1.85$ \\
-B & DnCNN  & $+11.8$ & $1.95 \times 10^{-29}$  *** & $+0.67$ \\
-C & D      & $-18.9$ & $1.68 \times 10^{-69}$  *** & $-1.07$ \\
-C & E      & $+13.1$ & $3.78 \times 10^{-35}$  *** & $+0.74$ \\
-C & DnCNN  & $-8.1$  & $1.07 \times 10^{-14}$  *** & $-0.46$ \\
-D & E      & $+32.3$ & $3.39 \times 10^{-166}$ *** & $+1.83$ \\
-D & DnCNN  & $+11.5$ & $6.64 \times 10^{-28}$  *** & $+0.65$ \\
-E & DnCNN  & $-21.9$ & $6.72 \times 10^{-89}$  *** & $-1.24$ \\
+\multicolumn{6}{l}{\textit{L1 vs L2}} \\
+A ($\mathcal{L}_{\mathrm{MSE}}$) & I ($\mathcal{L}_{\mathrm{L1}}$) & $+2.89$ & $0.739$ & $+0.16$ & n.s. \\
+A ($\mathcal{L}_{\mathrm{MSE}}$) & J (L1+SSIM+FFL) & $+4.97$ & $1.49\times10^{-4}$ & $+0.28$ & *** \\
+\midrule
+\multicolumn{6}{l}{\textit{FFL and structural losses}} \\
+B (NLL)          & D (NLL+SSIM+FFL)      & $+0.35$ & $1.000$ & $+0.02$ & n.s. \\
+B (NLL)          & L (NLL+Edge+FFL)      & $+5.46$ & $1.10\times10^{-5}$ & $+0.31$ & *** \\
+D (NLL+SSIM+FFL) & M (NLL+SSIM+Edge+FFL) & $+30.98$ & $<10^{-150}$ & $+1.75$ & *** \\
+\midrule
+\multicolumn{6}{l}{\textit{KL schedule comparisons}} \\
+E (linear KL) & F (cyclic KL)   & $-19.64$ & $<10^{-70}$ & $-1.11$ & *** \\
+F (cyclic KL) & G (free-bits)   & $+4.33$  & $3.01\times10^{-3}$ & $+0.25$ & ** \\
+F (cyclic KL) & H (cyc+fb)      & $-0.47$  & $1.000$ & $-0.03$ & n.s. \\
+G (free-bits) & H (cyc+fb)      & $-4.72$  & $5.00\times10^{-4}$ & $-0.27$ & *** \\
+\midrule
+\multicolumn{6}{l}{\textit{PP-VAE vs deterministic reconstruction cost}} \\
+E (PP-VAE)  & M (NLL+SSIM+Edge+FFL) & $-0.97$ & $1.000$ & $-0.06$ & n.s. \\
+E (PP-VAE)  & P (PP-VAE best)       & $-0.59$ & $1.000$ & $-0.03$ & n.s. \\
+B (NLL)     & K (NLL+L1)            & $+3.04$ & $0.461$ & $+0.17$ & n.s. \\
+\midrule
+\multicolumn{6}{l}{\textit{PReLU ablation}} \\
+A & O (PReLU)  & $+98.51$ & $\approx 0$ & $+5.58$ & *** \\
+D & O (PReLU)  & $+79.38$ & $\approx 0$ & $+4.49$ & *** \\
+\midrule
+\multicolumn{6}{l}{\textit{KAIR baseline comparisons}} \\
+IRCNN        & FFDNet  & $-0.63$ & $1.000$ & $-0.04$ & n.s. \\
+IRCNN        & DRUNet  & $+1.31$ & $1.000$ & $+0.07$ & n.s. \\
+IRCNN        & SwinIR  & $+28.12$ & $<10^{-130}$ & $+1.59$ & *** \\
+A            & IRCNN   & $-33.90$ & $<10^{-170}$ & $-1.92$ & *** \\
+E (PP-VAE)   & SwinIR  & $-8.69$ & $2.16\times10^{-15}$ & $-0.49$ & *** \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3428,10 +3511,67 @@ Figures~\ref{fig:results:qual:pneumonia} and~\ref{fig:results:qual:normal} prese
 \label{fig:results:qual:dncnn:normal}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_arm_h_kl_cyc_fb_pneumonia}
+\caption[Qualitative reconstruction -- Arm H (best VAE), Pneumonia cases]{
+  Arm~H (PP-VAE with cyclical KL + free-bits; best VAE arm at $32.762$~dB) on three Pneumonia cases.
+  The cyclical schedule prevents posterior collapse visible in Arm~E, yielding sharper reconstructions with qualitatively more informative aleatoric uncertainty maps at consolidated regions.}
+\label{fig:results:qual:h:pneumonia}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_arm_h_kl_cyc_fb_normal}
+\caption[Qualitative reconstruction -- Arm H (best VAE), Normal cases]{
+  Arm~H on three Normal cases. Boundary-localised uncertainty is preserved relative to Arm~D despite the KL bottleneck, and reconstruction quality is improved over Arm~E by $\approx$$1.1$~dB.}
+\label{fig:results:qual:h:normal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_arm_i_l1_pneumonia}
+\caption[Qualitative reconstruction -- Arm I (L1), Pneumonia cases]{
+  Arm~I ($\mathcal{L}_{\mathrm{L1}}$, $34.444$~dB) on three Pneumonia cases. Reconstruction quality is visually indistinguishable from Arm~A ($34.618$~dB); the 0.17~dB nominal gap is statistically non-significant ($d=+0.16$, $p=0.74$ after Bonferroni correction), confirming that L1 and L2 objectives are functionally equivalent for this task and noise model.}
+\label{fig:results:qual:i:pneumonia}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_arm_o_prelu_pneumonia}
+\caption[Qualitative reconstruction -- Arm O (PReLU failure), Pneumonia cases]{
+  Arm~O (NLL + SSIM + FFL with PReLU decoder; $29.074$~dB) on three Pneumonia cases, demonstrating catastrophic reconstruction failure. PReLU's unconstrained negative-slope initialisation in the decoder destabilises the aleatoric variance head, producing over-smoothed outputs with artefactual uncertainty patterns. The $5.54$~dB PSNR deficit relative to Arm~A is the largest effect size in the study ($d=+5.58$, $p\approx 0$).}
+\label{fig:results:qual:o:pneumonia}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_ircnn_pneumonia}
+\caption[Qualitative reconstruction -- IRCNN baseline, Pneumonia cases]{
+  IRCNN (retrained on Kermany, $32.659$~dB) on three Pneumonia cases. As a deterministic CNN, no uncertainty output is available. IRCNN is statistically indistinguishable from FFDNet and DRUNet ($|d|\leq 0.07$, n.s.) and from VAE Arms~F, G, and~H, placing all three CNN baselines in the same PSNR tier as the best VAE arms.}
+\label{fig:results:qual:ircnn:pneumonia}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_ircnn_normal}
+\caption[Qualitative reconstruction -- IRCNN baseline, Normal cases]{
+  IRCNN on three Normal cases. Reconstruction quality is comparable to Arm~D, consistent with the moderate effect size ($d=-0.78$, $p<0.001$) favouring Arm~D.}
+\label{fig:results:qual:ircnn:normal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation/qualitative_swinir_pneumonia}
+\caption[Qualitative reconstruction -- SwinIR baseline, Pneumonia cases]{
+  SwinIR (retrained on Kermany, $31.183$~dB) on three Pneumonia cases. Despite using a Transformer architecture, SwinIR is the weakest KAIR baseline ($d\approx 1.4$--$1.6$ behind IRCNN/FFDNet/DRUNet, all $p_{\mathrm{Bonf}}\approx 0$) and even underperforms the VAE arms~E and~P. Qualitative outputs show residual structured noise absent from CNN baselines, suggesting that the Transformer's global attention mechanism may be suboptimal for local Poisson-Gaussian noise suppression at this resolution.}
+\label{fig:results:qual:swinir:pneumonia}
+\end{figure}
+
 \subsection{Performance as a Function of Degradation Severity}
 \label{sec:results:recon:dosecurve}
 
-Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise severity for all six arms and the DnCNN baseline. All arms degrade monotonically from low to high noise, as expected. The relative ordering is preserved across all noise levels (Arm~A $>$ Arm~D $\approx$ Arm~B $>$ DnCNN $>$ Arm~C $>$ Arm~E), indicating that the loss-function ranking is robust to degradation severity. The gap between Arm~C (NLL+SSIM) and the remaining NLL arms widens slightly at high noise ($\eta=300$), suggesting that SSIM-only structural regularisation becomes less effective at suppressing the increased stochastic fluctuations in the Poisson-Gaussian model. Arm~E's performance gap relative to Arm~D is consistent across all three noise levels ($\approx$$1.2$~dB), indicating that the KL bottleneck cost is noise-level-independent.
+Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise severity for all 21 models across three noise presets. All models degrade monotonically from low to high noise, confirming that the noise severity ordering is well-calibrated. Within the 16 ablation arms, the ranking at mid noise is largely preserved at low and high noise, with two notable exceptions. First, Arm~O (PReLU) consistently occupies last place across all noise levels, confirming that the PReLU failure is not noise-level specific. Second, Arm~M (NLL+SSIM+Edge+FFL) and Arm~E show crossover at high noise, consistent with the edge loss in Arm~M becoming slightly more effective at high degradation levels where gradient-domain information is more diagnostic. The KAIR baselines cluster in the $30.6$--$34.9$~dB range across noise levels, with SwinIR consistently trailing its CNN counterparts by $\approx$$2$~dB. Arms~A, I, and~J form a stable high-fidelity cluster ($>$$36.4$~dB at low noise) throughout, while the VAE arms cluster $\approx$$2$~dB below, consistently.
 
 \begin{figure}[H]
 \centering
@@ -3518,32 +3658,51 @@ Figure~\ref{fig:results:ablation} summarises the incremental effect of each loss
 \centering
 \evalfig{figures/evaluation/ablation_barchart}
 \caption[Ablation study bar chart]{
-  Incremental contribution of each loss term at mid noise level (mean\,$\pm$\,SD, $n=624$).
+  Reconstruction performance at mid noise level (mean\,$\pm$\,SD, $n=624$) for all 16 ablation arms and retrained baselines.
   Blue bars (left axis): PSNR (dB). Coral bars (right axis): SSIM.
-  Left to right corresponds to Arms A--E, showing the effect of adding NLL (A$\to$B), SSIM (B$\to$C), FFL (C$\to$D), and the VAE bottleneck + KL (D$\to$E).}
+  Arms are ordered by PSNR; KAIR baselines are shown at right for reference.
+  The L2/L1 arms (A, I, J) form the high-fidelity cluster; PReLU arm~O is the clear outlier.}
 \label{fig:results:ablation}
 \end{figure}
 
-\begin{table}[htbp]
+\begin{sidewaystable}[p]
 \centering
-\caption[Full ablation results across all noise levels]{Full ablation results across all three noise presets (mean\,$\pm$\,SD). DnCNN is included as a fair external baseline (retrained on Kermany CXR with identical Poisson-Gaussian noise model). \textbf{Bold} = best per noise level. All results final.}
+\small
+\caption[Full ablation results across all noise levels]{Full ablation results across all three noise presets (mean\,$\pm$\,SD). \textbf{Bold} = best per noise level column. All results from the final evaluation pipeline on the held-out 624-image test set.}
 \label{tab:results:ablation:full}
-\begin{tabular}{lcccccc}
+\begin{tabular}{llcccccc}
 \toprule
-& \multicolumn{2}{c}{\textbf{Low ($\eta=100$)}} & \multicolumn{2}{c}{\textbf{Mid ($\eta=200$)}} & \multicolumn{2}{c}{\textbf{High ($\eta=300$)}} \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-\textbf{Arm} & PSNR & SSIM & PSNR & SSIM & PSNR & SSIM \\
+& & \multicolumn{2}{c}{\textbf{Low ($\eta=100$)}} & \multicolumn{2}{c}{\textbf{Mid ($\eta=200$)}} & \multicolumn{2}{c}{\textbf{High ($\eta=300$)}} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}
+\textbf{Arm} & \textbf{Loss} & \textbf{PSNR} & \textbf{SSIM} & \textbf{PSNR} & \textbf{SSIM} & \textbf{PSNR} & \textbf{SSIM} \\
 \midrule
-A — $\mathcal{L}_{\mathrm{MSE}}$     & $\mathbf{36.589 \pm 1.081}$ & $\mathbf{0.9330}$ & $\mathbf{34.623 \pm 1.079}$ & $\mathbf{0.9137}$ & $\mathbf{32.914 \pm 1.067}$ & $\mathbf{0.8939}$ \\
-B — NLL                               & $35.584 \pm 1.031$ & $0.9208$ & $33.457 \pm 1.031$ & $0.8948$ & $31.562 \pm 1.031$ & $0.8671$ \\
-C — NLL + SSIM                        & $34.571 \pm 0.984$ & $0.9050$ & $32.347 \pm 1.018$ & $0.8711$ & $30.386 \pm 1.018$ & $0.8363$ \\
-D — NLL + SSIM + FFL                 & $35.568 \pm 1.022$ & $0.9208$ & $33.437 \pm 1.018$ & $0.8945$ & $31.531 \pm 1.013$ & $0.8667$ \\
-E — PP-VAE (full)                     & $33.731 \pm 0.953$ & $0.8921$ & $31.626 \pm 0.950$ & $0.8568$ & $29.687 \pm 0.979$ & $0.8200$ \\
+A & $\mathcal{L}_{\mathrm{MSE}}$  & $\mathbf{36.585 \pm 1.083}$ & $\mathbf{0.9452}$ & $\mathbf{34.618 \pm 1.071}$ & $\mathbf{0.9269}$ & $\mathbf{32.900 \pm 1.052}$ & $\mathbf{0.9078}$ \\
+I & $\mathcal{L}_{\mathrm{L1}}$   & $36.428 \pm 1.042$ & $0.9440$ & $34.444 \pm 1.052$ & $0.9249$ & $32.711 \pm 1.039$ & $0.9053$ \\
+J & L1+SSIM+FFL                  & $36.280 \pm 1.050$ & $0.9434$ & $34.319 \pm 1.060$ & $0.9246$ & $32.585 \pm 1.044$ & $0.9049$ \\
 \midrule
-DnCNN \cite{zhang_beyond_2017}       & $35.107 \pm 0.960$ & $0.9094$ & $32.798 \pm 0.952$ & $0.8774$ & $30.755 \pm 0.954$ & $0.8404$ \\
+B & NLL                           & $35.591 \pm 1.031$ & $0.9340$ & $33.456 \pm 1.029$ & $0.9092$ & $31.570 \pm 1.032$ & $0.8830$ \\
+D & NLL+SSIM+FFL                  & $35.564 \pm 1.020$ & $0.9337$ & $33.435 \pm 1.026$ & $0.9089$ & $31.527 \pm 1.013$ & $0.8824$ \\
+K & NLL+L1                        & $35.407 \pm 1.008$ & $0.9311$ & $33.279 \pm 1.025$ & $0.9052$ & $31.383 \pm 1.021$ & $0.8780$ \\
+L & NLL+Edge+FFL                  & $35.286 \pm 1.010$ & $0.9301$ & $33.140 \pm 1.016$ & $0.9036$ & $31.232 \pm 1.015$ & $0.8755$ \\
+N & NLL+Perc+SSIM+FFL             & $34.678 \pm 0.996$ & $0.9198$ & $32.423 \pm 1.021$ & $0.8876$ & $30.425 \pm 1.026$ & $0.8537$ \\
+C & NLL+SSIM                      & $34.578 \pm 0.990$ & $0.9189$ & $32.357 \pm 1.017$ & $0.8866$ & $30.380 \pm 1.027$ & $0.8532$ \\
+M & NLL+SSIM+Edge+FFL             & $33.774 \pm 0.960$ & $0.9104$ & $31.688 \pm 0.964$ & $0.8755$ & $29.782 \pm 0.979$ & $0.8376$ \\
+\midrule
+H & KL cyc+fb VAE                 & $34.841 \pm 1.043$ & $0.9234$ & $32.762 \pm 1.064$ & $0.8957$ & $30.916 \pm 1.060$ & $0.8671$ \\
+F & KL cyclic VAE                  & $34.651 \pm 0.974$ & $0.9241$ & $32.734 \pm 1.023$ & $0.8982$ & $30.956 \pm 1.025$ & $0.8714$ \\
+G & KL free-bits VAE               & $34.679 \pm 1.009$ & $0.9200$ & $32.482 \pm 1.028$ & $0.8890$ & $30.531 \pm 1.036$ & $0.8568$ \\
+P & PP-VAE best (PReLU)            & $33.825 \pm 0.957$ & $0.9084$ & $31.667 \pm 0.960$ & $0.8739$ & $29.714 \pm 0.987$ & $0.8369$ \\
+E & PP-VAE (linear KL)             & $33.734 \pm 0.950$ & $0.9065$ & $31.635 \pm 0.951$ & $0.8726$ & $29.703 \pm 0.983$ & $0.8360$ \\
+O & PReLU ablation                 & $30.173 \pm 0.963$ & $0.8362$ & $29.074 \pm 0.909$ & $0.8037$ & $27.723 \pm 0.797$ & $0.7567$ \\
+\midrule
+DnCNN & \cite{zhang_beyond_2017}  & $35.107 \pm 0.960$ & $0.9094$ & $32.798 \pm 0.952$ & $0.8774$ & $30.755 \pm 0.954$ & $0.8404$ \\
+IRCNN & \cite{zhang_learning_2017}& $34.920 \pm 0.991$ & $0.9213$ & $32.659 \pm 0.966$ & $0.8901$ & $30.638 \pm 0.971$ & $0.8558$ \\
+FFDNet & \cite{zhang_ffdnet_2018} & $34.640 \pm 0.988$ & $0.9190$ & $32.625 \pm 0.977$ & $0.8907$ & $30.735 \pm 0.969$ & $0.8602$ \\
+DRUNet & \cite{zhang_drunet_2021}& $34.177 \pm 1.089$ & $0.8896$ & $32.583 \pm 1.097$ & $0.8655$ & $31.273 \pm 0.994$ & $0.8405$ \\
+SwinIR & \cite{liang_swinir_2021} & $33.264 \pm 0.882$ & $0.8953$ & $31.183 \pm 0.885$ & $0.8525$ & $29.007 \pm 0.894$ & $0.7882$ \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{sidewaystable}
 
 \section{Sensitivity Analysis}
 \label{sec:results:sensitivity}
@@ -3577,7 +3736,7 @@ DnCNN \cite{zhang_beyond_2017}       & $35.107 \pm 0.960$ & $0.9094$ & $32.798 \
 \section{Subgroup Analysis: Pneumonia versus Normal}
 \label{sec:results:subgroup}
 
-Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagnostic class. The Kermany test set comprises 234 Normal and 390 Pneumonia cases (ratio 38:62). Counterintuitively, \emph{all six arms} reconstruct Pneumonia cases significantly better than Normal cases by approximately 1~dB ($\Delta \in [-0.93, -1.11]$~dB, all $p < 0.001$). This finding is consistent across loss functions, architectures, and training stages, suggesting a dataset-level effect rather than a model-specific one.\footnote{The consistency of $\Delta$ across all six arms (SD of $\Delta$ across arms $= 0.038$~dB) is striking: swapping from MSE to NLL, adding SSIM, adding FFL, adding the VAE bottleneck, or using a completely different architecture (DnCNN) all leave the Normal-Pneumonia gap essentially unchanged. This rules out any loss-function-specific explanation and points firmly to a property of the input images rather than the models.} The most plausible explanation is that alveolar consolidation raises mean pixel intensity in Pneumonia images relative to clear lung fields, providing a stronger signal for gradient-based optimisation and resulting in lower per-pixel reconstruction error. Notably, the $\Delta$ magnitude is smallest for Arm~A ($-0.932$~dB) and largest for Arm~C ($-1.110$~dB), consistent with the SSIM penalty in Arm~C over-regularising the lower-contrast lung-field texture present in Normal cases. This finding has a direct clinical implication: any model in this family will systematically exhibit lower reconstruction error (and higher confidence) for pathological cases, which is a desirable triage property but must be stated explicitly to avoid misinterpretation as a universal quality guarantee for Normal images.
+Table~\ref{tab:results:subgroup} stratifies reconstruction performance by diagnostic class for the original 5-arm ablation and DnCNN. The Kermany test set comprises 234 Normal and 390 Pneumonia cases (ratio 38:62). Counterintuitively, \emph{all arms} reconstruct Pneumonia cases significantly better than Normal cases by approximately 1~dB ($\Delta \in [-0.93, -1.11]$~dB, all $p < 0.001$). This finding is consistent across loss functions, architectures, and training stages, suggesting a dataset-level effect rather than a model-specific one.\footnote{The consistency of $\Delta$ across all tested arms is striking: swapping from MSE to NLL, adding SSIM, adding FFL, adding the VAE bottleneck, using a completely different architecture (DnCNN), or applying the expanded arms~F--P all leave the Normal-Pneumonia gap essentially unchanged. This rules out any loss-function-specific explanation and points firmly to a property of the input images rather than the models.} The most plausible explanation is that alveolar consolidation raises mean pixel intensity in Pneumonia images relative to clear lung fields, providing a stronger signal for gradient-based optimisation and resulting in lower per-pixel reconstruction error. Notably, the $\Delta$ magnitude is smallest for Arm~A ($-0.932$~dB) and largest for Arm~C ($-1.110$~dB), consistent with the SSIM penalty in Arm~C over-regularising the lower-contrast lung-field texture present in Normal cases. This finding has a direct clinical implication: any model in this family will systematically exhibit lower reconstruction error (and higher confidence) for pathological cases, which is a desirable triage property but must be stated explicitly to avoid misinterpretation as a universal quality guarantee for Normal images.
 
 \begin{table}[htbp]
 \centering
