@@ -4134,6 +4134,50 @@ SwinIR \cite{liang_swinir_2021}               & $30.09\pm0.81$ & $31.11\pm0.74$ 
 }
 \end{table}
 
+% ============================================================
+\section{Held-Out Perceptual Metrics: FSIM and LPIPS}
+\label{sec:results:perceptual}
+% ============================================================
+
+Table~\ref{tab:results:fsim} reports two perceptual metrics --- FSIM \cite{zhang_fsim_2011} and LPIPS \cite{zhang_unreasonable_2018} (AlexNet backbone) --- evaluated on the full 624-image held-out test set at mid noise. Neither metric appeared in any arm's training objective. FSIM and LPIPS were selected as held-out validators specifically because they capture perceptual quality orthogonal to the pixel-norm and structural objectives used in training: FSIM uses phase congruency and gradient magnitude (a measure of structural texture fidelity), while LPIPS uses deep AlexNet features (a measure of high-level perceptual similarity). All values were computed using the \texttt{piq} library (v0.8.0) with \texttt{piq.fsim(..., chromatic=False)} for greyscale FSIM and \texttt{piq.LPIPS} with 3-channel replication for LPIPS.
+
+\begin{table}[htbp]
+\centering
+\caption[Held-out perceptual metrics (FSIM and LPIPS) at mid noise]{FSIM (higher is better) and LPIPS (lower is better) for all 21 models at mid noise ($\eta{=}200$, $n{=}624$). Neither metric was used in any training objective; results represent a fully held-out evaluation. FSIM and LPIPS values were computed with \texttt{piq} v0.8.0. Bold denotes the best value per column. LPIPS from \texttt{piq.LPIPS} (AlexNet) differs numerically from the main evaluation table (which used the \texttt{lpips} library) due to implementation differences; within-table comparisons are valid, cross-table comparisons are not.}
+\label{tab:results:fsim}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Arm / Model} & \textbf{FSIM $\uparrow$} & \textbf{LPIPS $\downarrow$} \\
+\midrule
+A --- $\mathcal{L}_{\mathrm{MSE}}$      & $\mathbf{0.9317 \pm 0.0088}$ & $\mathbf{0.2257 \pm 0.0343}$ \\
+B --- NLL                                & $0.9157 \pm 0.0092$          & $0.2732 \pm 0.0374$ \\
+C --- NLL+SSIM                           & $0.8997 \pm 0.0102$          & $0.3411 \pm 0.0370$ \\
+D --- NLL+SSIM+FFL                       & $0.9160 \pm 0.0093$          & $0.2733 \pm 0.0371$ \\
+E --- PP-VAE (linear KL)                 & $0.8926 \pm 0.0113$          & $0.3687 \pm 0.0346$ \\
+F --- PP-VAE (cyclical KL)               & $0.9072 \pm 0.0108$          & $0.3009 \pm 0.0335$ \\
+G --- PP-VAE (free bits)                 & $0.9018 \pm 0.0103$          & $0.3318 \pm 0.0352$ \\
+H --- PP-VAE (cyc.+fb.)                  & $0.9056 \pm 0.0105$          & $0.3079 \pm 0.0338$ \\
+I --- $\mathcal{L}_1$                    & $0.9296 \pm 0.0090$          & $0.2291 \pm 0.0350$ \\
+J --- $\mathcal{L}_1$+SSIM+FFL          & $0.9306 \pm 0.0086$          & $0.2268 \pm 0.0336$ \\
+K --- NLL+$\mathcal{L}_1$               & $0.9131 \pm 0.0093$          & $0.2824 \pm 0.0378$ \\
+L --- NLL+Edge+FFL                       & $0.9116 \pm 0.0093$          & $0.2877 \pm 0.0383$ \\
+M --- NLL+SSIM+Edge+FFL                  & $0.8956 \pm 0.0112$          & $0.3627 \pm 0.0345$ \\
+N --- NLL+Perceptual+SSIM+FFL            & $0.9017 \pm 0.0099$          & $0.3310 \pm 0.0355$ \\
+O --- NLL+SSIM+FFL (PReLU)               & $0.8757 \pm 0.0124$          & $0.4397 \pm 0.0246$ \\
+P --- PP-VAE (best)                      & $0.8929 \pm 0.0111$          & $0.3695 \pm 0.0343$ \\
+\midrule
+DnCNN \cite{zhang_beyond_2017}          & $0.9071 \pm 0.0102$          & $0.2922 \pm 0.0321$ \\
+FFDNet \cite{zhang_ffdnet_2018}         & $0.9025 \pm 0.0105$          & $0.3226 \pm 0.0365$ \\
+IRCNN \cite{zhang_learning_2017}        & $0.9027 \pm 0.0105$          & $0.3168 \pm 0.0337$ \\
+DRUNet \cite{zhang_plug_2021}           & $0.9212 \pm 0.0090$          & $0.2354 \pm 0.0269$ \\
+SwinIR \cite{liang_swinir_2021}         & $0.8905 \pm 0.0115$          & $0.4148 \pm 0.0323$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The PSNR rank ordering is largely preserved under both held-out metrics. Pixel-norm arms (A, I, J) dominate with FSIM~$\in[0.9296, 0.9317]$ and LPIPS~$\in[0.2257, 0.2291]$. Arm~J ($\mathcal{L}_1$+SSIM+FFL) trails Arm~A by only $\Delta\mathrm{FSIM} = 0.0011$ while achieving a $0.37$~dB lower PSNR, suggesting that J's structural regularisers preserve the phase-congruency and gradient-magnitude components captured by FSIM with near-parity to L2. The NLL group (B, D: FSIM~$\approx 0.9158$) lies $\approx 0.016$ FSIM below the pixel-norm group, consistent with the $1.2$~dB PSNR gap. Among baselines, DRUNet achieves FSIM~$= 0.9212$ --- notably above any NLL ablation arm and approaching the pixel-norm tier --- despite a PSNR of only $32.17$~dB, suggesting DRUNet's dilated residual architecture preserves structural frequency content more efficiently than PSNR alone captures. VAE arms (E, G, P: FSIM~$\in[0.8926, 0.9056]$) cluster $\approx 0.024$--$0.039$ below Arm~A on FSIM, consistent with the reconstruction penalty from KL regularisation. Arm~O (PReLU failure) remains the worst arm on FSIM ($0.8757$) and LPIPS ($0.4397$), confirming that the pathological divergence produces perceptually degraded images beyond what PSNR alone captures.
+
 \section{Error Analysis and Failure Cases}
 \label{sec:results:error}
 
@@ -4194,7 +4238,7 @@ The following enumerated findings correspond directly to the research objectives
 \subsection{Reconstruction Performance and the PSNR-SSIM Trade-Off}
 \label{sec:disc:findings:psnr}
 
-The ranking of models by PSNR (Table~\ref{tab:results:recon:mid}) largely, but not entirely, mirrors their ranking by perceptual quality (LPIPS $\downarrow$). Arm~A achieves both the highest PSNR ($34.618\pm1.071$~dB) and one of the lowest LPIPS scores ($0.1287$), suggesting that at the Poisson-Gaussian noise magnitudes studied, minimising mean squared error and preserving perceptual quality are not in tension. This contrasts with the classical perception--distortion tradeoff~\cite{blau_perception_2018}, which predicts that distortion-minimising objectives (such as L2) are Pareto-dominated by perceptually oriented methods. The resolution of this apparent contradiction is quantitative: the Blau--Michaeli bound becomes binding only at large reconstruction distortions (i.e., severely degraded inputs). At our mid-noise level ($\eta=200$, PSNR~34.6~dB), reconstruction quality is already high enough that L2 and perceptual quality remain aligned. Had we studied higher noise levels ($\eta \gg 300$), we would expect LPIPS to decouple from PSNR, favouring perceptual objectives such as SSIM or GAN-based reconstruction.
+The ranking of models by PSNR (Table~\ref{tab:results:recon:mid}) largely mirrors their ranking by both training-set perceptual quality (LPIPS $\downarrow$) and the held-out FSIM metric (Table~\ref{tab:results:fsim}). Arm~A achieves both the highest PSNR ($34.618\pm1.071$~dB), the highest held-out FSIM ($0.9317$), and the lowest held-out LPIPS ($0.2257$), suggesting that at the Poisson-Gaussian noise magnitudes studied, minimising mean squared error and preserving perceptual quality are not in tension. This contrasts with the classical perception--distortion tradeoff~\cite{blau_perception_2018}, which predicts that distortion-minimising objectives (such as L2) are Pareto-dominated by perceptually oriented methods. The resolution of this apparent contradiction is quantitative: the Blau--Michaeli bound becomes binding only at large reconstruction distortions (i.e., severely degraded inputs). At our mid-noise level ($\eta=200$, PSNR~34.6~dB), reconstruction quality is already high enough that L2 and perceptual quality remain aligned. Had we studied higher noise levels ($\eta \gg 300$), we would expect LPIPS and FSIM to decouple from PSNR, favouring perceptual objectives such as SSIM or GAN-based reconstruction. Notably, Arm~J ($\mathcal{L}_1$+SSIM+FFL) achieves near-parity with Arm~A on FSIM ($0.9306$ vs $0.9317$, $\Delta = 0.0011$) despite being $0.30$~dB lower on PSNR, suggesting that J's structural regularisers preserve the phase-congruency and gradient components that FSIM measures.
 
 The NLL arms (B, D: $\approx 33.4$--$33.5$~dB) lie approximately $1.2$~dB below Arm~A. This gap is not a failure of the NLL objective; rather, it reflects the distributional shift from a pointwise MSE signal to a heteroscedastic likelihood signal. The NLL objective asks the network to simultaneously estimate the clean image mean \emph{and} the per-pixel noise variance, which distributes model capacity across two tasks. The price is approximately $1.2$~dB PSNR. The clinical value recovered in exchange is a calibrated aleatoric uncertainty map $\hat{\sigma}^2_a$ at every pixel, a capability entirely unavailable from MSE-trained architectures.
 
