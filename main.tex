@@ -2700,7 +2700,7 @@ to attend to different kinds of contextual relationships simultaneously.} within
 local windows of size $8 \times 8$ pixels. Restricting attention to local windows is the key
 design choice from the Swin Transformer \cite{liu_swin_2021}: global self-attention over a
 $256 \times 256$ feature map would require computing roughly $4.3 \times 10^9$ pairwise
-similarity scores, which is computationally infeasible. Window attention reduces this to only
+similarity scores, which is computationally expensive. Window attention reduces this to only
 $64 \times 64 = 4{,}096$ scores per window -- enough context to integrate information
 across anatomical boundaries -- while keeping the total computation tractable. The block
 uses pre-normalisation with LayerNorm and a two-layer feedforward network with a hidden
@@ -2714,10 +2714,10 @@ After the three encoder stages, the feature map is at its smallest spatial footp
 ($32 \times 32$ pixels, 512 channels). Two further HybridBlocks process the bottleneck
 features before the optional VAE layer is applied.
 
-For Arms A through D (\texttt{use\_vae=False}), the bottleneck is deterministic: the feature
+For Arms A through D, the bottleneck is deterministic: the feature
 map passes through the bottleneck HybridBlocks and directly into the decoder.
 
-For Arm E (\texttt{use\_vae=True}), a VAEBottleneck module is applied after the bottleneck
+For Arm E, a VAE Bottleneck module is applied after the bottleneck
 HybridBlocks. Unlike the original VAE \cite{kingma_auto-encoding_2014} which maps the
 entire image to a single global latent vector, this VAE operates spatially on the full
 $512 \times 32 \times 32$ feature map. Three $1 \times 1$ convolutions serve as projection
