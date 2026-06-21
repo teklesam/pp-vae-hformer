@@ -4391,6 +4391,7 @@ This dissertation designed, implemented, and rigorously evaluated a Pathology-Pr
   \item \textbf{Architecture and objective design} (Objective~2) was met by the 16-arm ablation study, which isolates the contribution of every loss term: NLL provides calibrated uncertainty ($-2.556$~nats/px in best arm); MS-SSIM+FFL together recover the NLL baseline's PSNR while adding perceptual benefit; cyclical KL prevents posterior collapse and enables VAE parity with CNN baselines.
 
   \item \textbf{Pathology preservation validation} (Objective~3) was met by the full quantitative comparison against five retrained baselines (DnCNN, IRCNN, FFDNet, DRUNet, SwinIR), the 210-pair pairwise statistical analysis, and the subgroup analysis demonstrating that all arms perform $\approx 1$~dB better on Pneumonia (pathological) than Normal images --- confirming that the models are not biased against the pathology class.
+  
 
   \item \textbf{Uncertainty quantification} (Objective~4) was met by evaluating aleatoric calibration via NLL and sharpness metrics across all NLL and VAE arms, and by demonstrating that the cyclical KL schedule produces better-calibrated uncertainty outputs (lower NLL, lower $\hat{\sigma}_a$) than the linear-warmup or free-bits schedules.
 \end{enumerate}
