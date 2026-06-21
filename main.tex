@@ -1571,8 +1571,8 @@ single cohort. Their main findings are summarised in Table~\ref{tab:lit:dose}.
   \end{tabular}
 
   \vspace{0.01em}
-  {\footnotesize \textbf{Note:} The contrast between chest radiography and head CT---a factor 
-  of over 800 in attributable risk---illustrates why preventing unnecessary escalation from 
+  {\footnotesize \textbf{Note:} The contrast between chest radiography and head CT (a factor
+  of over 800 in attributable risk) illustrates why preventing unnecessary escalation from
   X-ray to CT is clinically meaningful. ERR = excess relative risk. Source: Smith-Bindman 
   et al.\ (2025), \textit{N Engl J Med}, 392(1):44--56.}
 \end{table}
@@ -1883,7 +1883,7 @@ the key benchmark results across the methods described above.
 
   \vspace{0.4em}
   {\footnotesize \textbf{Notes:} Higher PSNR is better; bold indicates best in tier.
-  Performance gains come primarily from architectural innovation---the field has relied on
+  Performance gains come primarily from architectural innovation; the field has relied on
   L2 or Charbonnier loss throughout. Sources: all numbers from Liang et al.\ (2021, Table~5)
   unless noted. \textsuperscript{\dag}SCUNet numbers from Zhang et al.\ (2023, Table~1).
   $\dagger$PP-VAE-Hformer (Arm~A, best PSNR arm) evaluated on Kermany paediatric CXR
@@ -2848,8 +2848,8 @@ preserved in the reconstruction beyond what the pixel-level NLL alone enforces.
 
 Arm D adds the Focal Frequency Loss (FFL) \cite{jiang_focal_2021}. As discussed in
 Section~\ref{sec:lit:losses:ffl}, spectral bias \cite{rahaman_spectral_2019} causes
-pixel-domain-trained networks to underfit high-frequency components --- fine edges, vessel
-margins, and consolidation boundaries --- precisely the structures most clinically significant
+pixel-domain-trained networks to underfit high-frequency components such as fine edges, vessel
+margins, and consolidation boundaries, which are precisely the structures most clinically significant
 in paediatric CXR. FFL addresses this by computing reconstruction error in the frequency
 domain via the two-dimensional discrete Fourier transform, with adaptive weights that
 concentrate gradient pressure on the frequency components the model currently reconstructs
@@ -3297,7 +3297,7 @@ SwinIR \cite{liang_swinir_2021}$^\dagger$  & 31.183 & 0.8525 & 200 \\
 \subsection{Quantitative Metrics}
 \label{sec:results:recon:quant}
 
-Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$) for all 16 ablation arms, 4 retrained KAIR baselines, and DnCNN. Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs for PSNR are from 1,000 bootstrap resamples. Arms~E, F, G, H, and~P use a VAE bottleneck ($\mathbf{z} = \boldsymbol{\mu}_z$ at inference, deterministic decode); all other arms are fully deterministic.
+Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$) for all 16 ablation arms, 4 retrained KAIR baselines, and DnCNN. Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs for PSNR are from 1,000 bootstrap resamples. Arms~E, F, G, H, and~P use a VAE bottleneck ($\mathbf{z} = \boldsymbol{\mu}_z$ at inference, deterministic decode); all other arms are fully deterministic. The same results are displayed visually as ranked bar charts in Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} (Section~\ref{sec:results:ablation}).
 
 \begin{sidewaystable}[p]
 \centering
@@ -3625,7 +3625,7 @@ The three sites were selected to stress-test complementary reconstruction proper
 \subsection{Performance as a Function of Degradation Severity}
 \label{sec:results:recon:dosecurve}
 
-Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise severity for all 21 models across three noise presets. All models degrade monotonically from low to high noise, confirming that the noise severity ordering is well-calibrated. Within the 16 ablation arms, the ranking at mid noise is largely preserved at low and high noise, with two notable exceptions. First, Arm~O (PReLU) consistently occupies last place across all noise levels, confirming that the PReLU failure is not noise-level specific. Second, Arm~M (NLL+SSIM+Edge+FFL) and Arm~E show crossover at high noise, consistent with the edge loss in Arm~M becoming slightly more effective at high degradation levels where gradient-domain information is more diagnostic. The KAIR baselines cluster in the $30.6$--$34.9$~dB range across noise levels, with SwinIR consistently trailing its CNN counterparts by $\approx$$2$~dB. Arms~A, I, and~J form a stable high-fidelity cluster ($>$$36.4$~dB at low noise) throughout, while the VAE arms cluster $\approx$$2$~dB below, consistently.
+Figures~\ref{fig:results:dosecurve:psnr} and~\ref{fig:results:dosecurve:ssim} show PSNR and SSIM as a function of noise severity for all 21 models across three noise presets. All models degrade monotonically from low to high noise, confirming that the noise severity ordering is well-calibrated. Within the 16 ablation arms, the ranking at mid noise is largely preserved at low and high noise, with two notable exceptions. First, Arm~O (PReLU) consistently occupies last place across all noise levels, confirming that the PReLU failure is not noise-level specific. Second, Arm~M (NLL+SSIM+Edge+FFL) and Arm~E show crossover at high noise, consistent with the edge loss in Arm~M becoming slightly more effective at high degradation levels where gradient-domain information is more diagnostic. The KAIR baselines cluster in the $30.6$--$34.9$~dB range across noise levels, with SwinIR consistently trailing its CNN counterparts by $\approx$$2$~dB. Arms~A, I, and~J form a stable high-fidelity cluster ($>$$36.4$~dB at low noise) throughout, while the VAE arms cluster $\approx$$2$~dB below, consistently.
 
 \begin{figure}[!htb]
 \centering
@@ -3634,7 +3634,7 @@ Figure~\ref{fig:results:dosecurve} shows PSNR and SSIM as a function of noise se
   PSNR (dB, mean\,$\pm$\,SD, $n=624$) as a function of noise severity for all 21 models.
   Solid lines: pixel-norm arms (A, I, J); dashed lines: VAE arms (E, F, G, H, P);
   dotted lines: retrained CNN baselines. Colour coding consistent with
-  Figure~\ref{fig:results:ablation}. All models degrade monotonically;
+  Figure~\ref{fig:results:ablation:psnr}. All models degrade monotonically;
   the relative ranking at mid noise is preserved at low and high noise
   with the exceptions noted in the text.}
 \label{fig:results:dosecurve:psnr}
@@ -3792,7 +3792,7 @@ The 13 arms with heteroscedastic NLL loss (arms B--D, F--H, K--N, O, P) each pro
 
 Figures~\ref{fig:results:uncertainty:arm_b}--\ref{fig:results:uncertainty:arm_h} present pixel-level uncertainty maps for the three NLL/VAE arms most relevant to the dissertation's clinical objectives: Arm~B (pure NLL), Arm~D (NLL+SSIM+FFL), and Arm~H (best VAE). Each figure shows four Bacterial Pneumonia test cases in the rows, with columns: Noisy input, Reference, Reconstruction ($\hat{\mu}$), Aleatoric uncertainty ($\hat{\sigma}_a$, inferno colourmap $[0, 0.30]$), Absolute error ($|\hat{\mu}-y|$, hot colourmap).
 
-The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across all three arms. First, dark parenchymal regions (lung fields) consistently show the highest predicted uncertainty, correctly reflecting the elevated quantum noise in these low-photon-count pixels under the Poisson-Gaussian model. Second, bright mediastinal structures (heart border, aortic knuckle) show near-zero predicted uncertainty, correctly reflecting the high photon count and low relative noise at high-intensity pixels. Third, at alveolar consolidation margins --- the diagnostic boundary between consolidated and aerated lung --- predicted uncertainty is elevated above the surrounding parenchyma, consistent with the model recognising that boundary pixel values are genuinely ambiguous under noise.
+The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across all three arms. First, dark parenchymal regions (lung fields) consistently show the highest predicted uncertainty, correctly reflecting the elevated quantum noise in these low-photon-count pixels under the Poisson-Gaussian model. Second, bright mediastinal structures (heart border, aortic knuckle) show near-zero predicted uncertainty, correctly reflecting the high photon count and low relative noise at high-intensity pixels. Third, at alveolar consolidation margins (the boundary between consolidated and aerated lung), predicted uncertainty is elevated above the surrounding parenchyma, consistent with the model recognising that boundary pixel values are genuinely ambiguous under noise.
 
 \begin{figure}[!htb]
 \centering
@@ -4223,7 +4223,7 @@ The cyclical KL schedule (Arms~F, H) prevents this collapse by periodically rese
 
 All NLL-trained arms produce calibrated aleatoric uncertainty maps $\hat{\sigma}^2_a$. The sharpness values (mean predicted $\hat{\sigma}_a$ per pixel) range from $0.0159$ (Arm~A, which has no variance head) to $0.0309$ (Arm~O, PReLU failure), with the best-performing NLL arms (B, D) clustered at $\hat{\sigma}_a \approx 0.0200$ and the best VAE arms (F, H) at $\hat{\sigma}_a \approx 0.0215$. Lower sharpness indicates tighter, more confident predictions; higher sharpness indicates the model is uncertain about its own reconstruction.
 
-The structure of the aleatoric uncertainty maps is physically meaningful: the Poisson-Gaussian noise model predicts that uncertainty scales with the expected photon count, which is proportional to local image intensity. In a chest radiograph, this means the model should predict higher uncertainty in dark regions (lung parenchyma, where quantum noise is greatest) and lower uncertainty in bright regions (rib cortex, mediastinum). The qualitative uncertainty maps (Figure~\ref{fig:results:uncertainty}) confirm this pattern for Arms~B, D, F, and~H, validating that the heteroscedastic training objective has successfully learned the signal-dependent noise structure.
+The structure of the aleatoric uncertainty maps is physically meaningful: the Poisson-Gaussian noise model predicts that uncertainty scales with the expected photon count, which is proportional to local image intensity. In a chest radiograph, this means the model should predict higher uncertainty in dark regions (lung parenchyma, where quantum noise is greatest) and lower uncertainty in bright regions (rib cortex, mediastinum). The qualitative uncertainty maps (Figures~\ref{fig:results:uncertainty:arm_b}--\ref{fig:results:uncertainty:arm_h}) confirm this pattern for Arms~B, D, F, and~H, validating that the heteroscedastic training objective has successfully learned the signal-dependent noise structure.
 
 For Arms~E and~P (KL collapse and PReLU failure respectively), the uncertainty maps are spatially uniform and elevated: the model has lost the ability to discriminate between high- and low-confidence regions, reverting to a constant predicted variance that covers all regions equally. This directly translates to clinical uselessness of the uncertainty output --- a constant uncertainty map provides no information to the radiologist about which regions of the reconstruction are reliable.
 
@@ -4238,7 +4238,7 @@ Direct numerical comparison with published denoising benchmarks is confounded by
 
 \textbf{Contextual comparison.} Table~\ref{tab:disc:lit} lists representative published results. All values are from different datasets and noise models; they provide scale reference only. Our Arm~A ($34.63$~dB) exceeds the RED-CNN result on clinical CT ($33.11$~dB; Chen et al.\ \citeyear{chen_low_2017}), despite the different domain, consistent with the architectural advantage of transformer-based feature aggregation over the residual CNN used in RED-CNN. Standard AWGN benchmarks (DnCNN, DRUNet, SwinIR, SCUNet on BSD68 at $\sigma=25$) cluster around 29--30~dB owing to the harder natural-image task; direct comparison is not meaningful.
 
-The most architecturally comparable prior work is Xu et al.\ \cite{xuLowdoseComputedTomography2025}, who combined a residual dense network with transformer attention for LDCT denoising — a design closely paralleling PP-VAE-Hformer's hybrid backbone. The critical distinction is that their architecture is entirely deterministic: it produces a single point-estimate reconstruction with no mechanism for uncertainty quantification. PP-VAE-Hformer's VAE bottleneck provides calibrated per-pixel uncertainty maps (Figure~\ref{fig:results:uncertainty}), a capability unavailable in any deterministic hybrid architecture including Xu et al.\ \cite{xuLowdoseComputedTomography2025}, Hformer \cite{zhang_hformer_2023}, and SCUNet \cite{zhang_scunet_2023}. This uncertainty output is directly actionable in the paediatric CXR clinical workflow, where a radiologist can use a high-uncertainty reconstruction region as a flag to request a repeat exposure or a second opinion.
+The most architecturally comparable prior work is Xu et al.\ \cite{xuLowdoseComputedTomography2025}, who combined a residual dense network with transformer attention for LDCT denoising — a design closely paralleling PP-VAE-Hformer's hybrid backbone. The critical distinction is that their architecture is entirely deterministic: it produces a single point-estimate reconstruction with no mechanism for uncertainty quantification. PP-VAE-Hformer's VAE bottleneck provides calibrated per-pixel uncertainty maps (Figures~\ref{fig:results:uncertainty:arm_b}--\ref{fig:results:uncertainty:arm_h}), a capability unavailable in any deterministic hybrid architecture including Xu et al.\ \cite{xuLowdoseComputedTomography2025}, Hformer \cite{zhang_hformer_2023}, and SCUNet \cite{zhang_scunet_2023}. This uncertainty output is directly actionable in the paediatric CXR clinical workflow, where a radiologist can use a high-uncertainty reconstruction region as a flag to request a repeat exposure or a second opinion.
 
 \begin{table}[htbp]
 \centering
@@ -4281,7 +4281,7 @@ Each term corresponds to a distinct domain prior: the NLL enforces the Gaussian 
 \section{Clinical Relevance}
 \label{sec:disc:clinical}
 
-\textbf{Dose reduction potential.} The dose curve (Figure~\ref{fig:results:dosecurve}) demonstrates that all NLL and VAE arms maintain $\geq 31$~dB PSNR at the highest noise level ($\eta=300$), a noise magnitude corresponding to a simulated exposure $\approx 3\times$ lower than the mid-noise reference. Arm~A maintains $32.9$~dB at high noise --- a level that matches the best CNN baseline (IRCNN: $32.7$~dB) at the lower mid-noise setting. This suggests that a clinical deployment of Arm~A reconstruction could support a dose reduction of approximately $1.5\times$ (mid$\to$high noise) while maintaining reconstruction quality equivalent to the best existing retrained CNN baseline at nominal dose. For the VAE arms~F and~H, which provide uncertainty maps, the high-noise PSNR ($30.9$--$30.7$~dB) is still above SwinIR at mid noise ($31.2$~dB), demonstrating that the uncertainty functionality is retained without catastrophic quality degradation at reduced dose.
+\textbf{Dose reduction potential.} The dose curves (Figures~\ref{fig:results:dosecurve:psnr} and~\ref{fig:results:dosecurve:ssim}) demonstrate that all NLL and VAE arms maintain $\geq 31$~dB PSNR at the highest noise level ($\eta=300$), a noise magnitude corresponding to a simulated exposure $\approx 3\times$ lower than the mid-noise reference. Arm~A maintains $32.9$~dB at high noise --- a level that matches the best CNN baseline (IRCNN: $32.7$~dB) at the lower mid-noise setting. This suggests that a clinical deployment of Arm~A reconstruction could support a dose reduction of approximately $1.5\times$ (mid$\to$high noise) while maintaining reconstruction quality equivalent to the best existing retrained CNN baseline at nominal dose. For the VAE arms~F and~H, which provide uncertainty maps, the high-noise PSNR ($30.9$--$30.7$~dB) is still above SwinIR at mid noise ($31.2$~dB), demonstrating that the uncertainty functionality is retained without catastrophic quality degradation at reduced dose.
 
 \textbf{Paediatric imaging context.} The finding that Pneumonia cases are reconstructed $\approx 1.0$~dB better than Normal cases across all arms (Section~\ref{sec:results:subgroup}) has direct clinical relevance: the patient population most frequently scanned at low dose (infants with suspected pneumonia, where repeat exposures carry the highest cancer risk) systematically benefits more from reconstruction. This reversal of the usual dose--quality tradeoff makes the framework particularly well-suited to the paediatric emergency CXR context.
 
