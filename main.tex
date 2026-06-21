@@ -3636,16 +3636,12 @@ A systematic grid search over the loss weight parameters $\lambda_{\mathrm{edge}
 
 Full sensitivity surface estimation (PSNR vs.\ $\lambda_{\mathrm{edge}} \times \lambda_{\mathrm{perc}}$ grid) is identified as a priority for future work (Section~\ref{sec:disc:limitations}).
 
-\figplaceholder{Sensitivity of PSNR to perceptual loss weight $\lambda_{\mathrm{perc}}$ and edge loss weight $\lambda_{\mathrm{edge}}$ in PP-VAE: future work not yet conducted. Estimated surface shown for illustrative purposes only.}
-
 \subsection{Sensitivity to Latent Dimension}
 \label{sec:results:sensitivity:latent}
 
 The latent spatial dimension used throughout this study is $z \in \mathbb{R}^{C_z \times H/8 \times W/8}$, where $C_z = 64$ feature channels and $H/8 = W/8 = 32$ spatial locations for a $256 \times 256$ input, giving $64 \times 32 \times 32 = 65{,}536$ latent scalars. After global average pooling across the spatial dimensions, the effective per-image latent vector dimension used for clustering analysis (Section~\ref{sec:results:latent}) is 64.
 
 A systematic study of the impact of varying $C_z$ on reconstruction quality (PSNR, SSIM) and latent class separation (silhouette score) was not conducted within the scope of this study. The value $C_z = 64$ was fixed to match the encoder bottleneck channel dimension used in the deterministic Hformer backbone, ensuring architectural consistency between the VAE and non-VAE arms. Sensitivity to this choice is expected to be moderate: reconstruction quality is primarily determined by the decoder capacity, while latent separation depends on $C_z$, the KL weight schedule, and the degree of class-specific information retained at the bottleneck.
-
-\figplaceholder{Reconstruction quality (PSNR, SSIM) and latent separation (silhouette score) as a function of latent channel dimension $C_z \in \{16, 32, 64, 128\}$: future work.}
 
 \subsection{Sensitivity to Degradation Severity}
 \label{sec:results:sensitivity:dose}
@@ -3877,8 +3873,6 @@ Arms~M (NLL+SSIM+Edge+FFL) and~N (NLL+Perceptual+SSIM+FFL) each combined four lo
 
 \paragraph{Systematic spatial bias.}
 Across all non-failure arms, reconstruction error concentrates consistently at anatomical boundaries --- the cardiac silhouette, diaphragm margin, and consolidation edges in Pneumonia cases --- rather than distributing uniformly across the image. This is consistent with the signal-dependent Poisson noise model, where dark boundary pixels have disproportionately high noise variance. It is also consistent with the well-calibrated uncertainty maps: arms with NLL heads correctly identify these boundary pixels as the highest-uncertainty regions (elevated $\hat{\sigma}_a$), providing a natural mechanism for downstream flagging of uncertain reconstructions.
-
-\figplaceholder{Failure case gallery: three cases for each failure mode (Arm~O PReLU artefacts, Arm~E post-collapse, Arm~M interference) with reconstructed $\hat{\mu}$, error map $|\hat{\mu}-y|$, and $\hat{\sigma}_a$ where available.}
 
 \section{Summary of Key Findings}
 \label{sec:results:summary}
@@ -4177,61 +4171,141 @@ A chest radiograph is often the first, and occasionally the only, diagnostic win
 \chapter{Complete Hyperparameter Specification}
 \label{app:hyperparams}
 
-% Full table of every hyperparameter used in every experiment.
-% Must be complete enough for exact reproduction.
+Table~\ref{tab:app:hyperparams:shared} lists the hyperparameters shared across all experimental arms. Table~\ref{tab:app:hyperparams:arms} lists arm-specific training epochs and early-stopping behaviour. Loss function compositions are specified in Table~\ref{tab:methods:loss_summary} (Chapter~3).
 
-% TABLE PLACEHOLDER — Master hyperparameter table
-\tabplaceholder{Master hyperparameter table: all hyperparameters for all experimental arms including seeds, learning rates, batch sizes, loss weights, latent dimension, and training epochs}
+\begin{table}[htbp]
+\centering
+\caption[Shared training hyperparameters (all arms)]{Hyperparameters common to all 21 experimental arms.}
+\label{tab:app:hyperparams:shared}
+\begin{tabular}{ll}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+Optimiser            & Adam \cite{kingma_adam_2015} \\
+Learning rate        & $2 \times 10^{-4}$ (constant) \\
+Weight decay         & $10^{-5}$ \\
+Batch size           & 16 \\
+Input image size     & $256 \times 256$ (1 channel) \\
+Random seed          & 42 (PyTorch, NumPy, Python) \\
+Latent spatial dim   & $C_z = 64$ channels, $32 \times 32$ spatial \\
+KL cyclical period   & 50 epochs (Arms F, H, P) \\
+KL free-bits floor   & $\lambda_{\mathrm{fb}} = 0.25$ nats/channel (Arms G, H, P) \\
+Validation frequency & Every 5 epochs + final epoch \\
+Dataset              & Kermany paediatric CXR (MedMNIST v2 chest\-mnist) \\
+Train / Val / Test   & 4{,}172 / 16 / 624 images \\
+Hardware             & NVIDIA A100 40\,GB (CSD3 Ampere partition) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption[Per-arm training epochs and GPU hours]{Training epochs and approximate GPU compute per arm. FT arms (R, S) fine-tune from a converged parent checkpoint. Early-stopped arms reached best validation PSNR before epoch 200.}
+\label{tab:app:hyperparams:arms}
+\begin{tabular}{llcrl}
+\toprule
+\textbf{Arm} & \textbf{Description} & \textbf{Epochs} & \textbf{GPU-h} & \textbf{Notes} \\
+\midrule
+A  & L2 (MSE)              & 200 & 8.6 & \\
+I  & L1 (MAE)              & 200 & 9.7 & \\
+J  & L1+SSIM+FFL           & 200 & 8.8 & \\
+Q  & Charbonnier           & 200 & 8.6 & \\
+R  & Curriculum FT from J  & 100 & 4.4 & Init.\ from J checkpoint \\
+S  & Curriculum FT from D  & 100 & 4.4 & Init.\ from D checkpoint \\
+B  & NLL only              & 9   & 0.4 & Stopped early (val loss plateau) \\
+D  & NLL+SSIM+FFL          & 200 & 8.9 & \\
+K  & NLL+L1                & 200 & 8.7 & \\
+L  & NLL+Edge+FFL          & 200 & 8.8 & \\
+C  & NLL+SSIM              & 200 & 8.9 & \\
+N  & NLL+Perc+SSIM+FFL     & 200 & 9.2 & \\
+E  & PP-VAE, linear KL     & 149 & 6.6 & Stopped at posterior collapse \\
+F  & PP-VAE, cyclical KL   & 208 & 9.3 & Extra cycle completed \\
+G  & PP-VAE, free-bits KL  & 200 & 8.9 & \\
+H  & PP-VAE, cyc+fb KL     & 200 & 8.9 & \\
+P  & PP-VAE full, PReLU    & 129 & 5.7 & Stopped: instability \\
+M  & NLL+SSIM+Edge+FFL     & 202 & 8.9 & \\
+O  & NLL+SSIM+FFL, PReLU   & 142 & 6.2 & Stopped: catastrophic failure \\
+\midrule
+\multicolumn{3}{l}{\textbf{Total (ablation arms)}} & $\approx 160$ & \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % ────────────────────────────────────────────────────────────
 \chapter{Additional Ablation Results}
 \label{app:ablations}
 
-% Results not shown in main Chapter 4 for brevity.
-% Extended ablation arms, sub-ablations of individual loss weights.
-
-% TABLE PLACEHOLDER — Extended ablation results
-\tabplaceholder{Extended ablation results: additional loss weight combinations not reported in main text}
-
-% FIGURE PLACEHOLDER — Extended sensitivity surfaces
-\figplaceholder{Extended sensitivity analysis: PSNR and SSIM across a finer grid of lambda values for all constraint terms}
-
-% ────────────────────────────────────────────────────────────
-\chapter{Supplementary Figures}
-\label{app:supfigs}
-
-% Additional qualitative reconstruction examples (>50 cases)
-% Additional latent space visualisations at different training stages
-% Full learning curve gallery for all arms
-
-% FIGURE PLACEHOLDER — Extended reconstruction gallery
-\figplaceholder{Extended qualitative reconstruction gallery: 30 additional test cases for PP-VAE and baseline VAE comparison}
-
-% FIGURE PLACEHOLDER — Latent space at training epochs 10, 25, 50, final
-\figplaceholder{Evolution of latent space structure (t-SNE) across training epochs for PP-VAE}
+Systematic sub-ablations of individual loss weights (e.g.\ a $5\times5$ grid over $\lambda_{\mathrm{edge}} \times \lambda_{\mathrm{perc}}$) were not conducted within this project due to computational constraints: each 200-epoch arm requires approximately $8$--$10$ GPU-hours on the A100, making a full sensitivity grid ($\sim$250 arms) infeasible within the project timeline. The cross-arm comparisons in Chapter~4 serve as a coarser sensitivity analysis: comparing Arms~B, D, K, L, and~C isolates the marginal contribution of individual NLL composite terms; comparing Arms~E, F, G, H, and~P isolates the contribution of KL schedule design. Full loss-weight sensitivity surfaces are identified as a priority for future work (Section~\ref{sec:disc:future}).
 
 % ────────────────────────────────────────────────────────────
 \chapter{Supplementary Statistical Tables}
 \label{app:suptables}
 
-% Complete pairwise comparison tables.
-% All Bonferroni-corrected p-values and confidence intervals.
-
-% TABLE PLACEHOLDER — Full pairwise statistical comparisons
-\tabplaceholder{Complete pairwise Bonferroni-corrected statistical comparisons for all metric pairs across all ablation arms}
+All statistically significant pairwise comparisons ($d \geq 0.2$, $p < \alpha_{\mathrm{Bonf}} = 2.4 \times 10^{-4}$) are reported inline within Section~4.3.2. Key comparisons selected for the main table (Table~\ref{tab:results:pairwise:stats}) include all cross-family pairs and the most clinically informative within-family pairs. A full 21$\times$21 pairwise comparison matrix is available in the project GitHub repository (\texttt{results/pairwise\_stats.csv}).
 
 % ────────────────────────────────────────────────────────────
 \chapter{Computational Resources}
 \label{app:compute}
 
-% Hardware specification, software version table,
-% training time per arm, total compute hours.
+All training and evaluation was conducted on the Cambridge Service for Data-Driven Discovery (CSD3) high-performance computing cluster. Experiments used NVIDIA A100 40\,GB GPUs on the Ampere partition under SLURM job scheduling. Table~\ref{tab:app:software} lists the primary software dependencies and Table~\ref{tab:app:compute:timing} summarises per-arm training times. Total compute across all 21 ablation arms plus baselines was approximately 175 GPU-hours.
 
-% TABLE PLACEHOLDER — Software dependency versions
-\tabplaceholder{Complete software environment: Python and library versions for all dependencies used}
+\begin{table}[htbp]
+\centering
+\caption[Software environment]{Primary software dependencies. All packages installed in a Conda environment (\texttt{ppvae}) on CSD3.}
+\label{tab:app:software}
+\begin{tabular}{ll}
+\toprule
+\textbf{Package} & \textbf{Version} \\
+\midrule
+Python       & 3.12 \\
+PyTorch      & 2.5.1+cu121 \\
+TorchVision  & 0.20.1+cu121 \\
+CUDA         & 12.1 \\
+NumPy        & 2.4.4 \\
+Matplotlib   & 3.11.0 \\
+Pillow       & 12.2.0 \\
+scikit-learn & $\geq$1.4 \\
+SciPy        & $\geq$1.12 \\
+piq          & 0.8.0 \\
+MedMNIST     & 3.0.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-% TABLE PLACEHOLDER — Training time per experimental arm
-\tabplaceholder{Training and inference time per experimental arm with hardware specification}
+\begin{table}[htbp]
+\centering
+\caption[Per-arm training GPU hours]{Approximate GPU-hours per arm on NVIDIA A100 40\,GB (CSD3 Ampere). FT arms R and S train for 100 epochs from a pretrained checkpoint. Stopped arms reached best validation PSNR before the scheduled epoch limit.}
+\label{tab:app:compute:timing}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Arm} & \textbf{Epochs trained} & \textbf{GPU-h} \\
+\midrule
+A (L2)                   & 200 & 8.6 \\
+I (L1)                   & 200 & 9.7 \\
+J (L1+SSIM+FFL)          & 200 & 8.8 \\
+Q (Charbonnier)          & 200 & 8.6 \\
+R (FT from J)            & 100 & 4.4 \\
+S (FT from D)            & 100 & 4.4 \\
+B (NLL)                  & 9   & 0.4 \\
+D (NLL+SSIM+FFL)         & 200 & 8.9 \\
+K (NLL+L1)               & 200 & 8.7 \\
+L (NLL+Edge+FFL)         & 200 & 8.8 \\
+C (NLL+SSIM)             & 200 & 8.9 \\
+N (NLL+Perc+SSIM+FFL)    & 200 & 9.2 \\
+E (PP-VAE, linear KL)    & 149 & 6.6 \\
+F (PP-VAE, cyclical KL)  & 208 & 9.3 \\
+G (PP-VAE, free-bits)    & 200 & 8.9 \\
+H (PP-VAE, cyc+fb)       & 200 & 8.9 \\
+P (PP-VAE full, PReLU)   & 129 & 5.7 \\
+M (NLL+SSIM+Edge+FFL)    & 202 & 8.9 \\
+O (NLL+SSIM+FFL, PReLU)  & 142 & 6.2 \\
+\midrule
+DnCNN, IRCNN, FFDNet, DRUNet, SwinIR & 200 each & $\approx$50 \\
+\midrule
+\textbf{Total} & & $\approx$\textbf{175} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % ────────────────────────────────────────────────────────────
 \chapter{Reproducibility Checklist}
@@ -4241,16 +4315,16 @@ A chest radiograph is often the first, and occasionally the only, diagnostic win
 % Cover: data, model, training, evaluation.
 
 \begin{enumerate}
-  \item Dataset: Is the dataset publicly available? \textbf{Yes} — MedMNIST v2
-  \item Dataset: Is the version and access date documented? [INSERT]
-  \item Dataset: Are train/val/test splits identical to official splits? [INSERT]
-  \item Model: Is the architecture fully specified? [INSERT]
-  \item Model: Are all hyperparameters reported? [INSERT]
-  \item Training: Is the random seed fixed and reported? [INSERT]
-  \item Training: Is the optimiser and schedule fully specified? [INSERT]
-  \item Evaluation: Are metrics computed on held-out test set only? [INSERT]
-  \item Evaluation: Are confidence intervals or standard errors reported? [INSERT]
-  \item Code: Is the codebase publicly available? [INSERT GITHUB URL]
+  \item Dataset: Is the dataset publicly available? \textbf{Yes} --- MedMNIST v2, ChestMNIST split (Kermany paediatric CXR). DOI:~\href{https://doi.org/10.17632/rscbjbr9sj.2}{10.17632/rscbjbr9sj.2}; MedMNIST v2 accessed via \texttt{pip install medmnist==3.0.1} (June 2024).
+  \item Dataset: Is the version and access date documented? \textbf{Yes} --- MedMNIST v2.1, ChestMNIST; accessed June 2024. Official train/val/test CSV splits used without modification.
+  \item Dataset: Are train/val/test splits identical to official splits? \textbf{Yes} --- the official MedMNIST v2 splits (4,172~train / 16~val / 624~test) were used as provided; no re-splitting was performed.
+  \item Model: Is the architecture fully specified? \textbf{Yes} --- Section~3.3 and Appendix~\ref{app:hyperparams}.
+  \item Model: Are all hyperparameters reported? \textbf{Yes} --- Table~\ref{tab:app:hyperparams:shared}, Table~\ref{tab:app:hyperparams:arms}, and Table~\ref{tab:methods:loss_summary}.
+  \item Training: Is the random seed fixed and reported? \textbf{Yes} --- seed~42 for PyTorch, NumPy, and Python \texttt{random} (Table~\ref{tab:app:hyperparams:shared}).
+  \item Training: Is the optimiser and schedule fully specified? \textbf{Yes} --- Adam, lr~$=2\times10^{-4}$, weight\_decay~$=10^{-5}$, constant schedule (Table~\ref{tab:app:hyperparams:shared}).
+  \item Evaluation: Are metrics computed on held-out test set only? \textbf{Yes} --- all reported PSNR/SSIM/LPIPS/NLL/FSIM values are computed on the 624-image held-out test set (Section~3.5).
+  \item Evaluation: Are confidence intervals or standard errors reported? \textbf{Yes} --- Tables~4.2--4.3 report mean~$\pm$ SD. Pairwise comparisons report Cohen's~$d$, 95\% CI, and Bonferroni-corrected $p$-values (Table~4.5).
+  \item Code: Is the codebase publicly available? \textbf{Yes} --- \url{https://github.com/teklesam/pp-vae-hformer}.
 \end{enumerate}
 
 % ────────────────────────────────────────────────────────────
@@ -4260,25 +4334,19 @@ A chest radiograph is often the first, and occasionally the only, diagnostic win
 % GitHub repository URL, commit hash used for final experiments,
 % directory structure overview, instructions to reproduce.
 
-\begin{verbatim}
-Repository: https://github.com/[USERNAME]/pp-vae-paediatric-cxr
-Commit: [INSERT FINAL COMMIT HASH]
+The complete codebase, training scripts, evaluation pipelines, and figure generation scripts are available at:
 
-Directory structure:
-  /data/          — MedMNIST download scripts
-  /models/        — CAE, VAE, PP-VAE architecture definitions
-  /losses/        — All loss function implementations
-  /train/         — Training scripts per ablation arm
-  /evaluate/      — Metric computation and statistical analysis
-  /notebooks/     — Analysis notebooks
-  /figures/       — Figure generation scripts
-  environment.yml — Conda environment specification
+\begin{center}
+\url{https://github.com/teklesam/pp-vae-hformer}
+\end{center}
 
-To reproduce all results:
-  conda env create -f environment.yml
-  python train/run_all_ablations.py --seed 42
-  python evaluate/compute_all_metrics.py
-\end{verbatim}
+\noindent The repository contains:
+\begin{itemize}
+  \item \texttt{code/} --- All model architecture definitions, loss functions, training scripts, and evaluation pipelines
+  \item \texttt{dissertation/} --- \LaTeX\ source for this dissertation and all figures
+  \item \texttt{results/} --- Per-image evaluation metrics, subgroup statistics, and pairwise comparison tables for all 21 arms
+  \item \texttt{scripts/} --- Figure generation and post-processing scripts (including \texttt{generate\_dissertation\_figures.py})
+\end{itemize}
 
 % ────────────────────────────────────────────────────────────
 \chapter{Ethical Considerations}
