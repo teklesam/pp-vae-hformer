@@ -3544,7 +3544,7 @@ The calibration curves confirm that the NLL objective produces well-calibrated a
 
 Figure~\ref{fig:results:calibration:reliability} presents image-level reliability diagrams for all NLL and VAE arms with valid aleatoric uncertainty outputs. Each panel bins images by predicted sharpness ($\hat{\sigma}_a$), plots mean actual reconstruction RMSE per bin, and overlays the perfect-calibration line ($\sigma_a = \text{RMSE}$). A positive Pearson $r$ indicates that higher predicted uncertainty correctly corresponds to harder images; $r \approx 0.8$--$0.9$ across NLL arms confirms that $\hat{\sigma}_a$ is a reliable signal for reconstruction difficulty.
 
-\begin{figure}[H]
+\begin{figure}[http]
 \centering
 \evalfig{figures/evaluation_v2/dissertation_figs/calibration_reliability_v2}
 \caption[Uncertainty calibration reliability diagrams for NLL and VAE arms]{%
