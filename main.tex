@@ -3360,9 +3360,9 @@ E & PP-VAE (linear KL, ep.50)         & \checkmark & $31.635 \pm 0.951$ {[31.57,
 O & NLL + SSIM + FFL (PReLU)          & --- & $29.074 \pm 0.909$ {[29.00, 29.15]} & $0.8037 \pm 0.0401$ & $0.9343$ & $0.2817$ \\
 \midrule
 \multicolumn{7}{l}{\textit{Loss function variants (Charbonnier; curriculum fine-tuning)}} \\
-Q & Charbonnier ($\mathcal{L}_{\mathrm{Charb}}$) & --- & $34.535$ {[--,--]}$^\ddagger$ & $0.9266$ & $0.9731$ & ---$^\ddagger$ \\
-R & Curriculum FT: L1\,+\,SSIM\,+\,FFL           & --- & $34.539$ {[--,--]}$^\ddagger$ & $0.9269$ & $0.9727$ & ---$^\ddagger$ \\
-S & Curriculum FT: NLL\,+\,SSIM\,+\,FFL          & --- & $34.609$ {[--,--]}$^\ddagger$ & $0.9265$ & $0.9731$ & ---$^\ddagger$ \\
+Q & Charbonnier ($\mathcal{L}_{\mathrm{Charb}}$) & --- & $34.535 \pm 1.057$ {[34.45, 34.61]} & $0.9265 \pm 0.0143$ & $0.9731$ & $0.1249$ \\
+R & Curriculum FT: L1\,+\,SSIM\,+\,FFL           & --- & $34.545 \pm 1.067$ {[34.46, 34.63]} & $0.9269 \pm 0.0143$ & $0.9727$ & $\mathbf{0.1226}$ \\
+S & Curriculum FT: NLL\,+\,SSIM\,+\,FFL          & --- & $34.608 \pm 1.076$ {[34.52, 34.69]} & $0.9266 \pm 0.0145$ & $0.9730$ & $0.1296$ \\
 \midrule
 \multicolumn{7}{l}{\textit{Retrained baselines}} \\
 DnCNN & \cite{zhang_beyond_2017}       & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & --- \\
@@ -3378,7 +3378,7 @@ SwinIR & \cite{liang_swinir_2021}      & --- & $31.183 \pm 0.885$ {[31.11, 31.25
 \item PSNR and SSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN (not computed in evaluation pipeline). Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
 \item Arm~O uses PReLU activations in the decoder; all other arms use ReLU. DRUNet's elevated SSIM SD (0.053 vs.\ $\approx$0.015 elsewhere) reflects highly variable per-image performance.
 \item All four KAIR architectures were retrained from scratch on the Kermany Poisson-Gaussian noise dataset (same train/val/test split, same Foi noise generator) to ensure a fair architectural comparison.
-\item[$\ddagger$] Arms~Q, R, S: bootstrap 95\% CIs and LPIPS pending completion of full evaluation pipeline run. PSNR and SSIM are point estimates from the 624-image test set.
+\item Arms~Q, R, S are pairwise statistically indistinguishable ($p_{\mathrm{Bonf}} \geq 0.68$, $|d| \leq 0.07$); all three achieve PSNR equivalent to Arm~A ($d < 0.08$, n.s.). Arm~R achieves the best LPIPS (0.1226) of any arm in the table, narrowly surpassing Arm~J (0.1268).
 \end{tablenotes}
 \end{threeparttable}
 \end{sidewaystable}
