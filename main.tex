@@ -3230,15 +3230,36 @@ The Kermany test partition comprises 624 images drawn from three aetiologically 
 All images were converted to $256 \times 256$ single-channel tensors with pixel values in $[0,1]$. The mean pixel intensity across the test set is $0.506 \pm 0.058$ (SD across images), confirming that the dataset occupies the mid-range of the normalised intensity scale and that our noise simulation operates at a realistic mean signal level. Pneumonia cases exhibit modestly higher mean intensity ($0.518 \pm 0.062$) compared to Normal cases ($0.487 \pm 0.048$), reflecting the consolidation-induced whitening of lung fields in bacterial pneumonia.
 
 \paragraph{Degradation validation.}
-Table~\ref{tab:methods:noise_presets} characterises the three noise presets used throughout this study. The effective noise standard deviation $\sigma_{\mathrm{eff}}$ at a pixel with mean intensity $\bar{y}=0.5$ is $\sigma_{\mathrm{eff}} = \sqrt{a \cdot \bar{y} + b}$, yielding $\sigma_{\mathrm{eff}} \approx 0.074$, $0.122$, and $0.204$ for Low, Mid, and High presets respectively (equivalent to $\sigma \approx 15$, $25$, and $50$ in the $[0,255]$ scale used by conventional denoising benchmarks). The corresponding noisy-to-clean PSNR of the degraded input — before any model inference — is approximately $28.3$~dB, $25.4$~dB, and $21.5$~dB at the three levels, confirming that the High preset represents a clinically extreme dose reduction that would be unacceptable in routine practice without restoration.
+Table~\ref{tab:methods:noise_presets} characterises the three noise presets used throughout this study. The effective noise standard deviation $\sigma_{\mathrm{eff}}$ at a pixel with mean intensity $\bar{y}=0.5$ is $\sigma_{\mathrm{eff}} = \sqrt{a \cdot \bar{y} + b}$, yielding $\sigma_{\mathrm{eff}} \approx 0.084$, $0.142$, and $0.225$ for Low, Mid, and High presets respectively (equivalent to $\sigma \approx 21$, $36$, and $57$ in the $[0,255]$ scale used by conventional denoising benchmarks). The corresponding noisy-to-clean PSNR of the degraded input --- before any model inference --- is approximately $21.5$~dB, $17.0$~dB, and $13.0$~dB at the three levels, confirming that the High preset represents a clinically extreme dose reduction that would be unacceptable in routine practice without restoration. Table~\ref{tab:results:noise_stats} provides per-subgroup quantitative characterisation.
 
-The noise variance is intentionally signal-dependent: a pixel at intensity $0.1$ (deep shadow) has effective $\sigma \approx 0.19$ at the Mid preset, while a pixel at intensity $0.9$ (bright aerated lung) has $\sigma \approx 0.12$. This $1.6\times$ variance ratio across the intensity range confirms that dark anatomical regions (pleural angles, retrocardiac space) are substantially harder to denoise than bright regions, and that per-pixel uncertainty maps ($\hat{\sigma}_a$) should — and empirically do — show elevated uncertainty in these dark regions.
+The noise variance is intentionally signal-dependent: because the Poisson term $a \cdot y$ scales with signal intensity, bright regions carry more absolute noise than dark ones. At the Mid preset, a bright pixel at intensity $0.9$ (aerated lung) has $\sigma_{\mathrm{eff}} = \sqrt{0.03 \times 0.9 + 0.005} \approx 0.179$, whereas a dark pixel at intensity $0.1$ (dense consolidation) has $\sigma_{\mathrm{eff}} = \sqrt{0.03 \times 0.1 + 0.005} \approx 0.089$. Despite the lower absolute noise variance, dark regions have worse signal-to-noise ratio ($\mathrm{SNR} = y/\sigma_{\mathrm{eff}} \approx 1.1$ vs $5.0$), making them clinically harder to interpret. This confirms that per-pixel aleatoric uncertainty maps ($\hat{\sigma}_a$) should --- and empirically do --- show elevated uncertainty in low-signal anatomical regions such as pleural angles and retrocardiac spaces.
 
 Pairing integrity was validated by verifying that identical random seeds reproduce identical noisy images for a held-out subset of 20 test cases. All 20 pairs were reproducible to floating-point precision, confirming that the evaluation pipeline is deterministic and that the same noisy image is always presented to every model during evaluation, enabling valid model comparisons.
 
-\figplaceholder{Representative paediatric CXR pairs at three Poisson-Gaussian degradation levels (Low/Mid/High presets; $\sigma_{\mathrm{eff}}\approx15/25/50$). Left column: clean reference. Remaining columns: noisy input at each preset.}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/evaluation/dataset_noise_examples.png}
+\caption[Representative paediatric CXRs at three Foi Poisson-Gaussian noise levels]{
+  Representative paediatric chest radiographs at three Foi Poisson-Gaussian degradation levels. Each row shows one case: Normal (top), Bacterial Pneumonia (middle), and Viral Pneumonia (bottom). Left column: clean reference image. Columns 2--4: noisy input at Low, Mid, and High presets respectively ($\sigma_{\mathrm{eff}} \approx 0.084$, $0.142$, $0.225$ at mean intensity $\bar{y}=0.5$). At the High preset the fine bronchopulmonary markings are visually obliterated, motivating the denoising task. Images are from the Kermany 2018 test partition \citep{kermany_identifying_2018}, resized to $256 \times 256$ grayscale.}
+\label{fig:results:dataset:noise_levels}
+\end{figure}
 
-\tabplaceholder{Quantitative noise characterisation: mean noisy-image PSNR, SNR, and pixel intensity statistics per noise preset. Normal vs.\ Pneumonia subgroups.}
+\begin{table}[H]
+\centering
+\small
+\caption[Quantitative noise characterisation per Foi preset]{
+  Noise characterisation for each Foi Poisson-Gaussian preset. $\sigma_{\mathrm{eff}}$ is computed at mean test-set intensity $\bar{y}=0.506$; per-subgroup values use $\bar{y}_{\mathrm{Normal}}=0.487$ and $\bar{y}_{\mathrm{Pneumonia}}=0.518$ (confirmed on test set). PSNR is the expected noisy-to-clean PSNR before any model inference, $10\log_{10}(1/\mathrm{MSE})$ where $\mathrm{MSE} = a\bar{y}+b$. SNR $= \bar{y}/\sigma_{\mathrm{eff}}$.}
+\label{tab:results:noise_stats}
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Preset} & $a$ & $b$ & $\sigma_{\mathrm{eff}}$ & \textbf{PSNR (dB)} & \textbf{SNR} & \textbf{PSNR\textsubscript{Normal}} & \textbf{PSNR\textsubscript{Pneumonia}} \\
+\midrule
+Low  & 0.01 & 0.002 & 0.084 & 21.5 & 6.0 & 21.6 & 21.4 \\
+Mid  & 0.03 & 0.005 & 0.142 & 17.0 & 3.6 & 17.1 & 16.9 \\
+High & 0.08 & 0.010 & 0.225 & 13.0 & 2.3 & 13.1 & 12.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Training Behaviour}
 \label{sec:results:training}
@@ -3338,6 +3359,11 @@ E & PP-VAE (linear KL, ep.50)         & \checkmark & $31.635 \pm 0.951$ {[31.57,
 \multicolumn{7}{l}{\textit{Activation ablation}} \\
 O & NLL + SSIM + FFL (PReLU)          & --- & $29.074 \pm 0.909$ {[29.00, 29.15]} & $0.8037 \pm 0.0401$ & $0.9343$ & $0.2817$ \\
 \midrule
+\multicolumn{7}{l}{\textit{Loss function variants (Charbonnier; curriculum fine-tuning)}} \\
+Q & Charbonnier ($\mathcal{L}_{\mathrm{Charb}}$) & --- & $34.535$ {[--,--]}$^\ddagger$ & $0.9266$ & $0.9731$ & ---$^\ddagger$ \\
+R & Curriculum FT: L1\,+\,SSIM\,+\,FFL           & --- & $34.539$ {[--,--]}$^\ddagger$ & $0.9269$ & $0.9727$ & ---$^\ddagger$ \\
+S & Curriculum FT: NLL\,+\,SSIM\,+\,FFL          & --- & $34.609$ {[--,--]}$^\ddagger$ & $0.9265$ & $0.9731$ & ---$^\ddagger$ \\
+\midrule
 \multicolumn{7}{l}{\textit{Retrained baselines}} \\
 DnCNN & \cite{zhang_beyond_2017}       & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & --- \\
 IRCNN & \cite{zhang_learning_2017}     & --- & $32.659 \pm 0.966$ {[32.58, 32.73]} & $0.8901 \pm 0.0184$ & $0.9535$ & $0.1778$ \\
@@ -3352,6 +3378,7 @@ SwinIR & \cite{liang_swinir_2021}      & --- & $31.183 \pm 0.885$ {[31.11, 31.25
 \item PSNR and SSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN (not computed in evaluation pipeline). Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
 \item Arm~O uses PReLU activations in the decoder; all other arms use ReLU. DRUNet's elevated SSIM SD (0.053 vs.\ $\approx$0.015 elsewhere) reflects highly variable per-image performance.
 \item All four KAIR architectures were retrained from scratch on the Kermany Poisson-Gaussian noise dataset (same train/val/test split, same Foi noise generator) to ensure a fair architectural comparison.
+\item[$\ddagger$] Arms~Q, R, S: bootstrap 95\% CIs and LPIPS pending completion of full evaluation pipeline run. PSNR and SSIM are point estimates from the 624-image test set.
 \end{tablenotes}
 \end{threeparttable}
 \end{sidewaystable}
