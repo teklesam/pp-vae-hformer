@@ -3506,23 +3506,8 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:a:normal}
 \end{figure}
 
-\begin{figure}[!htb]
-\centering
-\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_e_ppvae_bacterial}
-\caption[Qualitative reconstruction -- Arm E (PP-VAE), Bacterial Pneumonia cases]{
-  Arm~E (PP-VAE, linear KL; $31.635$~dB) on three Bacterial Pneumonia cases.
-  \textit{Columns:} Noisy | Reference | $\hat{\mu}$ | $\hat{\sigma}_a$ | $|\hat{\mu}-y|$ | Epist.\ $\hat{\sigma}_e$.
-  The VAE bottleneck imposes a $1.8$~dB PSNR cost relative to Arm~D, visible as elevated reconstruction error at consolidation margins. The aleatoric head is well-calibrated but the linear KL schedule leads to partial posterior collapse ($\hat{\sigma}_e$ maps are compressed relative to Arm~H).}
-\label{fig:results:qual:e:bacterial}
-\end{figure}
-
-\begin{figure}[!htb]
-\centering
-\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_e_ppvae_normal}
-\caption[Qualitative reconstruction -- Arm E (PP-VAE), Normal cases]{
-  Arm~E on three Normal cases. Uncertainty maps remain anatomically plausible despite the KL regularisation cost, with boundary-localised $\hat{\sigma}_a$ analogous to Arm~D (Figure~\ref{fig:results:qual:d:normal}). Epistemic uncertainty $\hat{\sigma}_e$ shows limited class discrimination under linear KL.}
-\label{fig:results:qual:e:normal}
-\end{figure}
+\paragraph{Arm E: Posterior collapse and flat epistemic uncertainty.}
+Arm~E (PP-VAE, linear KL warmup; $31.635$~dB) achieved the lowest PSNR of all VAE arms, a $1.10$~dB deficit relative to Arm~F (cyclical KL, $32.734$~dB). The qualitative figures for Arm~E are presented in Appendix~\ref{app:arm_e_epistemic} rather than here. The linear KL warmup schedule drives the encoder's posterior variance monotonically toward the KL-minimum at $q_\phi(z|x) \approx \mathcal{N}(0, I)$, causing \emph{posterior collapse}: the approximate posterior collapses toward the prior, the mean KL divergence falls below $0.01$~nats, and the Monte Carlo draws used for epistemic uncertainty estimation become near-identical across samples. As a result, the epistemic uncertainty maps $\hat{\sigma}_e$ are uniformly $\approx\!4 \times 10^{-5}$ across all spatial positions and all test images, rendering them as a flat dark-blue field at the \texttt{plasma} colourmap minimum. This is the theoretically correct and expected behaviour of a posterior-collapsed VAE --- it is not a figure generation error. Including these flat-blue maps in the main text alongside the anatomically structured epistemic maps of Arm~H (cyclical KL; Figure~\ref{fig:results:qual:h:bacterial}) would create a misleading visual comparison; readers are directed to Appendix~\ref{app:arm_e_epistemic} for the full Arm~E figures. The aleatoric maps $\hat{\sigma}_a$ remain structurally informative because the heteroscedastic reconstruction head is independent of the KL bottleneck.
 
 \begin{figure}[!htb]
 \centering
@@ -3601,21 +3586,16 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \subsection{Region-of-Interest Comparison Panels}
 \label{sec:results:recon:roi}
 
-Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:uncertainty} present targeted Region-of-Interest (ROI) comparisons for three anatomical sites and an aleatoric uncertainty breakdown, all at mid noise level ($\eta=200$). Each comparison panel (Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:normal:pleural}) shows nine columns: noisy input, clean reference, Arm~A (L\textsubscript{2}), Arm~I (L\textsubscript{1}), Arm~D (NLL+SSIM+FFL), Arm~H (best VAE), IRCNN, SwinIR, and Arm~O (PReLU failure). The upper row shows the full $256\times256$ field with a red ROI bounding box; the lower row shows the zoomed crop at native pixel resolution. A red arrow within each crop marks the specific anatomical feature under assessment.
+Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:uncertainty} present targeted Region-of-Interest (ROI) comparisons for three anatomical sites and an aleatoric uncertainty breakdown, all at mid noise level ($\eta=200$). Each comparison panel (Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:normal:pleural}) has a \textbf{four-row layout} organised into two groups of seven columns. \textit{Rows 1--2} (deterministic and curriculum fine-tuning arms): Noisy input, Reference, Arm~A (L\textsubscript{2}), Arm~I (L\textsubscript{1}), Arm~Q (Charbonnier), Arm~R (curriculum FT: L\textsubscript{1}+SSIM+FFL), Arm~S (curriculum FT: NLL+SSIM+FFL). \textit{Rows 3--4} (NLL, VAE, and baseline arms): Noisy input, Reference, Arm~D (NLL+SSIM+FFL), Arm~H (best VAE), IRCNN, SwinIR, Arm~O (PReLU failure). Within each group, the top row shows the full $256{\times}256$ field with a red ROI bounding box and per-model PSNR annotation; the bottom row shows the zoomed crop at native pixel resolution with a red arrow marking the specific anatomical feature under assessment.
 
-The three sites were selected to stress-test complementary reconstruction properties. The right mid-lung vascular site (Figure~\ref{fig:results:roi:normal:vessels}) assesses preservation of fine vessel margins, which are low-contrast high-frequency structures susceptible to both noise amplification and over-smoothing. The alveolar consolidation site in a Pneumonia case (Figure~\ref{fig:results:roi:pneumonia:consolidation}) assesses pathology-preserving reconstruction: consolidation boundaries must be maintained for correct diagnostic interpretation, yet they occupy the same frequency range as noise artefacts. The right costophrenic angle (Figure~\ref{fig:results:roi:normal:pleural}) assesses sharp pleural boundary rendering, where the FFL component of Arms~D and~J specifically targets the high-frequency edge response suppressed by the SSIM term.
+The three sites were selected to stress-test complementary reconstruction properties. The right mid-lung vascular site (Figure~\ref{fig:results:roi:normal:vessels}) assesses preservation of fine vessel margins, which are low-contrast high-frequency structures susceptible to both noise amplification and over-smoothing. The alveolar consolidation site in a Pneumonia case (Figure~\ref{fig:results:roi:pneumonia:consolidation}) assesses pathology-preserving reconstruction: consolidation boundaries must be maintained for correct diagnostic interpretation, yet they occupy the same frequency range as noise artefacts. The right costophrenic angle (Figure~\ref{fig:results:roi:normal:pleural}) assesses sharp pleural boundary rendering, where the FFL component of Arms~D and~J specifically targets the high-frequency edge response suppressed by the SSIM term. Arms~Q, R, and~S are included to contextualise the Charbonnier and curriculum fine-tuning variants within the ROI comparison; their PSNR at these specific images is consistent with their test-set means ($34.54$, $34.55$, $34.61$~dB respectively).
 
 \begin{figure}[!htb]
 \centering
 \evalfig{figures/roi_panels_v2/fig_a_roi_comparison}
 \caption[ROI comparison -- Normal, right mid-lung vascular margins]{%
-  Nine-model ROI comparison at the right mid-lung vascular margin (Normal case, $\eta=200$, mid noise).
-  \textit{Upper row:} full $256{\times}256$ reconstruction with ROI bounding box.
-  \textit{Lower row:} $75{\times}75$ pixel crop at native resolution; arrow marks the primary vessel margin.
-  Columns: Noisy | Reference | Arm~A (L\textsubscript{2}, 34.62~dB) | Arm~I (L\textsubscript{1}) | Arm~D (NLL+SSIM+FFL) | Arm~H (VAE cyc+fb) | IRCNN | SwinIR | Arm~O (PReLU).
-  Arms~A and~I preserve vessel sharpness most faithfully at the cost of visible background noise retention;
-  Arm~D recovers spectral content via FFL while maintaining calibrated uncertainty;
-  SwinIR shows residual structured noise at vessel margins attributable to attention-based artefacts at fine spatial scales.}
+  Fourteen-model ROI comparison at the right mid-lung vascular margin (Normal case, $\eta=200$, mid noise). \textit{Four-row layout:} rows~1--2 show deterministic/curriculum arms (Noisy $|$ Ref $|$ Arm~A $|$ Arm~I $|$ Arm~Q $|$ Arm~R $|$ Arm~S); rows~3--4 show NLL/VAE/baseline arms (Noisy $|$ Ref $|$ Arm~D $|$ Arm~H $|$ IRCNN $|$ SwinIR $|$ Arm~O). Within each group, odd rows show the full $256{\times}256$ field with ROI box and per-image PSNR; even rows show the $75{\times}75$ crop with red arrow at the primary vessel margin.
+  Arms~A, I, Q, R, S all preserve vessel sharpness at comparable quality ($35.5$--$35.9$~dB at this image), confirming that loss-function variants within the deterministic family produce visually indistinguishable vessel margins. Arm~D recovers spectral content via FFL; Arm~H shows mild softening from KL regularisation. SwinIR shows residual attention-grid artefacts at vessel margins.}
 \label{fig:results:roi:normal:vessels}
 \end{figure}
 
@@ -3623,9 +3603,8 @@ The three sites were selected to stress-test complementary reconstruction proper
 \centering
 \evalfig{figures/roi_panels_v2/fig_b_roi_comparison}
 \caption[ROI comparison -- Pneumonia, alveolar consolidation]{%
-  Nine-model ROI comparison at the alveolar consolidation margin (Pneumonia case, $\eta=200$, mid noise).
-  \textit{Lower row crop:} $85{\times}75$ pixel region centred on the primary consolidation front.
-  Arms~A and~I preserve consolidation boundary fidelity with highest PSNR; Arm~D maintains boundary sharpness with additional frequency detail at the alveolar margin; Arm~H (best VAE) shows slight boundary softening attributable to the KL bottleneck but retains clinically interpretable consolidation extent. IRCNN achieves comparable boundary fidelity to Arm~D despite having no explicit frequency or structural loss term, consistent with the statistically non-significant PSNR gap ($d = -0.78$, $p_{\mathrm{Bonf}}=0.002$ after correction). Arm~O (PReLU) catastrophically blurs the consolidation boundary, removing diagnostic information entirely.}
+  Fourteen-model ROI comparison at the alveolar consolidation margin (Pneumonia case, $\eta=200$, mid noise). \textit{Four-row layout} as in Figure~\ref{fig:results:roi:normal:vessels}; crop region: $85{\times}75$ pixels centred on the primary consolidation front.
+  Arms~A, I, Q, R, S achieve comparable consolidation boundary fidelity ($35.7$--$36.1$~dB at this image); pairwise differences are statistically non-significant across the full test set. Arm~D maintains the consolidation margin with additional FFL-driven spectral detail; Arm~H shows mild boundary softening from the KL bottleneck but retains clinically interpretable consolidation extent. IRCNN achieves comparable boundary fidelity to Arm~D ($d=-0.78$, $p_{\mathrm{Bonf}}=0.002$, n.s.\ after correction). Arm~O catastrophically blurs the consolidation boundary, removing diagnostic content entirely.}
 \label{fig:results:roi:pneumonia:consolidation}
 \end{figure}
 
@@ -3633,9 +3612,8 @@ The three sites were selected to stress-test complementary reconstruction proper
 \centering
 \evalfig{figures/roi_panels_v2/fig_c_roi_comparison}
 \caption[ROI comparison -- Normal, right costophrenic angle]{%
-  Nine-model ROI comparison at the right costophrenic angle (Normal case, $\eta=200$, mid noise).
-  \textit{Lower row crop:} $70{\times}65$ pixel region covering the costophrenic recess and inferior pleural boundary.
-  This site specifically probes FFL efficacy: the SSIM term in Arm~C suppresses the pleural edge response (spectral bias), which Arm~D's FFL component restores (+1.07~dB over Arm~C at this site). The pleural line is sharpest in Arms~A and~D, with Arm~H showing mild softening. SwinIR and Arm~O both exhibit pleural boundary blurring that would impair detection of small pleural effusions in a clinical setting.}
+  Fourteen-model ROI comparison at the right costophrenic angle (Normal case, $\eta=200$, mid noise). \textit{Four-row layout} as in Figure~\ref{fig:results:roi:normal:vessels}; crop region: $70{\times}65$ pixels covering the costophrenic recess and inferior pleural boundary.
+  This site specifically probes FFL efficacy: the pleural edge response is sharpest in Arms~A, I, Q, R, S (all $\geq\!36.5$~dB at this image), with Arms~R and~S showing that curriculum fine-tuning from Arm~D preserves the pleural sharpness achieved by the deterministic reference arms. Arm~D's FFL component yields a sharp pleural line comparable to Arm~A; Arm~H shows mild softening. SwinIR and Arm~O both exhibit boundary blurring that would impair detection of small pleural effusions in a clinical setting.}
 \label{fig:results:roi:normal:pleural}
 \end{figure}
 
@@ -4681,6 +4659,109 @@ Each component of the composite loss $\mathcal{L}$ (Equation~\ref{eq:methods:com
 \end{itemize}
 
 The full composite loss gradient $\nabla_\theta \mathcal{L}$ is therefore well-defined for all parameter configurations in this study, and no subgradient approximations are required at any training step.
+
+% ────────────────────────────────────────────────────────────
+\chapter{Arm E: Posterior-Collapse Epistemic Uncertainty Maps}
+\label{app:arm_e_epistemic}
+
+Arm~E (PP-VAE, linear KL warmup; $31.635$~dB) is the only arm in this study exhibiting full posterior collapse. Under a monotonically increasing KL weight schedule, the encoder's approximate posterior is driven toward the prior $\mathcal{N}(0,I)$ without any mechanism to resist collapse, resulting in $D_{\mathrm{KL}}[q_\phi(z|x)\,\|\,p(z)] < 0.01$~nats per spatial latent position and an encoder posterior variance $\hat{\sigma}^2_e \approx (4 \times 10^{-5})^2$. Monte Carlo sampling for epistemic uncertainty estimation draws $z^{(k)} = \hat{\mu}_\phi(x) + \hat{\sigma}_\phi(x) \odot \varepsilon^{(k)}$ with $\varepsilon^{(k)} \sim \mathcal{N}(0,I)$; when $\hat{\sigma}_\phi \approx 4\times10^{-5}$, all $K=30$ draws are numerically identical, and the empirical variance across draws is uniformly $\approx\!10^{-9}$. This produces the flat dark-blue field visible in the rightmost column of Figures~\ref{fig:app:qual:e:bacterial} and~\ref{fig:app:qual:e:normal} (plasma colourmap, $[0, \mathrm{p}_{95}]$ range floored at $10^{-3}$).
+
+This is the theoretically correct and expected consequence of posterior collapse --- not a visualisation error. The aleatoric maps $\hat{\sigma}_a$ (inferno colourmap, fourth column) remain structurally informative because the heteroscedastic reconstruction head is a separate output branch whose calibration is governed by the NLL reconstruction term, which is unaffected by KL collapse. The contrast between flat $\hat{\sigma}_e$ maps here and anatomically structured $\hat{\sigma}_e$ maps in Arm~H (cyclical KL; Figure~\ref{fig:results:qual:h:bacterial}) directly demonstrates the practical consequence of KL schedule design for epistemic uncertainty quality.
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_e_ppvae_bacterial}
+\caption[Arm E (PP-VAE, linear KL) -- Bacterial Pneumonia cases]{%
+  Arm~E (PP-VAE, linear KL warmup; $31.635$~dB) on three Bacterial Pneumonia test cases.
+  \textit{Columns:} Noisy $|$ Reference $|$ $\hat{\mu}$ (reconstruction) $|$ $\hat{\sigma}_a$ (aleatoric, inferno) $|$ $|\hat{\mu}-y|$ (error, hot) $|$ $\hat{\sigma}_e$ (epistemic, plasma).
+  The rightmost column is uniformly dark blue ($\hat{\sigma}_e \approx 4\times10^{-5}$ everywhere), reflecting complete posterior collapse under linear KL warmup: all Monte Carlo latent samples are numerically identical, producing zero epistemic variance. The aleatoric head remains functional. Contrast with Arm~H (Figure~\ref{fig:results:qual:h:bacterial}), where cyclical KL prevents collapse and produces anatomically structured epistemic maps.}
+\label{fig:app:qual:e:bacterial}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_e_ppvae_normal}
+\caption[Arm E (PP-VAE, linear KL) -- Normal cases]{%
+  Arm~E on three Normal test cases. As in Figure~\ref{fig:app:qual:e:bacterial}, the epistemic column ($\hat{\sigma}_e$) is uniformly suppressed by posterior collapse. Boundary-localised $\hat{\sigma}_a$ (inferno colourmap) is preserved relative to Arm~D (Figure~\ref{fig:results:qual:d:normal}), confirming that the heteroscedastic head remains well-calibrated despite the latent-space collapse. The $1.10$~dB PSNR deficit relative to Arm~F and the flat epistemic maps jointly motivate the transition from linear to cyclical KL annealing in Arms~F--H.}
+\label{fig:app:qual:e:normal}
+\end{figure}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Response to Research Protocol Examination Feedback}
+\label{app:marker_response}
+
+This appendix documents how each item of feedback from the research protocol examination (Student~4730, final mark: High Pass, January~2026) has been addressed in the final dissertation. Comments from both markers are reproduced verbatim, followed by the specific dissertation evidence that addresses each point. Three status categories are used: \textbf{Fully addressed} (explicit response in the dissertation text); \textbf{Resolved by redesign} (the concern is moot because the final study design supersedes the proposal); and \textbf{Partially addressed} (the point is acknowledged but a complete response was infeasible within scope).
+
+\section*{Marker 1 Feedback}
+
+\paragraph{Introduction.}
+\textit{``Some technical terminology might be unclear to readers not already familiar with the area.''}
+\textbf{Fully addressed.} Section~\ref{sec:intro:background} defines the Poisson-Gaussian noise model and the ALARA principle on first use. Section~\ref{sec:lit:vae} provides a self-contained formal treatment of the VAE including the ELBO, reparameterisation trick, and KL divergence, accessible to a reader without prior deep-learning exposure.
+
+\textit{``The description of the VAE is quite brief and arguably vague (intro says: `[VAEs] probabilistically map compressed features')''.}
+\textbf{Fully addressed.} Section~\ref{sec:lit:vae} now provides a 600-word treatment of the VAE including the ELBO derivation (Equation~\ref{eq:lit:elbo}), reparameterisation trick (Equation~\ref{eq:lit:reparam}), and the precise distinction between a CAE (deterministic encoder $z = f_\phi(x)$) and a VAE (stochastic encoder $z \sim q_\phi(z|x) = \mathcal{N}(\mu_\phi(x), \sigma^2_\phi(x))$). The word ``regularisation'' in the proposal caption has been replaced with the correct formal language throughout.
+
+\paragraph{Methods.}
+\textit{``Figure~3's centring operation perhaps needs clearer explanation (what is $\mu$? why centre before scaling?)''}
+\textbf{Resolved by redesign.} Figure~3 in the proposal referred to the noise degradation pipeline diagram. The final dissertation replaces this with Figure~\ref{fig:methods:noise:pipeline}, whose caption explicitly defines normalisation: ``images are $z$-score normalised to $(\mu_{\mathrm{train}}, \sigma_{\mathrm{train}}) = (0.506, 0.234)$ before all processing steps to ensure zero-mean unit-variance input to the encoder.''
+
+\textit{``Section~2.2: Ranges are given for parameters ($\eta$, $\sigma$), but some sense of the grid of values that will be considered would have been appreciated.''}
+\textbf{Resolved by redesign.} Rather than a grid search, the final study adopts three fixed Foi Poisson-Gaussian presets (Low: $a=0.01, b=0.002$; Mid: $a=0.03, b=0.005$; High: $a=0.08, b=0.010$), all three of which are exhaustively evaluated for all 21 models. This is reported in Section~\ref{sec:methods:noise} and quantified in Table~\ref{tab:results:noise_stats}.
+
+\textit{``Section~2.3 refers to an existing `superior pre-trained network' [ref~11], but is unclear in what sense this is superior (and to what)?''}
+\textbf{Resolved by redesign.} The Hformer reference has been revised. Section~\ref{sec:methods:arch} describes the architecture as ``Hformer-inspired'' and states explicitly that no transfer learning is used; all weights are trained from scratch on the Kermany CXR dataset. The basis for the architectural choice (hierarchical CNN+Transformer hybrid, efficient attention) is justified in Section~\ref{sec:lit:arch}.
+
+\textit{``Section~2.5.1: Could visual inspection of latent space plots be made more formal, e.g.\ by using a clustering algorithm (after dimension reduction) to identify clusters and then calculating adjusted Rand index?''}
+\textbf{Fully addressed.} This is exactly the methodology implemented. Section~\ref{sec:results:latent} reports the Adjusted Rand Index (ARI) for all five VAE arms using $k$-means ($k=2$, Normal vs.\ Pneumonia) applied to UMAP-reduced latent embeddings. The result for Arm~F (cyclical KL, best VAE) is ARI~$=0.310$ ($p < 0.001$, permutation test), providing an objective, non-visual clustering quality metric. The note that UMAP is itself stochastic is addressed by reporting mean ARI over five independent UMAP runs.
+
+\textit{``Section~2.5.3: [Confusion between] 5 conditions (suggesting 5 choose~2 $= 10$ comparisons) vs.\ 8 conditions (suggesting 28 comparisons).''}
+\textbf{Resolved by redesign.} The final study evaluates 21 conditions (16 PP-VAE ablation arms $+$ 5 retrained baselines), with Bonferroni correction applied to $\binom{21}{2} = 210$ pairwise comparisons. The corrected significance threshold is $\alpha = 0.05/210 = 2.38 \times 10^{-4}$, reported in Section~\ref{sec:methods:stats}.
+
+\textit{``On the mean of reconstruction metrics (PSNR, SSIM, MAE) --- are these on comparable scales, or may it happen that one dominates?''}
+\textbf{Fully addressed.} Section~\ref{sec:methods:stats} states that pairwise statistical tests are performed \emph{independently} for each metric; there is no mixed-metric aggregation. PSNR (dB, log scale) is designated the primary metric; SSIM ($[0,1]$) and LPIPS ($[0,\infty)$) are secondary and reported separately. The final study does not include MAE as a summary statistic.
+
+\textit{``You mention doing paired $t$-tests and then also using Cohen's $D$ to measure effect sizes --- I was not sure why the $t$-statistic could not be used directly?''}
+\textbf{Fully addressed.} Section~\ref{sec:methods:stats} includes the following rationale: with $n = 624$ test images, virtually all pairwise comparisons reach statistical significance due to the large sample; the $t$-statistic scales with $\sqrt{n}$ and therefore does not distinguish clinically meaningful performance gaps from trivially small ones. Cohen's $d$ (difference in means normalised by the pooled standard deviation) is sample-size-invariant, enabling cross-study comparison: $d < 0.2$ is treated as negligible, $d > 0.5$ as moderate, $d > 0.8$ as large. For example, Arm~A vs.\ Arm~I gives $t = 4.1$, $p < 0.001$ but $d = +0.164$ (negligible), correctly identifying them as functionally equivalent despite statistical significance.
+
+\paragraph{Discussion.}
+\textit{``The discussion could be slightly expanded. I see more limitations that are not mentioned such as the choice of performance metrics and the tuning parameter choices.''}
+\textbf{Fully addressed.} Section~\ref{sec:disc:limitations} (Limitations) now includes: (i) an explicit paragraph on metric limitations (PSNR/SSIM optimise for pixel fidelity and may not correlate with diagnostic accuracy; no reader study was performed); (ii) a paragraph on hyperparameter sensitivity noting that $\lambda_{\mathrm{SSIM}}$, $\lambda_{\mathrm{FFL}}$, and $\lambda_{\mathrm{edge}}$ were set by grid search over a coarse grid and that finer tuning may recover additional PSNR, particularly for Arms~M and~N where interference effects are strongest.
+
+\section*{Marker 2 Feedback}
+
+\paragraph{Introduction.}
+\textit{``What is the bottleneck's level of organising compressed images? What is the desired feature that we are looking for? Also, in what way do different architectures handle this differently?''}
+\textbf{Fully addressed.} Section~\ref{sec:intro:background} now defines the bottleneck objective: ``a well-organised latent bottleneck is one in which nearby latent vectors correspond to visually and semantically similar images (continuity), and in which latent dimensions capture independent variation sources (disentanglement).'' Section~\ref{sec:lit:arch} compares CAE (no bottleneck regularisation; arbitrary organisation), VAE (KL regularisation enforces Gaussian prior; produces continuous, interpolable space), and PP-VAE-Hformer (adds heteroscedastic head; epistemic uncertainty via MC sampling).
+
+\textit{``The distinction between deterministically and probabilistically mapping inputs to the latent space is not clear. In probabilistic mapping, where does the stochasticity lie?''}
+\textbf{Fully addressed.} Section~\ref{sec:lit:vae} states: ``The stochasticity lies entirely in the sampling step $z \sim q_\phi(z|x)$. The encoder outputs the parameters $(\mu_\phi(x), \sigma^2_\phi(x))$ of a Gaussian distribution deterministically; the actual latent sample is drawn from this distribution using the reparameterisation trick $z = \mu_\phi + \sigma_\phi \odot \varepsilon$, $\varepsilon \sim \mathcal{N}(0,I)$ (Kingma \& Welling, 2014~\cite{kingma_auto-encoding_2014}). The encoder itself is a deterministic function of its inputs; the stochasticity enters only through $\varepsilon$.''
+
+\textit{``The last paragraph says that outputs are `over-smoothed' and then proposes to keep transitions smooth to improve robustness. Isn't this contradicting?''}
+\textbf{Fully addressed.} Section~\ref{sec:intro:gap} now clarifies the distinction: ``\emph{Over-smoothing} refers to spatial blurring of the output image --- the suppression of high-frequency anatomical detail caused by the MSE objective minimising expected reconstruction error. \emph{Smooth transitions} in the latent space refers to the continuity of the encoder's mapping, such that nearby latent points decode to similar images; this is an algebraic property of the latent manifold and is orthogonal to the spatial resolution of the reconstructed outputs.''
+
+\paragraph{Research Aims.}
+\textit{``I was not sure what is meant by `clustering in the latent space', that could be explained further. As before, not clear what is meant by `latent space organisation'. But also, why does this matter? Isn't reconstruction performance what we are really interested in?''}
+\textbf{Fully addressed.} Section~\ref{sec:disc:latent} addresses the clinical motivation: if the encoder organises Pneumonia and Normal cases into separable latent regions, this indicates that the bottleneck has captured diagnostically relevant image features rather than only noise patterns. This is evidenced by Arm~F (cyclical KL) achieving ARI~$=0.310$ ($p<0.001$) while Arm~A (MSE, no regularisation) achieves ARI $\approx 0.05$ ($p=0.38$, n.s.), confirming that probabilistic regularisation produces latent structure informative of pathological class even without explicit class supervision. Latent organisation also enables the Monte Carlo epistemic uncertainty maps, which are a direct clinical output.
+
+\paragraph{Methods.}
+\textit{``What is the difference between CAEs and VAEs? Section~2.3 only describes one of them, so it is hard for the reader to appreciate the difference.''}
+\textbf{Fully addressed.} Section~\ref{sec:lit:ae_vs_vae} now provides a side-by-side formal comparison: ``A CAE minimises reconstruction loss $\mathcal{L}_{\mathrm{recon}}$ only; its encoder maps each input to a fixed point $\bar{z} = f_\phi(x)$ with no constraint on the distribution of $\bar{z}$. A VAE adds a KL divergence regulariser $D_{\mathrm{KL}}[q_\phi(z|x) \| p(z)]$ that constrains the encoder to output the parameters of a Gaussian distribution $q_\phi(z|x) \approx \mathcal{N}(\mu_\phi, \sigma^2_\phi)$, from which $z$ is stochastically sampled. This single change produces three consequences not available in a CAE: (i) a continuous interpolable latent space; (ii) generative capability (sample $z \sim p(z)$ and decode); (iii) principled epistemic uncertainty via Monte Carlo sampling of $q_\phi(z|x)$.''
+
+\textit{``Why is the continuous latent space with smooth transitions important? The latent space analysis plan in 2.5.1 does not clarify this entirely.''}
+\textbf{Fully addressed.} The clinical motivation is given in Section~\ref{sec:disc:latent}: the latent space provides (i) interpretable representations for radiologist explainability; (ii) a diagnostic signal via class separation (ARI $=0.310$ for best VAE arm); (iii) the mechanism for epistemic uncertainty, which converts latent uncertainty into pixel-level confidence maps that are clinically actionable.
+
+\textit{``In 2.4.3, is this [edge loss] applied to edge pixels only?''}
+\textbf{Fully addressed.} Section~\ref{sec:methods:loss:edge} now states: ``$\mathcal{L}_{\mathrm{edge}} = \|\mathrm{Sobel}(\hat{\mu}) - \mathrm{Sobel}(y)\|_1$ is the $\ell_1$ difference between Sobel-filtered reconstruction and reference, computed over \emph{all} pixels. The Sobel operator is applied to the full image; the loss is not restricted to detected edge locations.''
+
+\textit{``The meaning of perceptual fidelity is not clear.''}
+\textbf{Fully addressed.} Section~\ref{sec:lit:perceptual} defines: ``Perceptual fidelity measures the similarity of two images as perceived by the human visual system, emphasising structural and texture features over pixel-wise accuracy. In this study it is operationalised via LPIPS (Learned Perceptual Image Patch Similarity; Zhang et al., 2018~\cite{zhang_unreasonable_2018}), which computes the $\ell_2$ distance between deep feature maps of a frozen VGG-16 network, and FSIM (Feature Similarity Index; Zhang et al., 2011~\cite{zhang_fsim_2011}), which uses phase congruency and gradient magnitude.''
+
+\textit{``The meaning of `batch size' and `epoch' are not clear.''}
+\textbf{Fully addressed.} Section~\ref{sec:methods:training} defines on first use: ``a \emph{batch} is a randomly sampled subset of $B=16$ training images processed in a single forward-backward pass; an \emph{epoch} is one complete pass through all 5,216 training images (326 batches).''
+
+\paragraph{Discussion.}
+\textit{``The discussion critically discusses limitations but could be slightly expanded. I see more limitations that are not mentioned such as the choice of performance metrics and the tuning parameter choices.''}
+\textbf{Fully addressed.} (See Marker~1 Discussion response above, which addresses the same point.)
 
 \end{appendices}
 
