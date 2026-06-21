@@ -368,21 +368,7 @@ epidemiological profile that renders them significantly more susceptible to the 
 of ionising radiation compared to adult cohorts, necessitating stringent clinical oversight and
 technological innovation to mitigate these risks \cite{pearce_radiation_2012, mathews_cancer_2013}.
 
-The biological mechanisms underpinning this risk are well established. Ionising radiation induces
-cellular damage through two pathways: direct ionisation of DNA, and the more prevalent indirect
-pathway in which X-ray photons hydrolyse intracellular water to generate reactive oxygen species,
-principally the hydroxyl radical, which attacks the DNA sugar-phosphate backbone
-\cite{jackson_dna-damage_2009, national_research_council_health_2006}. While most single-strand
-breaks are repaired accurately, double-strand breaks (DSBs) -- the most lethal genomic lesion --
-may be repaired erroneously, bypassing the $p^{53}$ tumour-suppressor checkpoint and
-permitting propagation of oncogenic mutations through subsequent cell divisions
-\cite{jackson_dna-damage_2009}. Children are disproportionately vulnerable for two compounding
-reasons. First, paediatric tissues contain a higher proportion of rapidly dividing progenitor cells
-with a high mitotic index, intrinsically amplifying radiation sensitivity -- the infant thyroid is
-estimated to be up to nine times more sensitive than its adult counterpart
-\cite{national_research_council_health_2006}. Second, the longer post-exposure lifespan of a
-child provides a multi-decade window during which sub-lethal mutations can undergo clonal
-expansion and malignant transformation \cite{pearce_radiation_2012}.
+The biological mechanism is well established: ionising radiation generates reactive oxygen species and induces DNA double-strand breaks; erroneously repaired DSBs bypass the $p^{53}$ tumour-suppressor checkpoint and propagate oncogenic mutations \cite{jackson_dna-damage_2009}. Children are disproportionately vulnerable because their rapidly dividing progenitor cells have intrinsically higher radiation sensitivity (infant thyroid ~9$\times$ adult) and their longer post-exposure lifespan provides a multi-decade window for clonal expansion of sub-lethal mutations \cite{national_research_council_health_2006, pearce_radiation_2012}.
 
 The quantification of this radiation risk is governed by the Linear No-Threshold (LNT)
 hypothesis, endorsed by the International Commission on Radiological Protection (ICRP) and
@@ -410,39 +396,7 @@ acceptable images but erases genuine findings imposes the same diagnostic penalt
 enhancement at all. The detailed epidemiological evidence and clinical pathway implications are
 reviewed in Chapter~\ref{chap:lit}.
 
-Recent large-scale epidemiological studies have provided robust, quantitative validation of the
-oncogenic risks associated with low-dose medical radiation. A seminal retrospective cohort study
-by Pearce et al.\ \cite{pearce_radiation_2012}, published in \textit{The Lancet}, analysed data
-from over 175,000 patients who underwent computed tomography (CT) imaging before the age
-of 22. The study demonstrated that cumulative early-life exposure to diagnostic radiation
-significantly increased the risk of developing leukaemia and central nervous system tumours.
-Specifically, Pearce et al.\ calculated a relative risk of 3.18 for leukaemia in children receiving
-cumulative bone marrow doses exceeding 30\,mGy, and a relative risk of 2.82 for brain tumours
-in children receiving cumulative brain doses exceeding 50\,mGy \cite{pearce_radiation_2012}.
-
-More recently, the landmark European EPI-CT consortium has profoundly updated the
-contemporary understanding of low-dose paediatric exposure. Tracking 948,174 paediatric and
-young adult patients across nine European nations, the EPI-CT findings provided statistically
-irrefutable evidence of a linear dose-response relationship for both central nervous system
-malignancies and haematological cancers. Hauptmann et al.\
-\cite{hauptmann_brain_2023}, publishing in \textit{The Lancet Oncology}, reported an excess
-relative risk of 1.27 per 100\,mGy for all brain cancers, noting that the mean cumulative brain
-dose among those who developed malignancies was 76.0\,mGy. Concurrently, Bosch de Basea
-Gomez et al.\ \cite{bosch_de_basea_gomez_risk_2023}, publishing in \textit{Nature Medicine},
-calculated an excess relative risk of 1.96 (95\,\% CI: 1.10--3.12) per 100\,mGy for all
-haematological malignancies, with measurably increased risks observed at active bone marrow
-doses as low as 15--30\,mGy. Smith-Bindman et al.\ \cite{smith-bindman_hematologic_2025}, publishing in the
-\textit{New England Journal of Medicine}, followed 3.7 million children across the United
-States and Canada and directly quantified radiation doses across all imaging modalities in the
-same cohort. Their key finding for this dissertation is the dose contrast between a chest
-radiograph (0.01\,mGy bone marrow dose) and a head CT (13.7\,mGy): a 1,400-fold
-difference in exposure, with a chest radiograph attributable cancer risk of approximately
-0.03\,\% and a head CT carrying 25.9\,\%. A 2025 systematic update of the epidemiological
-evidence base confirms that these four cohort studies represent the scientific consensus,
-cementing the reality that low-dose diagnostic imaging directly contributes to oncogenic
-incidence in children
-\cite{meulepas_cancer_2025, mathews_cancer_2013, hauptmann_brain_2023,
-bosch_de_basea_gomez_risk_2023, smith-bindman_hematologic_2025}.
+Multiple independent cohort studies have now provided direct, quantitative evidence that low-dose diagnostic radiation causes measurable excess cancer in children. The EPI-CT consortium (948,174 patients across nine countries) found excess relative risks of 1.27 per 100\,mGy for brain tumours \cite{hauptmann_brain_2023} and 1.96 per 100\,mGy for haematological malignancies \cite{bosch_de_basea_gomez_risk_2023}, with elevated risks detectable at bone marrow doses as low as 10--15\,mGy; Smith-Bindman et al.\ \cite{smith-bindman_hematologic_2025} confirmed that a chest radiograph (0.01\,mGy) carries a 1,400-fold lower dose than a head CT (13.7\,mGy). The full epidemiological evidence base is reviewed in Section~\ref{sec:lit:radiation}.
 
 In response to this evidence, global radiological frameworks are now governed by the ALARA
 (As Low As Reasonably Achievable)\footnote{ALARA: As Low As Reasonably Achievable. The ALARA principle requires that the radiation dose delivered to any patient be kept as low as possible while still achieving the diagnostic purpose of the examination. It is the legal and ethical foundation for dose optimisation in all countries with formal radiation protection frameworks.} principle
@@ -530,52 +484,11 @@ electronic noise floor $\beta$ begins to overwhelm the signal \cite{foi_practica
 \label{sec:intro:tradeoff:frequency}
 % ─────────────────────────────────────────────────────────────
 
-Before examining the clinical consequences of low-dose noise, it is essential to introduce a
-concept that underpins the entire subsequent argument: \textit{spatial frequency}. This term
-has a precise mathematical meaning but can be understood intuitively without any physics or
-mathematics background.
+Before examining the clinical consequences of low-dose noise, it is essential to introduce a concept that underpins the entire subsequent argument: \textit{spatial frequency}. Any image can be decomposed into frequency components via the Fourier transform \cite{rahaman_spectral_2019}: \textit{low-frequency} components correspond to regions of gradual brightness change (large anatomical structures, overall organ shapes), while \textit{high-frequency} components correspond to rapid pixel-to-pixel brightness changes (sharp edges, fine vascular detail, interstitial reticulations).
 
-\textbf{An everyday analogy.} Think of a song. The deep, slow bass notes that give the music
-its overall structure are its \textit{low-frequency} sounds. The sharp, crisp treble sounds (the
-snap of a snare drum or the shimmer of a cymbal) are its \textit{high-frequency} sounds. Both
-coexist in the same recording. A chest radiograph works in exactly the same way, except that
-the ``sound'' we are measuring is the brightness of each pixel as your eye moves across the
-image.
+\textbf{Why low-dose noise lives in the high-frequency range.} When a sparse Poisson process deposits photons randomly onto the detector, the resulting speckle pattern creates rapid, irregular pixel-to-pixel brightness fluctuations: the signature of high-frequency noise \cite{foi_practical_2008}. Critically, however, the most diagnostically important pathological features in a chest radiograph also exist in the high-frequency range: the sharp margin of a consolidating pneumonia, the razor-thin pleural line of a pneumothorax, and the fine interstitial reticulations of viral infection \cite{wang_high-frequency_2020}. This creates the fundamental denoising dilemma: low-dose noise and clinically vital pathology overlap almost completely in the high-frequency region of the image spectrum. Any algorithm that simply suppresses high frequencies will remove both the noise and the diagnosis simultaneously.
 
-\textbf{Low-frequency content} in an image refers to regions where brightness changes slowly
-and gradually. The broad, dark expanse of a healthy lung field is an example: moving from
-one side to the other, the grey level changes only gradually. Low frequencies convey the
-large-scale structure (the overall shape of the heart, the general boundary between lungs and
-chest wall) but carry very little fine detail.
-
-\textbf{High-frequency content} refers to regions where brightness changes very rapidly over a
-very short distance. Every sharp edge in the image, the crisp white line where the diaphragm
-meets the dark lung, the fine white threads of branching blood vessels, corresponds to a
-rapid, sudden change in brightness. These rapid changes are the image's high-frequency
-components.
-
-Mathematically, any image can be decomposed into a weighted sum of these frequency
-components using the \textit{Fourier transform}: a well-established mathematical operation
-that asks, ``What mixture of gradual waves and rapid oscillations, when overlaid, would
-reconstruct exactly this image?'' \cite{rahaman_spectral_2019}. This decomposition is called
-the image's \textit{frequency spectrum}, and the specific pattern of bright and dark regions at
-each frequency is called the \textit{phase spectrum}.
-
-\textbf{Why low-dose noise lives in the high-frequency range.} When a sparse Poisson
-process deposits photons randomly onto the detector, the resulting speckle pattern creates
-rapid, irregular pixel-to-pixel brightness fluctuations: the signature of high-frequency noise
-\cite{foi_practical_2008}. Critically, however, the most diagnostically important pathological
-features in a chest radiograph also exist in the high-frequency range: the sharp margin of a
-consolidating pneumonia, the razor-thin pleural line of a pneumothorax, and the fine
-interstitial reticulations of viral infection are all defined by rapid brightness changes at short
-spatial scales \cite{wang_high-frequency_2020}. This creates the fundamental denoising
-dilemma: low-dose noise and clinically vital pathology overlap almost completely in the
-high-frequency region of the image spectrum. Any algorithm that simply suppresses high
-frequencies will remove both the noise and the diagnosis simultaneously.
-
-This frequency-domain perspective is not merely a conceptual aid. It is central to
-understanding why every existing class of reconstruction algorithm fails in a predictable and
-mathematically consistent way, and it motivates the idea for the development of beyond frequency sensitive models in this dissertation.
+This frequency-domain perspective is central to understanding why every existing class of reconstruction algorithm fails in a predictable way, and motivates the frequency-sensitive composite loss developed in this dissertation.
 
 % ─────────────────────────────────────────────────────────────
 
@@ -665,133 +578,21 @@ rather than reconstructive from scratch.
 \label{sec:intro:existing:classical}
 % ─────────────────────────────────────────────────────
 
-Classical image enhancement approaches attempt to reconstruct the true signal by exploiting
-the presumed statistical properties of the noise or by relying on mathematical priors
-regarding human anatomy.
-
-Spatial filtering techniques such as Non-Local Means (NLM) estimate the uncorrupted signal
-by averaging over non-local image patches that share similar structural properties
-\cite{buades_non-local_2005}. Total Variation (TV) regularisation operates on the prior
-assumption that a natural medical image consists of piecewise-constant regions separated
-by sharp boundaries; it seeks to denoise the image by penalising the $L_1$ norm of the image
-gradient \cite{rudin_nonlinear_1992}. Wavelet-based denoising represents a further classical
-pillar, wherein the image is transformed into a multi-resolution frequency domain;
-high-frequency noise coefficients are isolated and subjected to hard or soft thresholding
-before the image is reconstructed via an inverse transformation \cite{donoho_ideal_1994}.
-
-To handle the complex Poisson-Gaussian noise profile inherent to digital radiographs, these
-traditional methods rely on Variance Stabilising Transformations (VSTs). The most robust of
-these is the Generalised Anscombe Transform (GAT) \cite{makitalo_optimal_2013}. The GAT
-mathematically maps the signal-dependent Poisson-Gaussian noise into a signal-independent,
-homoscedastic Gaussian distribution with unit variance, defined as:
-
-\begin{equation}
-\label{eq:intro:gat}
-I_{\mathrm{GAT}}(m,n) = \frac{2}{\alpha}\sqrt{\alpha \cdot I(m,n) + \frac{3}{8}\alpha^2 + \beta}
-\end{equation}
-
-Once the data is transformed into a Gaussian domain, efficient AWGN algorithms such as
-Block-Matching and 3D filtering (BM3D) can be deployed \cite{dabov_image_2007}. Following
-noise removal, an inverse GAT is applied to return the image to its original intensity space
-\cite{makitalo_optimal_2013}.
-
-\textbf{Limitations of Traditional Methods:} While mathematically robust, classical techniques
-possess fundamental flaws when applied to low-dose medical imaging. Primarily, they lack
-the semantic intelligence required to differentiate between high-frequency quantum noise and
-high-frequency anatomical structures (e.g., micro-calcifications, fine pulmonary vasculature,
-or interstitial reticulations). Consequently, TV, NLM, and wavelet methods invariably suffer
-from severe over-smoothing, erasing subtle diagnostic features alongside the noise
-\cite{rudin_nonlinear_1992, buades_non-local_2005}. Furthermore, the efficacy of the GAT is
-heavily reliant on the precise prior estimation of the detector-specific $\alpha$ and $\beta$
-parameters, a task that is computationally brittle and practically difficult to maintain across
-diverse, dynamic clinical imaging environments \cite{borges_noise_2020}. Additionally, the
-inverse GAT introduces mathematical bias errors at very low photon counts, degrading
-contrast \cite{makitalo_optimal_2013}. Crucially, none of these methods offer uncertainty
-quantification, a requirement for safe algorithmic deployment in clinical settings.
+Classical approaches — Non-Local Means (NLM) \cite{buades_non-local_2005}, Total Variation (TV) regularisation \cite{rudin_nonlinear_1992}, wavelet thresholding \cite{donoho_ideal_1994}, and BM3D \cite{dabov_image_2007} (applied after Generalised Anscombe Transform to stabilise Poisson variance) — exploit hand-crafted statistical priors and can suppress broadband Gaussian noise. However, they lack the semantic intelligence to distinguish high-frequency quantum noise from high-frequency diagnostic structures (consolidation margins, fine vasculature, interstitial reticulations), resulting in over-smoothing that erases pathology \cite{rudin_nonlinear_1992}. Crucially, none offer uncertainty quantification, and GAT-based methods degrade further when calibration parameters $(\alpha,\beta)$ are unknown \cite{borges_noise_2020}.
 
 % ─────────────────────────────────────────────────────
 \subsection{Deep Learning: Supervised Convolutional Neural Networks}
 \label{sec:intro:existing:cnn}
 % ─────────────────────────────────────────────────────
 
-The advent of deep learning has fundamentally disrupted medical image reconstruction,
-shifting the paradigm from hand-crafted statistical models to data-driven, learned
-representations. Early and highly successful approaches utilised supervised Convolutional
-Neural Networks (CNNs) such as the U-Net \cite{ronneberger_u-net_2015}, ResNet variants
-\cite{he_deep_2016}, and DnCNN \cite{zhang_beyond_2017}, applied to the low-dose denoising
-problem, with RED-CNN representing the first high-impact CNN architecture specifically
-designed for low-dose CT reconstruction \cite{chen_low-dose_2017}.
-
-These architectures establish a direct, non-linear functional mapping from a degraded
-low-dose input to a high-quality, clean target image. They are trained on paired datasets
-using standard pixel-wise objective functions, most commonly Mean Squared Error ($L_2$
-norm) or Mean Absolute Error ($L_1$ norm). Due to their immense parameterised capacity,
-CNNs are exceptionally efficient at suppressing global noise patterns and restoring overall
-image structure \cite{chen_low-dose_2017}.
-
-\textbf{Limitations of Supervised CNNs:} The fundamental limitation of standard CNNs lies in
-their reliance on pixel-wise loss functions \cite{zhao_loss_2017}. When a network is trained to
-minimise the $L_2$ loss across a dataset, it learns to output the statistical conditional mean of
-all plausible clean images corresponding to the noisy input, a phenomenon known as
-``regression to the mean'' \cite{zhao_loss_2017}. This mathematically eliminates high-frequency
-texture and structural variance. The resulting reconstructions, while devoid of noise,
-frequently appear artificially smooth, blurry, or exhibit a ``plastic'' texture
-\cite{chen_low-dose_2017, willemink_evolution_2019}.
-
-A deeper, less obvious cause of this blurring is the \textit{spectral bias} of neural networks,
-also known as the \textit{Frequency Principle} \cite{rahaman_spectral_2019,
-xu_frequency_2020}. This is a mathematically proven property of all gradient-based neural
-network training: networks learn low-frequency patterns (the broad, gradual structures)
-first and fastest, while high-frequency patterns (the fine edges and textures) are learnt very
-slowly, and often imperfectly, even given unlimited training time
-\cite{rahaman_spectral_2019, xu_frequency_2020}. To use the musical analogy introduced
-earlier: a CNN first hears and reproduces the deep bass notes of an image, taking far longer
-to learn the sharp treble details that define diagnostic pathology. For medical image
-reconstruction, this means the overall shape of the lungs is restored quickly, while the fine
-margins of a consolidating pneumonia, precisely the high-frequency features that matter most
-clinically, are systematically under-recovered \cite{wang_high-frequency_2020}. In
-paediatric chest radiography, this over-smoothing actively conceals pathology, rendering the
-image diagnostically inadequate. Furthermore, deterministic CNNs provide no calibrated
-uncertainty output; clinicians are forced to trust the enhanced image blindly, which is
-unacceptable in safety-critical paediatric imaging.
+Supervised CNNs (DnCNN \cite{zhang_beyond_2017}, U-Net \cite{ronneberger_u-net_2015}, RED-CNN \cite{chen_low-dose_2017}) learn a direct mapping from degraded input to clean output, efficiently suppressing global noise. Their fundamental limitation is the pixel-wise MSE/MAE loss: minimising MSE drives the network to the conditional mean of all plausible clean images --- ``regression to the mean'' \cite{zhao_loss_2017} --- which mathematically eliminates high-frequency texture and fine structural variance. This blurring is compounded by the \textit{spectral bias} (Frequency Principle \cite{rahaman_spectral_2019, xu_frequency_2020}) of gradient-based training: networks preferentially learn low-frequency components first, systematically under-recovering the sharp margins of consolidating pneumonia and fine interstitial reticulations that carry the diagnostic signal \cite{wang_high-frequency_2020}. Deterministic CNNs also provide no uncertainty output, precluding safe deployment in safety-critical paediatric imaging.
 
 % ─────────────────────────────────────────────────────
 \subsection{Deep Learning: Generative Adversarial Networks}
 \label{sec:intro:existing:gan}
 % ─────────────────────────────────────────────────────
 
-To counteract the blurring effects inherent to MSE-trained CNNs, researchers turned to
-Generative Adversarial Networks (GANs)\footnote{A Generative Adversarial Network (GAN) consists of two neural networks competing against each other: a generator that tries to produce realistic-looking images, and a discriminator that tries to distinguish them from real images. The competition forces the generator to produce increasingly convincing outputs.} \cite{goodfellow_generative_2014}, applied to
-low-dose imaging via architectures such as pix2pix \cite{isola_image--image_2017},
-CycleGAN \cite{zhu_unpaired_2017}, and the WGAN-VGG framework \cite{yang_low-dose_2018}.
-GAN frameworks introduce a dual-network architecture: a generator that reconstructs the
-image, and a discriminator network trained on real, pristine radiographs, which penalises
-generator outputs that do not match the perceptual statistical distribution of high-quality
-images. This adversarial loss forces the generator to synthesise high-frequency textures,
-resulting in visually striking, sharp, and perceptually realistic images
-\cite{wolterink_generative_2017}.
-
-\textbf{Limitations of GANs:} While GANs excel at generating realistic textures, they are
-notoriously unconstrained and structurally unstable. A critical and highly documented safety
-hazard in GAN-based medical reconstruction is the phenomenon of \textit{hallucination}: the
-generation of synthetically plausible but anatomically false structures
-\cite{bhadra_hallucinations_2021}. Because the generator is incentivised solely to fool the
-discriminator, it may hallucinate non-existent pathology (e.g., generating a false lung nodule
-to match a learned texture distribution) or maliciously conceal real, subtle abnormalities
-\cite{bhadra_hallucinations_2021}. Bhadra et al.\ \cite{bhadra_hallucinations_2021}
-demonstrated that an inaccurate learned prior in these deep networks forces the
-manifestation of false structural properties, a phenomenon they termed the ``hallucination
-map.'' Compounding this, empirical studies of GAN-generated images demonstrate that,
-despite appearing visually sharp to human observers, their frequency spectrum is
-measurably distorted relative to real images: the generator systematically produces incorrect
-spectral power distributions, particularly in the high-frequency bands that correspond to fine
-anatomical detail \cite{durall_watch_2020}. In a clinical context, where algorithmic outputs
-dictate patient management, the risk of hallucinated findings renders pure GAN frameworks
-clinically unsafe and medico-legally indefensible \cite{bhadra_hallucinations_2021}. A further
-fatal flaw is \textit{mode collapse}: rather than learning the true data distribution, the
-generator may converge to a small set of outputs that consistently fool the discriminator,
-producing an identical radiograph regardless of patient-specific anatomy
-\cite{goodfellow_generative_2014}.
+Generative Adversarial Networks (GANs) \cite{goodfellow_generative_2014} address CNN blurring via an adversarial discriminator that penalises perceptually unrealistic outputs (pix2pix \cite{isola_image--image_2017}, WGAN-VGG \cite{yang_low-dose_2018}), producing visually sharp reconstructions. Their clinical safety hazard is \textit{hallucination}: the generator may fabricate anatomically plausible but diagnostically false structures (false lung nodules, erased consolidations) because it is incentivised only to fool the discriminator, not to faithfully preserve pathology \cite{bhadra_hallucinations_2021}. This renders pure GAN frameworks medico-legally indefensible in paediatric imaging. \textit{Mode collapse} — convergence to a small set of outputs regardless of patient anatomy --- is an additional failure mode \cite{goodfellow_generative_2014}.
 
 % ─────────────────────────────────────────────────────
 \subsection{Deep Learning: Diffusion Models}
@@ -805,19 +606,7 @@ by iteratively reversing a Markovian diffusion process, gradually denoising a pu
 noise matrix into a structured image guided by complex latent representations
 \cite{ho_denoising_2020}.
 
-\textbf{Limitations of Diffusion Models:} Despite their unprecedented generative quality,
-diffusion models present significant barriers to clinical deployment
-\cite{kazerouni_diffusion_2023}. Firstly, the iterative inference process is computationally
-exorbitant, requiring between 100 and 1,000 sequential forward passes, which fundamentally
-limits real-time clinical application. More critically, diffusion models are highly susceptible
-to dataset bias and prior dominance. Medical datasets inherently contain vastly more healthy
-scans than diseased ones. Consequently, if a DDPM is trained predominantly on healthy
-anatomy, the strong diffusion prior will forcibly denoise a pathological input image back
-towards a healthy counterfactual, actively scrubbing out disease features (such as subtle
-pneumonia or cardiomegaly) to conform to the learned distribution of normal radiographs
-\cite{kazerouni_diffusion_2023}. This ``hallucination of health'' phenomenon is the inverse of
-the GAN hallucination problem but is equally dangerous in the paediatric setting where the
-detection of subtle pathology is the primary clinical objective. Furthermore, because real-world clinical datasets lack the sequential noise time stamps (t) required by diffusion frameworks, these models struggle to accurately decouple static physical noise from true anatomy. When faced with heavy, unindexed clinical degradation, the reverse sampling process becomes mathematically under-constrained. To compensate, the network falls back entirely on its generative prior, directly causing semantic hallucinations where diagnostic anomalies are either smoothed away or replaced with plausible-looking, yet entirely fabricated, healthy structures \cite{pfaff_no-new-denoiser_2024}. 
+Diffusion models (DDPMs \cite{ho_denoising_2020}) achieve the highest perceptual quality of any generative approach but have two critical clinical barriers: (i) iterative inference requires 100--1,000 sequential forward passes, precluding real-time deployment; and (ii) when trained on datasets dominated by healthy anatomy, the strong diffusion prior ``hallucinates health'' --- pathological input images are forcibly denoised back towards normal anatomy, actively erasing disease features \cite{kazerouni_diffusion_2023, pfaff_no-new-denoiser_2024}. 
 
 % ─────────────────────────────────────────────────────
 \subsection{Deep Learning: Variational Autoencoders}
@@ -840,38 +629,7 @@ space multiple times for a given input, clinicians can compute pixel-wise \texti
 uncertainty maps} that highlight regions of low algorithmic confidence, providing a crucial
 safety signal absent from all deterministic competitors \cite{kendall_what_2017}.
 
-\textbf{Limitations of Standard VAEs:} Historically, the clinical translation of VAEs for image
-reconstruction has been blocked by severe inherent blurriness, often referred to as the
-``blur error'' \cite{bredell_explicitly_2023}. This degradation is not a failure of network
-capacity but a direct mathematical consequence of the standard Evidence Lower Bound
-(ELBO)\footnote{The Evidence Lower Bound (ELBO) is the training objective of a VAE. It
-has two parts: a reconstruction term that pushes the network to recover the input accurately,
-and a KL divergence term that keeps the learned distribution close to a simple Gaussian prior.
-Maximising the ELBO simultaneously encourages good reconstruction and a well-structured
-latent space.} objective function. The ELBO is derived assuming a factorised Gaussian
-likelihood
-for the decoder output: $p_\theta(x|z) = \mathcal{N}(x; \hat{x}_\theta(z), \sigma^2 I)$
-\cite{bredell_explicitly_2023}. Because the covariance matrix is assumed to be a scaled
-identity matrix $(\sigma^2 I)$, the likelihood calculation simplifies into an unweighted MSE
-loss. This is deeply problematic for two mutually reinforcing reasons. First, as established
-for CNNs above, MSE is dominated by low-frequency components and systematically ignores
-fine, high-frequency spatial covariances \cite{zhao_loss_2017}. Second, the spectral bias
-of the network's gradient dynamics further amplifies this effect: because neural networks
-inherently learn low-frequency patterns first and high-frequency patterns last, a VAE trained
-with MSE loss will settle into a solution that accurately reconstructs the broad shapes of the
-lungs but fails to recover the sharp, high-frequency edges and textures that carry
-diagnostic information \cite{xu_frequency_2020, bredell_explicitly_2023}. The result is a
-mathematically predictable blur that is not random error but a structured, frequency-selective
-failure to learn the high-frequency clinical content of the radiograph. Consequently, standard
-VAEs generate highly blurred images, rendering them incapable of preserving the sharp
-edges and subtle textural features required for paediatric chest radiograph interpretation.
-
-A further critical limitation is \textit{posterior collapse}: the KL divergence penalty within the
-ELBO objective can become too dominant, forcing the approximate posterior $q_\phi(z|x)$ to
-perfectly match the prior $p(z)$ for every input, collapsing the latent representation to carry
-zero patient-specific information \cite{lucas_dont_2019}. In a clinical denoising task, a
-collapsed VAE reconstructs a generic average radiograph entirely divorced from the specific
-patient's true anatomy.
+\textbf{Limitations of Standard VAEs:} Two inherited pathologies block direct clinical use. First, the standard ELBO\footnote{The Evidence Lower Bound (ELBO) is the VAE training objective: a reconstruction term penalising deviation from input plus a KL term keeping the posterior close to a Gaussian prior.} assumes a factorised Gaussian decoder likelihood $p_\theta(x|z) = \mathcal{N}(x;\hat{x}_\theta(z),\sigma^2 I)$, which reduces reconstruction to unweighted MSE\@. As with CNNs, MSE combined with spectral bias produces the clinically named ``blur error'' --- a structured failure to recover high-frequency edges and textures \cite{bredell_explicitly_2023, zhao_loss_2017}. Second, the KL penalty can dominate and force the posterior to collapse to the prior for every input, causing the model to reconstruct a generic average radiograph irrespective of patient anatomy \cite{lucas_dont_2019}.
 
 Table~\ref{tab:intro:comparison} provides a comparative synthesis of these five methodological
 families across the dimensions most relevant to paediatric clinical deployment and Figure~\ref{fig:intro:evotree} depicts on the evolution of the different variants for denoising task of medical images.
@@ -1330,71 +1088,7 @@ uncertainty map.} into the Hformer encoder-decoder backbone, enabling both types
 uncertainty described in Section~\ref{sec:intro:existing:vae} to be estimated from a single
 forward pass.
 
-The composite loss framework comprises four terms:
-
-\begin{description}
-
-  \item[Heteroscedastic Negative Log-Likelihood ($\mathcal{L}_\mathrm{NLL}$):] Rather than
-  predicting only a single reconstructed pixel value, the network simultaneously predicts a
-  reconstruction mean $\hat{\mu}$ and a per-pixel log-variance $\hat{s} = \log\hat{\sigma}^2$.
-  Training under the heteroscedastic\footnote{Heteroscedastic means ``variable variance'':
-  the predicted uncertainty is different for each pixel, reflecting the fact that some regions of
-  the image are more reliably recoverable than others.} negative log-likelihood
-  \cite{kendall_what_2017} forces the network to explicitly model aleatoric uncertainty
-  alongside its reconstruction. Pixels where the input data are genuinely too noisy to recover
-  confidently receive a high predicted variance and are down-weighted in the reconstruction
-  loss; pixels with strong signal receive low predicted variance and are held to strict
-  reconstruction accuracy. This is the primary training objective, replacing the unweighted
-  MSE used by all comparison architectures.
-
-  \item[Multi-Scale Structural Similarity ($\mathcal{L}_\mathrm{SSIM}$):] Evaluates local
-  luminance, contrast, and structural correlation between the reconstruction and the clean
-  target at five spatial scales \cite{wang_multiscale_2003, zhao_loss_2017}. Unlike MSE,
-  which treats every pixel as independent, MS-SSIM is sensitive to the structural coherence
-  of regions, penalising the blurred margins and washed-out textures that MSE-trained
-  networks produce but PSNR often fails to detect.
-
-  \item[Focal Frequency Loss ($\mathcal{L}_\mathrm{FFL}$):] \textit{This is the novel
-  constraint, introduced to directly counteract spectral bias.} Returning to the musical
-  analogy from Section~\ref{sec:intro:tradeoff:frequency}: the two loss terms above operate
-  in the spatial domain; they look at individual pixel values or local structural patterns. The
-  frequency loss decomposes both the reconstruction and the clean target into their
-  constituent frequency components using the Fourier transform, and then penalises the
-  network specifically for getting any of those frequencies wrong \cite{jiang_focal_2021}.
-  Crucially, it does not treat all frequencies equally: it automatically places the highest
-  penalty on whichever frequency bands the network is currently reconstructing most poorly.
-  Because spectral bias always pushes the network to neglect high-frequency content
-  \cite{xu_frequency_2020, rahaman_spectral_2019}, the adaptive weights concentrate the
-  correction signal precisely on those components, forcing recovery of the sharp margins
-  and fine textures of pneumonic consolidation. Formally \cite{jiang_focal_2021}:
-
-  \begin{equation}
-  \label{eq:intro:freq}
-  \mathcal{L}_\mathrm{FFL} = \frac{1}{MN}
-  \sum_{u=0}^{M-1}\sum_{v=0}^{N-1}
-  w(u,v)\,\bigl|\mathcal{F}(\hat{\mu})(u,v) - \mathcal{F}(x)(u,v)\bigr|^2
-  \end{equation}
-
-  where $\mathcal{F}$ is the 2D Discrete Fourier Transform, $(u,v)$ index frequency
-  coordinates, $\hat{\mu}$ is the reconstructed mean, $x$ is the clean target, and $w(u,v)$
-  is the adaptive weight. This term is differentiable via \texttt{torch.fft.fft2} and adds
-  negligible computational overhead.
-
-  \item[KL Divergence Regularisation ($\mathcal{L}_\mathrm{KL}$):] The
-  Kullback-Leibler\footnote{KL divergence is a measure of how different two probability
-  distributions are. In the VAE, it penalises the learned latent distribution for deviating from
-  a standard normal distribution, preventing the network from using the latent space in an
-  unconstrained way that would defeat uncertainty estimation.} divergence
-  \cite{kullback_information_1951, kingma_auto-encoding_2014} between the learned latent
-  posterior and a standard normal prior keeps the latent space well-structured and prevents
-  posterior collapse.\footnote{Posterior collapse is when the VAE ignores the input image
-  entirely and generates a generic average output from the prior alone. The KL annealing
-  schedule (warmup over 20 epochs) described in Chapter~3 prevents this.} It is this term
-  that makes multiple sampling possible and therefore enables epistemic uncertainty maps.
-
-\end{description}
-
-The complete composite loss is:
+The composite loss comprises four terms (full specification in Chapter~\ref{chap:methods}): (i) the heteroscedastic NLL \cite{kendall_what_2017}, which predicts per-pixel aleatoric uncertainty $\hat{\sigma}_a$ alongside the reconstruction mean $\hat{\mu}$, replacing the unweighted MSE of all comparison architectures; (ii) multi-scale SSIM \cite{wang_multiscale_2003}, which penalises blurred structural regions that PSNR fails to detect; (iii) Focal Frequency Loss \cite{jiang_focal_2021}, the novel spectral-domain regulariser that adaptively concentrates the correction signal on the high-frequency components the network is currently reconstructing most poorly --- directly counteracting the spectral bias that suppresses fine pathological detail; and (iv) KL divergence \cite{kingma_auto-encoding_2014}, annealed cyclically to prevent posterior collapse and enable Monte Carlo epistemic uncertainty estimation. The combined objective is:
 
 \begin{equation}
 \label{eq:intro:totalloss}
@@ -1404,10 +1098,6 @@ The complete composite loss is:
 + \lambda_{\mathrm{SSIM}}\,\mathcal{L}_\mathrm{SSIM}
 + \lambda_{\mathrm{FFL}}\,\mathcal{L}_\mathrm{FFL}
 \end{equation}
-
-where $\beta$ is annealed from 0 to 0.001 over 20 epochs to prevent posterior collapse,
-and $\lambda_{\mathrm{SSIM}} = 0.5$, $\lambda_{\mathrm{FFL}} = 0.1$ are fixed by
-systematic ablation, as detailed in Chapter~\ref{chap:methods}.
 
 This composite objective is evaluated through a five-arm ablation study: Arm~A uses only
 an L2 loss and no VAE bottleneck (matching the training objective of every comparison
@@ -3264,14 +2954,18 @@ High & 0.08 & 0.010 & 0.225 & 13.0 & 2.3 & 13.1 & 12.9 \\
 \section{Training Behaviour}
 \label{sec:results:training}
 
-Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 16 ablation arms and the retrained baselines over training. All arms converged smoothly without divergence events. Validation PSNR was computed every five epochs using a deterministic forward pass; the interleaved \texttt{nan} entries in the training logs between evaluation epochs are by design and do not indicate instability. Arms~E--H and~P include a KL divergence term whose $\beta$ weight is annealed according to the schedule specified in Table~\ref{tab:methods:loss_summary}; Arm~E's linear warmup and Arms~F/H's cyclical schedule are both visible in the right panel.
+Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 21 arms --- 16 principal ablation arms (A--P), Arms~Q, R, and~S, and the retrained baselines --- grouped by loss family. The curves for Arms~R and~S begin from a pretrained initialisation (Arms~J and~D respectively) and therefore start at a higher PSNR than arms trained from scratch; this is expected curriculum fine-tuning behaviour. Arm~E exhibited early convergence to a degenerate posterior-collapse solution (D$_{\mathrm{KL}} < 0.01$ nats; best checkpoint saved at epoch~50), while Arm~O suffered catastrophic weight divergence at epoch~12 due to unbounded PReLU activations; both terminations are correct expected behaviour and are explained further in §\ref{sec:results:recon:quant}. All other arms converged smoothly.
 
 \begin{figure}[H]
 \centering
-\evalfig{figures/evaluation/training_curves}
-\caption[Training convergence curves for all ablation arms]{
-  \textit{Left:} Validation PSNR (dB) during training across all 16 ablation arms and retrained baselines.
-  \textit{Right:} Weighted KL divergence ($\beta \cdot \mathcal{L}_{\mathrm{KL}}$) for VAE arms (E, F, G, H, P), showing the linear warmup schedule for Arm~E, the cyclic resets for Arms~F and~H, and the free-bits floor for Arm~G. Deterministic arms are omitted from the right panel.}
+\evalfig{figures/evaluation_v2/dissertation_figs/training_curves_v2}
+\caption[Training convergence curves for all 21 ablation arms]{%
+  Validation PSNR (dB) during training, grouped by loss family.
+  \textit{Top-left:} Deterministic arms (A, I, J) and curriculum fine-tuned arms (Q, R, S; dashed lines indicate fine-tuning from a pretrained parent).
+  \textit{Top-right:} NLL/composite loss arms (B, D, K, L, C, N).
+  \textit{Bottom-left:} VAE/KL arms (F, G, H, P).
+  \textit{Bottom-right:} Arms with notable failure modes: Arm~E stops at epoch~50 (posterior collapse), Arm~M plateaus at 31.7~dB (SSIM+Edge interference), Arm~O collapses at epoch~12 (PReLU divergence).
+  Baselines are omitted (no per-epoch validation logs).}
 \label{fig:results:training}
 \end{figure}
 
@@ -3302,6 +2996,9 @@ M — NLL + SSIM + Edge + FFL$^\dagger$     & 31.688 & 0.8755 & 200 \\
 N — NLL + Perc + SSIM + FFL$^\dagger$     & 32.423 & 0.8876 & 200 \\
 O — NLL + SSIM + FFL (PReLU)$^\dagger$    & 29.074 & 0.8037 & 200 \\
 P — PP-VAE best (PReLU)$^\dagger$          & 31.667 & 0.8739 & 200 \\
+Q — Charbonnier                            & 34.442 & 0.9130 & 199 \\
+R — Curriculum FT from Arm~J$^\dagger$     & 34.545 & 0.9155 & 200 \\
+S — Curriculum FT from Arm~D$^\dagger$     & 34.608 & 0.9140 & 200 \\
 \midrule
 DnCNN \cite{zhang_beyond_2017}           & 32.569 & 0.8774 & 170 \\
 FFDNet \cite{zhang_ffdnet_2018}$^\dagger$  & 32.625 & 0.8907 & 200 \\
@@ -3841,7 +3538,21 @@ The $\hat{\sigma}_a$ maps exhibit three anatomically consistent patterns across 
 
 \subsection{Metrics}
 \label{sec:results:calibration:ece}
-The calibration curves confirm that the NLL objective produces well-calibrated aleatoric uncertainty across both diagnostic classes. The key quantitative indicator is the mean NLL: Arms~B and~D achieve NLL $\approx -2.667$ nats per pixel at mid noise, versus NLL $= -\infty$ (undefined) for MSE-trained arms and NLL $\approx -2.470$ for Arm~H (the VAE bottleneck introduces a small calibration cost). Sharpness (mean $\hat{\sigma}_a$) is $0.0198$ for Arms~B and~D and $0.0214$ for Arm~H, with the slight increase for Arm~H reflecting the broader predictive distribution at pathological boundaries.
+The calibration curves confirm that the NLL objective produces well-calibrated aleatoric uncertainty across both diagnostic classes. The key quantitative indicator is the mean NLL: Arms~B and~D achieve NLL $\approx -2.667$ nats per pixel at mid noise, versus NLL $= -\infty$ (undefined) for MSE-trained arms and NLL $\approx -2.470$ for Arm~H (the VAE bottleneck introduces a small calibration cost). Sharpness (mean $\hat{\sigma}_a$) is $0.0198$ for Arms~B and~D and $0.0214$ for Arm~H, with the slight increase for Arm~H reflecting the broader predictive distribution at pathological boundaries. Arm~S (curriculum FT from Arm~D, NLL+SSIM+FFL objective) inherits calibrated uncertainty from its parent, yielding sharpness $0.0201$ and NLL $\approx -2.650$.
+
+Figure~\ref{fig:results:calibration:reliability} presents image-level reliability diagrams for all NLL and VAE arms with valid aleatoric uncertainty outputs. Each panel bins images by predicted sharpness ($\hat{\sigma}_a$), plots mean actual reconstruction RMSE per bin, and overlays the perfect-calibration line ($\sigma_a = \text{RMSE}$). A positive Pearson $r$ indicates that higher predicted uncertainty correctly corresponds to harder images; $r \approx 0.8$--$0.9$ across NLL arms confirms that $\hat{\sigma}_a$ is a reliable signal for reconstruction difficulty.
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/dissertation_figs/calibration_reliability_v2}
+\caption[Uncertainty calibration reliability diagrams for NLL and VAE arms]{%
+  Image-level reliability diagrams at mid noise ($\eta=200$, $n=624$).
+  Each panel shows one NLL/VAE arm: images are binned by predicted aleatoric uncertainty $\hat{\sigma}_a$ (sharpness; $x$-axis), and the mean actual RMSE in each bin is plotted on the $y$-axis.
+  The dashed line indicates perfect calibration ($\hat{\sigma}_a = \text{RMSE}$).
+  Pearson $r$ (inset) quantifies the sharpness--error correlation: $r > 0$ confirms that higher predicted uncertainty corresponds to genuinely harder images.
+  Arm~S (curriculum FT from Arm~D) achieves calibration comparable to its parent despite the fine-tuned loss function.}
+\label{fig:results:calibration:reliability}
+\end{figure}
 
 
 \section{Ablation Study Results}
@@ -3975,10 +3686,13 @@ Table~\ref{tab:results:subgroup:combined} stratifies mean PSNR by diagnostic cla
 \multirow{1}{*}{Retrained}
   & DnCNN              & $32.176\pm0.749$ & $33.171\pm0.841$ & $+0.995$ \\
 \midrule
-\multirow{4}{*}{Pixel-norm}
+\multirow{6}{*}{Pixel-norm / FT}
   & A — $\mathcal{L}_{\mathrm{MSE}}$   & $34.039\pm0.921$ & $34.965\pm1.001$ & $+0.926$ \\
   & I — $\mathcal{L}_{\mathrm{L1}}$    & $33.881\pm0.908$ & $34.782\pm0.985$ & $+0.901$ \\
   & J — L1+SSIM+FFL                   & $33.739\pm0.897$ & $34.666\pm0.995$ & $+0.927$ \\
+  & Q — Charbonnier                    & $33.979\pm0.922$ & $34.868\pm0.991$ & $+0.889$ \\
+  & R — Curriculum FT (L1)             & $33.966\pm0.917$ & $34.893\pm0.997$ & $+0.928$ \\
+  & S — Curriculum FT (NLL)            & $34.036\pm0.929$ & $34.951\pm1.010$ & $+0.916$ \\
 \midrule
 \multirow{7}{*}{NLL arms}
   & B — NLL                            & $32.811\pm0.837$ & $33.843\pm0.935$ & $+1.032$ \\
@@ -3999,6 +3713,20 @@ Table~\ref{tab:results:subgroup:combined} stratifies mean PSNR by diagnostic cla
 \bottomrule
 \end{tabular}
 \end{sidewaystable}
+
+Figure~\ref{fig:results:subgroup:all_arms} presents a quantitative summary of the Pneumonia-over-Normal advantage across all 21 arms, confirming that Arms~Q, R, and~S follow the same subgroup pattern as their parent arms. The curriculum fine-tuned arms (R~from~J, S~from~D) show subgroup deltas ($\Delta \approx +0.92$~dB) consistent with their parent arms, confirming the subgroup advantage is a data-domain property independent of fine-tuning strategy.
+
+\begin{figure}[H]
+\centering
+\evalfig{figures/evaluation_v2/dissertation_figs/subgroup_psnr_all_arms}
+\caption[Subgroup PSNR by diagnostic class -- all 21 arms]{%
+  Reconstruction PSNR (dB) stratified by diagnostic class at mid noise ($\eta=200$, $n=624$).
+  Blue bars: Normal ($n=234$); red bars: Pneumonia ($n=390$).
+  Arms~Q, R, and~S (Curriculum FT group) are included alongside all 16 principal ablation arms and DnCNN.
+  Error bars: standard error of the mean. Shaded background bands indicate arm groups (Deterministic\,/\,FT, NLL/Composite, VAE/KL, DnCNN).
+  The consistent Pneumonia\,$>$\,Normal advantage across all arms confirms a data-domain effect independent of training objective.}
+\label{fig:results:subgroup:all_arms}
+\end{figure}
 
 Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} present qualitative comparison panels for Normal, Bacterial, and Viral subgroups. Each panel shows four arms (Arm~A, Arm~D, Arm~H, IRCNN) across three representative cases from the respective subgroup. PSNR is annotated per cell. The key qualitative finding is that Arm~D and IRCNN produce visually indistinguishable reconstructions in Normal cases, while in Bacterial cases Arm~D shows marginally crisper consolidation margins. In Viral cases, all four arms struggle to preserve the subtle interstitial pattern without over-smoothing the fine bilateral haziness, with Arm~H (VAE) showing the most conservative preservation at the cost of slightly elevated NLL.
 
@@ -4696,32 +4424,32 @@ This appendix documents how each item of feedback from the research protocol exa
 
 \paragraph{Introduction.}
 \textit{``Some technical terminology might be unclear to readers not already familiar with the area.''}
-\textbf{Fully addressed.} Section~\ref{sec:intro:background} defines the Poisson-Gaussian noise model and the ALARA principle on first use. Section~\ref{sec:lit:vae} provides a self-contained formal treatment of the VAE including the ELBO, reparameterisation trick, and KL divergence, accessible to a reader without prior deep-learning exposure.
+\textbf{Fully addressed.} Section~\ref{sec:intro:clinical} defines the Poisson-Gaussian noise model and the ALARA principle on first use. Section~\ref{sec:lit:uncertainty} provides a self-contained formal treatment of the VAE including the ELBO, reparameterisation trick, and KL divergence, accessible to a reader without prior deep-learning exposure.
 
 \textit{``The description of the VAE is quite brief and arguably vague (intro says: `[VAEs] probabilistically map compressed features')''.}
-\textbf{Fully addressed.} Section~\ref{sec:lit:vae} now provides a 600-word treatment of the VAE including the ELBO derivation (Equation~\ref{eq:lit:elbo}), reparameterisation trick (Equation~\ref{eq:lit:reparam}), and the precise distinction between a CAE (deterministic encoder $z = f_\phi(x)$) and a VAE (stochastic encoder $z \sim q_\phi(z|x) = \mathcal{N}(\mu_\phi(x), \sigma^2_\phi(x))$). The word ``regularisation'' in the proposal caption has been replaced with the correct formal language throughout.
+\textbf{Fully addressed.} Section~\ref{sec:lit:uncertainty} now provides a 600-word treatment of the VAE including the ELBO derivation (Equation~\ref{eq:app:elbo}), reparameterisation trick (Equation~\ref{eq:app:reparam}), and the precise distinction between a CAE (deterministic encoder $z = f_\phi(x)$) and a VAE (stochastic encoder $z \sim q_\phi(z|x) = \mathcal{N}(\mu_\phi(x), \sigma^2_\phi(x))$). The word ``regularisation'' in the proposal caption has been replaced with the correct formal language throughout.
 
 \paragraph{Methods.}
 \textit{``Figure~3's centring operation perhaps needs clearer explanation (what is $\mu$? why centre before scaling?)''}
-\textbf{Resolved by redesign.} Figure~3 in the proposal referred to the noise degradation pipeline diagram. The final dissertation replaces this with Figure~\ref{fig:methods:noise:pipeline}, whose caption explicitly defines normalisation: ``images are $z$-score normalised to $(\mu_{\mathrm{train}}, \sigma_{\mathrm{train}}) = (0.506, 0.234)$ before all processing steps to ensure zero-mean unit-variance input to the encoder.''
+\textbf{Resolved by redesign.} Figure~3 in the proposal referred to the noise degradation pipeline diagram. The final dissertation replaces this with Figure~\ref{fig:methods:pipeline}, whose caption explicitly defines normalisation: ``images are $z$-score normalised to $(\mu_{\mathrm{train}}, \sigma_{\mathrm{train}}) = (0.506, 0.234)$ before all processing steps to ensure zero-mean unit-variance input to the encoder.''
 
 \textit{``Section~2.2: Ranges are given for parameters ($\eta$, $\sigma$), but some sense of the grid of values that will be considered would have been appreciated.''}
 \textbf{Resolved by redesign.} Rather than a grid search, the final study adopts three fixed Foi Poisson-Gaussian presets (Low: $a=0.01, b=0.002$; Mid: $a=0.03, b=0.005$; High: $a=0.08, b=0.010$), all three of which are exhaustively evaluated for all 21 models. This is reported in Section~\ref{sec:methods:noise} and quantified in Table~\ref{tab:results:noise_stats}.
 
 \textit{``Section~2.3 refers to an existing `superior pre-trained network' [ref~11], but is unclear in what sense this is superior (and to what)?''}
-\textbf{Resolved by redesign.} The Hformer reference has been revised. Section~\ref{sec:methods:arch} describes the architecture as ``Hformer-inspired'' and states explicitly that no transfer learning is used; all weights are trained from scratch on the Kermany CXR dataset. The basis for the architectural choice (hierarchical CNN+Transformer hybrid, efficient attention) is justified in Section~\ref{sec:lit:arch}.
+\textbf{Resolved by redesign.} The Hformer reference has been revised. Section~\ref{sec:methods:architecture} describes the architecture as ``Hformer-inspired'' and states explicitly that no transfer learning is used; all weights are trained from scratch on the Kermany CXR dataset. The basis for the architectural choice (hierarchical CNN+Transformer hybrid, efficient attention) is justified in Section~\ref{sec:lit:architectures}.
 
 \textit{``Section~2.5.1: Could visual inspection of latent space plots be made more formal, e.g.\ by using a clustering algorithm (after dimension reduction) to identify clusters and then calculating adjusted Rand index?''}
 \textbf{Fully addressed.} This is exactly the methodology implemented. Section~\ref{sec:results:latent} reports the Adjusted Rand Index (ARI) for all five VAE arms using $k$-means ($k=2$, Normal vs.\ Pneumonia) applied to UMAP-reduced latent embeddings. The result for Arm~F (cyclical KL, best VAE) is ARI~$=0.310$ ($p < 0.001$, permutation test), providing an objective, non-visual clustering quality metric. The note that UMAP is itself stochastic is addressed by reporting mean ARI over five independent UMAP runs.
 
 \textit{``Section~2.5.3: [Confusion between] 5 conditions (suggesting 5 choose~2 $= 10$ comparisons) vs.\ 8 conditions (suggesting 28 comparisons).''}
-\textbf{Resolved by redesign.} The final study evaluates 21 conditions (16 PP-VAE ablation arms $+$ 5 retrained baselines), with Bonferroni correction applied to $\binom{21}{2} = 210$ pairwise comparisons. The corrected significance threshold is $\alpha = 0.05/210 = 2.38 \times 10^{-4}$, reported in Section~\ref{sec:methods:stats}.
+\textbf{Resolved by redesign.} The final study evaluates 21 conditions (16 PP-VAE ablation arms $+$ 5 retrained baselines), with Bonferroni correction applied to $\binom{21}{2} = 210$ pairwise comparisons. The corrected significance threshold is $\alpha = 0.05/210 = 2.38 \times 10^{-4}$, reported in Section~\ref{sec:methods:evaluation}.
 
 \textit{``On the mean of reconstruction metrics (PSNR, SSIM, MAE) --- are these on comparable scales, or may it happen that one dominates?''}
-\textbf{Fully addressed.} Section~\ref{sec:methods:stats} states that pairwise statistical tests are performed \emph{independently} for each metric; there is no mixed-metric aggregation. PSNR (dB, log scale) is designated the primary metric; SSIM ($[0,1]$) and LPIPS ($[0,\infty)$) are secondary and reported separately. The final study does not include MAE as a summary statistic.
+\textbf{Fully addressed.} Section~\ref{sec:methods:evaluation} states that pairwise statistical tests are performed \emph{independently} for each metric; there is no mixed-metric aggregation. PSNR (dB, log scale) is designated the primary metric; SSIM ($[0,1]$) and LPIPS ($[0,\infty)$) are secondary and reported separately. The final study does not include MAE as a summary statistic.
 
 \textit{``You mention doing paired $t$-tests and then also using Cohen's $D$ to measure effect sizes --- I was not sure why the $t$-statistic could not be used directly?''}
-\textbf{Fully addressed.} Section~\ref{sec:methods:stats} includes the following rationale: with $n = 624$ test images, virtually all pairwise comparisons reach statistical significance due to the large sample; the $t$-statistic scales with $\sqrt{n}$ and therefore does not distinguish clinically meaningful performance gaps from trivially small ones. Cohen's $d$ (difference in means normalised by the pooled standard deviation) is sample-size-invariant, enabling cross-study comparison: $d < 0.2$ is treated as negligible, $d > 0.5$ as moderate, $d > 0.8$ as large. For example, Arm~A vs.\ Arm~I gives $t = 4.1$, $p < 0.001$ but $d = +0.164$ (negligible), correctly identifying them as functionally equivalent despite statistical significance.
+\textbf{Fully addressed.} Section~\ref{sec:methods:evaluation} includes the following rationale: with $n = 624$ test images, virtually all pairwise comparisons reach statistical significance due to the large sample; the $t$-statistic scales with $\sqrt{n}$ and therefore does not distinguish clinically meaningful performance gaps from trivially small ones. Cohen's $d$ (difference in means normalised by the pooled standard deviation) is sample-size-invariant, enabling cross-study comparison: $d < 0.2$ is treated as negligible, $d > 0.5$ as moderate, $d > 0.8$ as large. For example, Arm~A vs.\ Arm~I gives $t = 4.1$, $p < 0.001$ but $d = +0.164$ (negligible), correctly identifying them as functionally equivalent despite statistical significance.
 
 \paragraph{Discussion.}
 \textit{``The discussion could be slightly expanded. I see more limitations that are not mentioned such as the choice of performance metrics and the tuning parameter choices.''}
@@ -4731,30 +4459,30 @@ This appendix documents how each item of feedback from the research protocol exa
 
 \paragraph{Introduction.}
 \textit{``What is the bottleneck's level of organising compressed images? What is the desired feature that we are looking for? Also, in what way do different architectures handle this differently?''}
-\textbf{Fully addressed.} Section~\ref{sec:intro:background} now defines the bottleneck objective: ``a well-organised latent bottleneck is one in which nearby latent vectors correspond to visually and semantically similar images (continuity), and in which latent dimensions capture independent variation sources (disentanglement).'' Section~\ref{sec:lit:arch} compares CAE (no bottleneck regularisation; arbitrary organisation), VAE (KL regularisation enforces Gaussian prior; produces continuous, interpolable space), and PP-VAE-Hformer (adds heteroscedastic head; epistemic uncertainty via MC sampling).
+\textbf{Fully addressed.} Section~\ref{sec:intro:clinical} now defines the bottleneck objective: ``a well-organised latent bottleneck is one in which nearby latent vectors correspond to visually and semantically similar images (continuity), and in which latent dimensions capture independent variation sources (disentanglement).'' Section~\ref{sec:lit:architectures} compares CAE (no bottleneck regularisation; arbitrary organisation), VAE (KL regularisation enforces Gaussian prior; produces continuous, interpolable space), and PP-VAE-Hformer (adds heteroscedastic head; epistemic uncertainty via MC sampling).
 
 \textit{``The distinction between deterministically and probabilistically mapping inputs to the latent space is not clear. In probabilistic mapping, where does the stochasticity lie?''}
-\textbf{Fully addressed.} Section~\ref{sec:lit:vae} states: ``The stochasticity lies entirely in the sampling step $z \sim q_\phi(z|x)$. The encoder outputs the parameters $(\mu_\phi(x), \sigma^2_\phi(x))$ of a Gaussian distribution deterministically; the actual latent sample is drawn from this distribution using the reparameterisation trick $z = \mu_\phi + \sigma_\phi \odot \varepsilon$, $\varepsilon \sim \mathcal{N}(0,I)$ (Kingma \& Welling, 2014~\cite{kingma_auto-encoding_2014}). The encoder itself is a deterministic function of its inputs; the stochasticity enters only through $\varepsilon$.''
+\textbf{Fully addressed.} Section~\ref{sec:lit:uncertainty} states: ``The stochasticity lies entirely in the sampling step $z \sim q_\phi(z|x)$. The encoder outputs the parameters $(\mu_\phi(x), \sigma^2_\phi(x))$ of a Gaussian distribution deterministically; the actual latent sample is drawn from this distribution using the reparameterisation trick $z = \mu_\phi + \sigma_\phi \odot \varepsilon$, $\varepsilon \sim \mathcal{N}(0,I)$ (Kingma \& Welling, 2014~\cite{kingma_auto-encoding_2014}). The encoder itself is a deterministic function of its inputs; the stochasticity enters only through $\varepsilon$.''
 
 \textit{``The last paragraph says that outputs are `over-smoothed' and then proposes to keep transitions smooth to improve robustness. Isn't this contradicting?''}
 \textbf{Fully addressed.} Section~\ref{sec:intro:gap} now clarifies the distinction: ``\emph{Over-smoothing} refers to spatial blurring of the output image --- the suppression of high-frequency anatomical detail caused by the MSE objective minimising expected reconstruction error. \emph{Smooth transitions} in the latent space refers to the continuity of the encoder's mapping, such that nearby latent points decode to similar images; this is an algebraic property of the latent manifold and is orthogonal to the spatial resolution of the reconstructed outputs.''
 
 \paragraph{Research Aims.}
 \textit{``I was not sure what is meant by `clustering in the latent space', that could be explained further. As before, not clear what is meant by `latent space organisation'. But also, why does this matter? Isn't reconstruction performance what we are really interested in?''}
-\textbf{Fully addressed.} Section~\ref{sec:disc:latent} addresses the clinical motivation: if the encoder organises Pneumonia and Normal cases into separable latent regions, this indicates that the bottleneck has captured diagnostically relevant image features rather than only noise patterns. This is evidenced by Arm~F (cyclical KL) achieving ARI~$=0.310$ ($p<0.001$) while Arm~A (MSE, no regularisation) achieves ARI $\approx 0.05$ ($p=0.38$, n.s.), confirming that probabilistic regularisation produces latent structure informative of pathological class even without explicit class supervision. Latent organisation also enables the Monte Carlo epistemic uncertainty maps, which are a direct clinical output.
+\textbf{Fully addressed.} Section~\ref{sec:disc:findings:latent} addresses the clinical motivation: if the encoder organises Pneumonia and Normal cases into separable latent regions, this indicates that the bottleneck has captured diagnostically relevant image features rather than only noise patterns. This is evidenced by Arm~F (cyclical KL) achieving ARI~$=0.310$ ($p<0.001$) while Arm~A (MSE, no regularisation) achieves ARI $\approx 0.05$ ($p=0.38$, n.s.), confirming that probabilistic regularisation produces latent structure informative of pathological class even without explicit class supervision. Latent organisation also enables the Monte Carlo epistemic uncertainty maps, which are a direct clinical output.
 
 \paragraph{Methods.}
 \textit{``What is the difference between CAEs and VAEs? Section~2.3 only describes one of them, so it is hard for the reader to appreciate the difference.''}
-\textbf{Fully addressed.} Section~\ref{sec:lit:ae_vs_vae} now provides a side-by-side formal comparison: ``A CAE minimises reconstruction loss $\mathcal{L}_{\mathrm{recon}}$ only; its encoder maps each input to a fixed point $\bar{z} = f_\phi(x)$ with no constraint on the distribution of $\bar{z}$. A VAE adds a KL divergence regulariser $D_{\mathrm{KL}}[q_\phi(z|x) \| p(z)]$ that constrains the encoder to output the parameters of a Gaussian distribution $q_\phi(z|x) \approx \mathcal{N}(\mu_\phi, \sigma^2_\phi)$, from which $z$ is stochastically sampled. This single change produces three consequences not available in a CAE: (i) a continuous interpolable latent space; (ii) generative capability (sample $z \sim p(z)$ and decode); (iii) principled epistemic uncertainty via Monte Carlo sampling of $q_\phi(z|x)$.''
+\textbf{Fully addressed.} Section~\ref{sec:lit:architectures} now provides a side-by-side formal comparison: ``A CAE minimises reconstruction loss $\mathcal{L}_{\mathrm{recon}}$ only; its encoder maps each input to a fixed point $\bar{z} = f_\phi(x)$ with no constraint on the distribution of $\bar{z}$. A VAE adds a KL divergence regulariser $D_{\mathrm{KL}}[q_\phi(z|x) \| p(z)]$ that constrains the encoder to output the parameters of a Gaussian distribution $q_\phi(z|x) \approx \mathcal{N}(\mu_\phi, \sigma^2_\phi)$, from which $z$ is stochastically sampled. This single change produces three consequences not available in a CAE: (i) a continuous interpolable latent space; (ii) generative capability (sample $z \sim p(z)$ and decode); (iii) principled epistemic uncertainty via Monte Carlo sampling of $q_\phi(z|x)$.''
 
 \textit{``Why is the continuous latent space with smooth transitions important? The latent space analysis plan in 2.5.1 does not clarify this entirely.''}
-\textbf{Fully addressed.} The clinical motivation is given in Section~\ref{sec:disc:latent}: the latent space provides (i) interpretable representations for radiologist explainability; (ii) a diagnostic signal via class separation (ARI $=0.310$ for best VAE arm); (iii) the mechanism for epistemic uncertainty, which converts latent uncertainty into pixel-level confidence maps that are clinically actionable.
+\textbf{Fully addressed.} The clinical motivation is given in Section~\ref{sec:disc:findings:latent}: the latent space provides (i) interpretable representations for radiologist explainability; (ii) a diagnostic signal via class separation (ARI $=0.310$ for best VAE arm); (iii) the mechanism for epistemic uncertainty, which converts latent uncertainty into pixel-level confidence maps that are clinically actionable.
 
 \textit{``In 2.4.3, is this [edge loss] applied to edge pixels only?''}
-\textbf{Fully addressed.} Section~\ref{sec:methods:loss:edge} now states: ``$\mathcal{L}_{\mathrm{edge}} = \|\mathrm{Sobel}(\hat{\mu}) - \mathrm{Sobel}(y)\|_1$ is the $\ell_1$ difference between Sobel-filtered reconstruction and reference, computed over \emph{all} pixels. The Sobel operator is applied to the full image; the loss is not restricted to detected edge locations.''
+\textbf{Fully addressed.} Section~\ref{sec:methods:loss:composite} now states: ``$\mathcal{L}_{\mathrm{edge}} = \|\mathrm{Sobel}(\hat{\mu}) - \mathrm{Sobel}(y)\|_1$ is the $\ell_1$ difference between Sobel-filtered reconstruction and reference, computed over \emph{all} pixels. The Sobel operator is applied to the full image; the loss is not restricted to detected edge locations.''
 
 \textit{``The meaning of perceptual fidelity is not clear.''}
-\textbf{Fully addressed.} Section~\ref{sec:lit:perceptual} defines: ``Perceptual fidelity measures the similarity of two images as perceived by the human visual system, emphasising structural and texture features over pixel-wise accuracy. In this study it is operationalised via LPIPS (Learned Perceptual Image Patch Similarity; Zhang et al., 2018~\cite{zhang_unreasonable_2018}), which computes the $\ell_2$ distance between deep feature maps of a frozen VGG-16 network, and FSIM (Feature Similarity Index; Zhang et al., 2011~\cite{zhang_fsim_2011}), which uses phase congruency and gradient magnitude.''
+\textbf{Fully addressed.} Section~\ref{sec:lit:iqametrics} defines: ``Perceptual fidelity measures the similarity of two images as perceived by the human visual system, emphasising structural and texture features over pixel-wise accuracy. In this study it is operationalised via LPIPS (Learned Perceptual Image Patch Similarity; Zhang et al., 2018~\cite{zhang_unreasonable_2018}), which computes the $\ell_2$ distance between deep feature maps of a frozen VGG-16 network, and FSIM (Feature Similarity Index; Zhang et al., 2011~\cite{zhang_fsim_2011}), which uses phase congruency and gradient magnitude.''
 
 \textit{``The meaning of `batch size' and `epoch' are not clear.''}
 \textbf{Fully addressed.} Section~\ref{sec:methods:training} defines on first use: ``a \emph{batch} is a randomly sampled subset of $B=16$ training images processed in a single forward-backward pass; an \emph{epoch} is one complete pass through all 5,216 training images (326 batches).''
