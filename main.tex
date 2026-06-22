@@ -4348,18 +4348,18 @@ Ranked by estimated clinical impact:
   \centering
   \evalfig{figures/evaluation_v2/fig_uncertainty_hotspot}
   \caption{%
-    \textbf{Uncertainty-guided clinical hotspot detection (Arm~S, NLL curriculum FT).}
-    Each row shows one test case with four panels:
-    (a)~noisy input,
-    (b)~denoised reconstruction $\hat{\mu}$ from Arm~S,
-    (c)~reconstruction residual $|\text{noisy} - \hat{\mu}|$ smoothed with a Gaussian kernel ($\sigma{=}3$\,px), used as a spatially informative aleatoric uncertainty proxy (inferno colourmap; brighter $=$ higher uncertainty),
-    (d)~clinical hotspot overlay combining (b) with anatomical zone boundaries (faint grid; RUL/RML/RLL~$=$~blue tones, LUL/LLL~$=$~red tones, Med~$=$~green) and thresholded high-uncertainty regions (top-20\% of proxy pixels after morphological closing), coloured by severity: HIGH~$=$~red fill/box, MOD~$=$~orange fill/box.
-    Each hotspot ($\text{H}1$, $\text{H}2$, \ldots$) is labelled with its attributed lobe abbreviation, severity tier, and morphological class (Nodular / Vascular-Linear / Irregular).
-    \emph{Top row (Normal case):}
-    High-uncertainty regions concentrate diffusely along vascular margins and the pleural interface --- characteristic of signal-dependent quantum noise at vessel boundaries.
-    \emph{Bottom row (Pneumonia case):}
-    Hotspots concentrate in the lower lobes and mediastinal border, consistent with the consolidation-driven local contrast gradients that produce elevated reconstruction residuals.
-    The residual proxy is equivalent to what a perfectly calibrated heteroscedastic $\hat{\sigma}_a$ approximates, and directly grounds the spatial uncertainty structure in the model's actual reconstruction behaviour.
+    \textbf{Uncertainty-guided clinical hotspot detection across three diagnostic groups (Arm~S, NLL curriculum FT).}
+    Each row corresponds to one representative test case; each column shows a distinct view of the same image.
+    \textbf{(a) Noisy input:} Poisson--Gaussian corrupted chest radiograph ($\alpha{=}0.03$, $\beta{=}0.005$).
+    \textbf{(b) Reference (clean):} Ground-truth uncorrupted image, included so the reader can anchor reconstruction quality and identify structures in the denoised output.
+    \textbf{(c) Denoised $\hat{\mu}$:} Mean prediction from Arm~S; the model recovers fine vascular and parenchymal detail across all three groups.
+    \textbf{(d) Uncertainty proxy:} Gaussian-smoothed reconstruction residual $|\text{noisy} - \hat{\mu}|$ ($\sigma{=}3$\,px), displayed on the inferno colourmap (brighter $=$ higher uncertainty); this is the spatial signal a perfectly calibrated heteroscedastic $\hat{\sigma}_a$ would approximate.
+    \textbf{(e) Hotspot overlay:} Denoised image with faint anatomical zone grid (RUL/RML/RLL $=$ blue tones; LUL/LLL $=$ red tones; Med $=$ green) and thresholded high-uncertainty regions (top-20\% of proxy after morphological closing, $5{\times}5$ disk), coloured by severity: HIGH $=$ red fill; MOD $=$ orange fill.
+    Hotspot labels (H1, H2, \ldots) mark bounding boxes; per-case clinical reports are placed \emph{below} each overlay panel (not stamped on the image) to avoid obscuring anatomical structures.
+    \emph{Row~1 (Normal):} Hotspots concentrate diffusely along vascular margins and the pleural interface, consistent with signal-dependent quantum noise at vessel boundaries.
+    \emph{Row~2 (Bacterial Pneumonia):} Hotspots shift to the lower lobes with irregular morphology, reflecting consolidation-driven local contrast gradients.
+    \emph{Row~3 (Viral Pneumonia):} Bilateral hotspots with a more diffuse, ground-glass distribution, distinguishable from the focal bacterial pattern.
+    The right-hand colourbar maps the shared inferno scale across all rows; the bottom legend identifies hotspot severity and anatomical zone colouring.
   }
   \label{fig:results:uncertainty:hotspot}
 \end{figure}
