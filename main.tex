@@ -3653,7 +3653,7 @@ Figure~\ref{fig:results:calibration:reliability} presents image-level reliabilit
   Each panel shows one NLL/VAE arm: images are binned by predicted aleatoric uncertainty $\hat{\sigma}_a$ (sharpness; $x$-axis), and the mean actual RMSE in each bin is plotted on the $y$-axis.
   The dashed line indicates perfect calibration ($\hat{\sigma}_a = \text{RMSE}$).
   Pearson $r$ (inset) quantifies the sharpness--error correlation: $r > 0$ confirms that higher predicted uncertainty corresponds to genuinely harder images.
-  Arm~S (curriculum FT from Arm~D) achieves calibration comparable to its parent despite the fine-tuned loss function.}
+  Arm~S (curriculum FT from Arm~A with NLL+SSIM+FFL objective) achieves calibration comparable to Arm~D despite the two-stage training.}
 \label{fig:results:calibration:reliability}
 \end{figure}
 
