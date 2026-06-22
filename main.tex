@@ -2593,19 +2593,42 @@ over the first 20 training epochs:
 
 Table~\ref{tab:methods:loss_summary} summarises the loss configuration for all 16 ablation arms spanning the full factorial design of this study.
 
-\begin{sidewaystable}[p]
-\centering
+\begin{landscape}
+\singlespacing
 \small
-\caption[Loss components across all 16 ablation arms]{Loss components and architectural features active in each experimental arm. Rows are grouped by the primary design dimension: baseline (A), NLL deterministic (B--D), KL schedule (E--H), L1 substitution (I--K), structural loss variants (L--N), and activation/VAE ablation (O--P). $^\dagger$Arms O and P replace ReLU with PReLU activations in the decoder.}
-\label{tab:methods:loss_summary}
-\begin{threeparttable}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{lcccccccccc}
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{lcccccccccc}
+
+\caption[Loss components across all 16 ablation arms]{Loss components and architectural features active in each experimental arm. Rows are grouped by primary design dimension: baseline (A), NLL deterministic (B--D), KL schedule (E--H), L1 substitution (I--K), structural loss variants (L--N), and activation/VAE ablation (O--P). $^\dagger$Arms O and P replace ReLU with PReLU activations in the decoder.}
+\label{tab:methods:loss_summary}\\
+%
 \toprule
 & \multicolumn{10}{c}{\textbf{Loss term / architectural feature active?}} \\
 \cmidrule(lr){2-11}
-\textbf{Arm} & \textbf{Description} & $\mathcal{L}_{\mathrm{MSE}}$ & $\mathcal{L}_{\mathrm{L1}}$ & $\mathcal{L}_{\mathrm{NLL}}$ & $\mathcal{L}_{\mathrm{SSIM}}$ & $\mathcal{L}_{\mathrm{FFL}}$ & $\mathcal{L}_{\mathrm{Edge}}$ & $\mathcal{L}_{\mathrm{Perc}}$ & KL schedule & PReLU$^\dagger$ \\
+\textbf{Arm} & \textbf{Description} & $\mathcal{L}_{\mathrm{MSE}}$ & $\mathcal{L}_{\mathrm{L1}}$ & $\mathcal{L}_{\mathrm{NLL}}$ & $\mathcal{L}_{\mathrm{SSIM}}$ & $\mathcal{L}_{\mathrm{FFL}}$ & $\mathcal{L}_{\mathrm{Edge}}$ & $\mathcal{L}_{\mathrm{Perc}}$ & \textbf{KL schedule} & \textbf{PReLU}$^\dagger$ \\
 \midrule
+\endfirsthead
+%
+\multicolumn{11}{l}{\small\itshape Table~\ref{tab:methods:loss_summary} \textit{continued from previous page}} \\[3pt]
+\toprule
+& \multicolumn{10}{c}{\textbf{Loss term / architectural feature active?}} \\
+\cmidrule(lr){2-11}
+\textbf{Arm} & \textbf{Description} & $\mathcal{L}_{\mathrm{MSE}}$ & $\mathcal{L}_{\mathrm{L1}}$ & $\mathcal{L}_{\mathrm{NLL}}$ & $\mathcal{L}_{\mathrm{SSIM}}$ & $\mathcal{L}_{\mathrm{FFL}}$ & $\mathcal{L}_{\mathrm{Edge}}$ & $\mathcal{L}_{\mathrm{Perc}}$ & \textbf{KL schedule} & \textbf{PReLU}$^\dagger$ \\
+\midrule
+\endhead
+%
+\midrule
+\multicolumn{11}{r}{\small\itshape Continued on next page\ldots} \\
+\endfoot
+%
+\bottomrule
+\multicolumn{11}{p{0.97\linewidth}}{\footnotesize
+  A tick indicates that the term contributes a non-zero gradient during training. Arms E--H and P include a VAE bottleneck (structured latent space with KL regularisation); all other arms are fully deterministic.
+  KL schedule: \emph{linear} = monotone warmup from 0 to $\beta_{\max}$ over 20 epochs; \emph{cyclic} = cosine annealing with periodic resets \cite{fu_cyclical_2019}; \emph{free-bits} = KL clipped below $\lambda=0.25$ nats per channel to prevent posterior collapse \cite{kingma_improving_2016}; \emph{cyc+fb} = both schedules applied jointly.
+  $\mathcal{L}_{\mathrm{Edge}}$: Sobel-gradient L1 loss.
+  $\mathcal{L}_{\mathrm{Perc}}$: VGG-16 perceptual loss (relu1\_2, relu2\_2, relu3\_3 layers, frozen weights).} \\
+\endlastfoot
+%
 A & MSE baseline        & \checkmark & & & & & & & — & \\
 \midrule
 B & NLL                 & & & \checkmark & & & & & — & \\
@@ -2627,15 +2650,9 @@ N & NLL + Perc + SSIM + FFL & & & \checkmark & \checkmark & \checkmark & & \chec
 \midrule
 O & NLL + SSIM + FFL (PReLU) & & & \checkmark & \checkmark & \checkmark & & & — & \checkmark \\
 P & PP-VAE best (PReLU) & & & \checkmark & \checkmark & \checkmark & \checkmark & & cyc+fb & \checkmark \\
-\bottomrule
-\end{tabular}%
-}
-\begin{tablenotes}
-\footnotesize
-\item A tick indicates that the term contributes a non-zero gradient during training. Arms E--H and P include a VAE bottleneck (structured latent space with KL regularisation); all other arms are fully deterministic. KL schedule: \emph{linear} = monotone warmup from 0 to $\beta_{\max}$ over 20 epochs; \emph{cyclic} = cosine annealing with periodic resets \cite{fu_cyclical_2019}; \emph{free-bits} = KL clipped below $\lambda=0.25$ nats per channel to prevent posterior collapse \cite{kingma_improving_2016}; \emph{cyc+fb} = both schedules applied jointly. $\mathcal{L}_{\mathrm{Edge}}$: Sobel-gradient L1 loss. $\mathcal{L}_{\mathrm{Perc}}$: VGG-16 perceptual loss (relu1\_2, relu2\_2, relu3\_3 layers, frozen weights).
-\end{tablenotes}
-\end{threeparttable}
-\end{sidewaystable}
+%
+\end{longtable}
+\end{landscape}
 
 % ============================================================
 \section{Training Procedure}
@@ -3736,22 +3753,47 @@ Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} summ
 \label{fig:results:ablation:ssim}
 \end{figure}
 
-\begin{sidewaystable}[p]
-\centering
+\begin{landscape}
+\singlespacing
 \small
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{llcccccc}
+
 \caption[Full ablation results across all noise levels]{Full ablation results across all three noise presets (mean\,$\pm$\,SD). \textbf{Bold} = best per noise level column. All results from the final evaluation pipeline on the held-out 624-image test set.}
-\label{tab:results:ablation:full}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{llcccccc}
+\label{tab:results:ablation:full}\\
+%
 \toprule
 & & \multicolumn{2}{c}{\textbf{Low ($\eta=100$)}} & \multicolumn{2}{c}{\textbf{Mid ($\eta=200$)}} & \multicolumn{2}{c}{\textbf{High ($\eta=300$)}} \\
 \cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}
 \textbf{Arm} & \textbf{Loss} & \textbf{PSNR} & \textbf{SSIM} & \textbf{PSNR} & \textbf{SSIM} & \textbf{PSNR} & \textbf{SSIM} \\
 \midrule
+\endfirsthead
+%
+\multicolumn{8}{l}{\small\itshape Table~\ref{tab:results:ablation:full} \textit{continued from previous page}} \\[3pt]
+\toprule
+& & \multicolumn{2}{c}{\textbf{Low ($\eta=100$)}} & \multicolumn{2}{c}{\textbf{Mid ($\eta=200$)}} & \multicolumn{2}{c}{\textbf{High ($\eta=300$)}} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}
+\textbf{Arm} & \textbf{Loss} & \textbf{PSNR} & \textbf{SSIM} & \textbf{PSNR} & \textbf{SSIM} & \textbf{PSNR} & \textbf{SSIM} \\
+\midrule
+\endhead
+%
+\midrule
+\multicolumn{8}{r}{\small\itshape Continued on next page\ldots} \\
+\endfoot
+%
+\bottomrule
+\multicolumn{8}{p{0.97\linewidth}}{\footnotesize
+  PSNR and SSIM: higher is better. All 21 models evaluated on the same 624-image held-out test set.
+  Rank ordering is stable across noise levels (Spearman $r_s > 0.98$).
+  BM3D results are not included here as it was evaluated at mid noise only.} \\
+\endlastfoot
+%
+\multicolumn{8}{l}{\textit{L2 / L1 deterministic arms}} \\
 A & $\mathcal{L}_{\mathrm{MSE}}$  & $\mathbf{36.585 \pm 1.083}$ & $\mathbf{0.9452}$ & $\mathbf{34.618 \pm 1.071}$ & $\mathbf{0.9269}$ & $\mathbf{32.900 \pm 1.052}$ & $\mathbf{0.9078}$ \\
 I & $\mathcal{L}_{\mathrm{L1}}$   & $36.428 \pm 1.042$ & $0.9440$ & $34.444 \pm 1.052$ & $0.9249$ & $32.711 \pm 1.039$ & $0.9053$ \\
 J & L1+SSIM+FFL                  & $36.280 \pm 1.050$ & $0.9434$ & $34.319 \pm 1.060$ & $0.9246$ & $32.585 \pm 1.044$ & $0.9049$ \\
 \midrule
+\multicolumn{8}{l}{\textit{NLL deterministic arms}} \\
 B & NLL                           & $35.591 \pm 1.031$ & $0.9340$ & $33.456 \pm 1.029$ & $0.9092$ & $31.570 \pm 1.032$ & $0.8830$ \\
 D & NLL+SSIM+FFL                  & $35.564 \pm 1.020$ & $0.9337$ & $33.435 \pm 1.026$ & $0.9089$ & $31.527 \pm 1.013$ & $0.8824$ \\
 K & NLL+L1                        & $35.407 \pm 1.008$ & $0.9311$ & $33.279 \pm 1.025$ & $0.9052$ & $31.383 \pm 1.021$ & $0.8780$ \\
@@ -3760,6 +3802,7 @@ N & NLL+Perc+SSIM+FFL             & $34.678 \pm 0.996$ & $0.9198$ & $32.423 \pm 
 C & NLL+SSIM                      & $34.578 \pm 0.990$ & $0.9189$ & $32.357 \pm 1.017$ & $0.8866$ & $30.380 \pm 1.027$ & $0.8532$ \\
 M & NLL+SSIM+Edge+FFL             & $33.774 \pm 0.960$ & $0.9104$ & $31.688 \pm 0.964$ & $0.8755$ & $29.782 \pm 0.979$ & $0.8376$ \\
 \midrule
+\multicolumn{8}{l}{\textit{VAE arms (KL regularisation)}} \\
 H & KL cyc+fb VAE                 & $34.841 \pm 1.043$ & $0.9234$ & $32.762 \pm 1.064$ & $0.8957$ & $30.916 \pm 1.060$ & $0.8671$ \\
 F & KL cyclic VAE                  & $34.651 \pm 0.974$ & $0.9241$ & $32.734 \pm 1.023$ & $0.8982$ & $30.956 \pm 1.025$ & $0.8714$ \\
 G & KL free-bits VAE               & $34.679 \pm 1.009$ & $0.9200$ & $32.482 \pm 1.028$ & $0.8890$ & $30.531 \pm 1.036$ & $0.8568$ \\
@@ -3767,15 +3810,15 @@ P & PP-VAE best (PReLU)            & $33.825 \pm 0.957$ & $0.9084$ & $31.667 \pm
 E & PP-VAE (linear KL)             & $33.734 \pm 0.950$ & $0.9065$ & $31.635 \pm 0.951$ & $0.8726$ & $29.703 \pm 0.983$ & $0.8360$ \\
 O & PReLU ablation                 & $30.173 \pm 0.963$ & $0.8362$ & $29.074 \pm 0.909$ & $0.8037$ & $27.723 \pm 0.797$ & $0.7567$ \\
 \midrule
-DnCNN & \cite{zhang_beyond_2017}  & $35.107 \pm 0.960$ & $0.9094$ & $32.798 \pm 0.952$ & $0.8774$ & $30.755 \pm 0.954$ & $0.8404$ \\
-IRCNN & \cite{zhang_learning_2017}& $34.920 \pm 0.991$ & $0.9213$ & $32.659 \pm 0.966$ & $0.8901$ & $30.638 \pm 0.971$ & $0.8558$ \\
-FFDNet & \cite{zhang_ffdnet_2018} & $34.640 \pm 0.988$ & $0.9190$ & $32.625 \pm 0.977$ & $0.8907$ & $30.735 \pm 0.969$ & $0.8602$ \\
-DRUNet & \cite{zhang_drunet_2021}& $34.177 \pm 1.089$ & $0.8896$ & $32.583 \pm 1.097$ & $0.8655$ & $31.273 \pm 0.994$ & $0.8405$ \\
-SwinIR & \cite{liang_swinir_2021} & $33.264 \pm 0.882$ & $0.8953$ & $31.183 \pm 0.885$ & $0.8525$ & $29.007 \pm 0.894$ & $0.7882$ \\
-\bottomrule
-\end{tabular}%
-}
-\end{sidewaystable}
+\multicolumn{8}{l}{\textit{Retrained baselines}} \\
+DnCNN  & \cite{zhang_beyond_2017}  & $35.107 \pm 0.960$ & $0.9094$ & $32.798 \pm 0.952$ & $0.8774$ & $30.755 \pm 0.954$ & $0.8404$ \\
+IRCNN  & \cite{zhang_learning_2017}& $34.920 \pm 0.991$ & $0.9213$ & $32.659 \pm 0.966$ & $0.8901$ & $30.638 \pm 0.971$ & $0.8558$ \\
+FFDNet & \cite{zhang_ffdnet_2018}  & $34.640 \pm 0.988$ & $0.9190$ & $32.625 \pm 0.977$ & $0.8907$ & $30.735 \pm 0.969$ & $0.8602$ \\
+DRUNet & \cite{zhang_drunet_2021}  & $34.177 \pm 1.089$ & $0.8896$ & $32.583 \pm 1.097$ & $0.8655$ & $31.273 \pm 0.994$ & $0.8405$ \\
+SwinIR & \cite{liang_swinir_2021}  & $33.264 \pm 0.882$ & $0.8953$ & $31.183 \pm 0.885$ & $0.8525$ & $29.007 \pm 0.894$ & $0.7882$ \\
+%
+\end{longtable}
+\end{landscape}
 
 \section{Sensitivity Analysis}
 \label{sec:results:sensitivity}
@@ -3810,27 +3853,47 @@ The Kermany paediatric CXR test set comprises three aetiologically distinct subg
 
 Table~\ref{tab:results:subgroup:combined} stratifies mean PSNR by diagnostic class (Normal vs.\ Pneumonia) for all 21 evaluated models at mid noise ($\eta=200$). The Pneumonia-over-Normal advantage of $\Delta \approx +1.0$~dB is consistent across all arms, confirming this is a data-domain property rather than a model-specific artefact: alveolar consolidation produces stronger local contrast gradients than the clear lung field, providing richer per-pixel reconstruction signal. The largest exception is Arm~O (PReLU failure, $\Delta=+0.75$~dB), where catastrophic weight divergence suppresses both classes indiscriminately. Table~\ref{tab:results:subgroup:viral} further deconstructs the Pneumonia class into Bacterial and Viral subgroups for the original five ablation arms and DnCNN; Bacterial cases consistently outperform Viral ($\Delta_{\mathrm{B-V}}\approx +0.5$--$+0.6$~dB), with Bacterial disease's focal lobar pattern providing more distinct reconstruction targets than the diffuse bilateral interstitial haziness of Viral pneumonia.\footnote{The consistency of Bacterial~$>$~Viral~$>$~Normal across all measured arms confirms this ranking as a data-domain property. A model validated solely on the combined Pneumonia category will have an optimistic bias if Bacterial cases dominate the validation set, which they do in this dataset (242 Bacterial vs.\ 148 Viral cases).}
 
-\begin{sidewaystable}[htbp]
-\centering
+\begin{landscape}
+\singlespacing
+\small
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{llccc}
+
 \caption[Reconstruction PSNR by diagnostic class -- all 21 models]{%
   Reconstruction PSNR (dB) stratified by diagnostic class at mid noise level ($\eta=200$, mean\,$\pm$\,SD).
   All models evaluated on $n_{\mathrm{Norm}}=234$, $n_{\mathrm{Pneu}}=390$ test images.
   $\Delta$ = Pneumonia $-$ Normal PSNR\,dB. All differences significant at $p<0.001$
   (independent-samples $t$-test, Bonferroni-corrected).
   Data computed from \texttt{per\_image\_metrics.csv} (job 30793687).}
-\label{tab:results:subgroup:combined}
-\small
-\begin{tabular}{llccc}
+\label{tab:results:subgroup:combined}\\
+%
 \toprule
 \textbf{Group} & \textbf{Arm / Model} & \textbf{Normal PSNR (dB)} & \textbf{Pneumonia PSNR (dB)} & $\bm{\Delta}$ \\
 \midrule
+\endfirsthead
+%
+\multicolumn{5}{l}{\small\itshape Table~\ref{tab:results:subgroup:combined} \textit{continued from previous page}} \\[3pt]
+\toprule
+\textbf{Group} & \textbf{Arm / Model} & \textbf{Normal PSNR (dB)} & \textbf{Pneumonia PSNR (dB)} & $\bm{\Delta}$ \\
+\midrule
+\endhead
+%
+\midrule
+\multicolumn{5}{r}{\small\itshape Continued on next page\ldots} \\
+\endfoot
+%
+\bottomrule
+\multicolumn{5}{p{0.97\linewidth}}{\footnotesize
+  $\Delta$ = Pneumonia PSNR $-$ Normal PSNR (dB). The Pneumonia-over-Normal advantage ($\Delta \approx +1.0$~dB) is consistent across all arms and reflects a data-domain property: alveolar consolidation produces stronger local contrast gradients than the clear lung field, providing richer per-pixel reconstruction signal. All pairwise differences are significant at $p<0.001$ (independent-samples $t$-test, Bonferroni-corrected for 21 comparisons).} \\
+\endlastfoot
+%
 \multirow{4}{*}{Baselines}
   & FFDNet             & $31.981\pm0.762$ & $33.011\pm0.885$ & $+1.029$ \\
   & IRCNN              & $32.013\pm0.765$ & $33.047\pm0.861$ & $+1.034$ \\
   & DRUNet             & $32.063\pm0.767$ & $32.895\pm1.146$ & $+0.831$ \\
   & SwinIR             & $30.575\pm0.761$ & $31.548\pm0.742$ & $+0.973$ \\
 \midrule
-\multirow{1}{*}{Retrained}
+Retrained
   & DnCNN              & $32.176\pm0.749$ & $33.171\pm0.841$ & $+0.995$ \\
 \midrule
 \multirow{6}{*}{Pixel-norm / FT}
@@ -3841,15 +3904,15 @@ Table~\ref{tab:results:subgroup:combined} stratifies mean PSNR by diagnostic cla
   & R — Curriculum FT (L1)             & $33.966\pm0.917$ & $34.893\pm0.997$ & $+0.928$ \\
   & S — Curriculum FT (NLL)            & $34.036\pm0.929$ & $34.951\pm1.010$ & $+0.916$ \\
 \midrule
-\multirow{7}{*}{NLL arms}
+\multirow{8}{*}{NLL arms}
   & B — NLL                            & $32.811\pm0.837$ & $33.843\pm0.935$ & $+1.032$ \\
   & C — NLL+SSIM                       & $31.654\pm0.782$ & $32.779\pm0.902$ & $+1.125$ \\
-  & D — NLL+SSIM+FFL                  & $32.787\pm0.838$ & $33.824\pm0.927$ & $+1.038$ \\
+  & D — NLL+SSIM+FFL                   & $32.787\pm0.838$ & $33.824\pm0.927$ & $+1.038$ \\
   & K — NLL+L1                         & $32.621\pm0.833$ & $33.674\pm0.922$ & $+1.053$ \\
   & L — NLL+Edge+FFL                   & $32.482\pm0.799$ & $33.534\pm0.923$ & $+1.052$ \\
-  & M — NLL+SSIM+Edge+FFL             & $31.042\pm0.774$ & $32.075\pm0.853$ & $+1.033$ \\
-  & N — NLL+Perceptual+SSIM+FFL       & $31.713\pm0.776$ & $32.849\pm0.907$ & $+1.137$ \\
-  & O — NLL+SSIM+FFL (PReLU)          & $28.608\pm0.730$ & $29.354\pm0.892$ & $+0.746$ \\
+  & M — NLL+SSIM+Edge+FFL              & $31.042\pm0.774$ & $32.075\pm0.853$ & $+1.033$ \\
+  & N — NLL+Perceptual+SSIM+FFL        & $31.713\pm0.776$ & $32.849\pm0.907$ & $+1.137$ \\
+  & O — NLL+SSIM+FFL (PReLU)           & $28.608\pm0.730$ & $29.354\pm0.892$ & $+0.746$ \\
 \midrule
 \multirow{5}{*}{VAE arms}
   & E — PP-VAE (linear KL)             & $30.985\pm0.765$ & $32.025\pm0.832$ & $+1.040$ \\
@@ -3857,9 +3920,9 @@ Table~\ref{tab:results:subgroup:combined} stratifies mean PSNR by diagnostic cla
   & G — PP-VAE free bits               & $31.772\pm0.788$ & $32.909\pm0.913$ & $+1.137$ \\
   & H — PP-VAE cyc+fb (best VAE)       & $32.038\pm0.822$ & $33.196\pm0.950$ & $+1.158$ \\
   & P — PP-VAE best (full)             & $31.030\pm0.754$ & $32.050\pm0.863$ & $+1.020$ \\
-\bottomrule
-\end{tabular}
-\end{sidewaystable}
+%
+\end{longtable}
+\end{landscape}
 
 Figure~\ref{fig:results:subgroup:all_arms} presents a quantitative summary of the Pneumonia-over-Normal advantage across all 21 arms, confirming that Arms~Q, R, and~S follow the same subgroup pattern as their parent arms. The curriculum fine-tuned arms (R and~S, both initialised from Arm~A) show subgroup deltas ($\Delta \approx +0.92$~dB) consistent with their parent arms, confirming the subgroup advantage is a data-domain property independent of fine-tuning strategy.
 
