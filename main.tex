@@ -155,31 +155,63 @@
 % ────────────────────────────────────────────────────────────
 \begin{titlepage}
   \centering
-  \vspace*{2cm}
+  \vspace*{1.2cm}
+
+  % ── Institutional logos ───────────────────────────────────
+  \noindent
+  \begin{minipage}[c]{0.40\textwidth}
+    \centering
+    \IfFileExists{figures/cambridge_shield.jpg}{%
+      \includegraphics[height=1.3cm]{figures/cambridge_shield}%
+    }{%
+      {\small University of Cambridge}%
+    }
+  \end{minipage}%
+  \hfill%
+  \begin{minipage}[c]{0.16\textwidth}
+    \centering
+    \IfFileExists{figures/stedmunds_crest.png}{%
+      \includegraphics[height=2.0cm]{figures/stedmunds_crest}%
+    }{%
+      {\small St Edmund's}%
+    }
+  \end{minipage}%
+  \hfill%
+  \begin{minipage}[c]{0.40\textwidth}
+    \centering
+    \IfFileExists{figures/mastercard_foundation_logo.png}{%
+      \includegraphics[height=1.3cm]{figures/mastercard_foundation_logo}%
+    }{%
+      {\small Mastercard Foundation}%
+    }
+  \end{minipage}
+
+  \vspace{0.8cm}
 
   {\Large University of Cambridge}\\[0.3em]
   {\large MRC Biostatistics Unit}\\[0.3em]
-  {\large MPhil in Population Health Sciences (Health Data Science)}\\[2.5cm]
+  {\large MPhil in Population Health Sciences (Health Data Science)}\\[1.8cm]
 
   {\Huge\bfseries\color{darkblue}
-    Pathology-Preserving Variational Autoencoder\\[0.4em]
-    for Paediatric Chest Radiograph Enhancement:\\[0.4em]
-    A Probabilistic Loss Framework for\\[0.4em]
-    Clinically Faithful Low-Dose Reconstruction
-  }\\[2.5cm]
+    Probabilistic Low-Dose Paediatric\\[0.4em]
+    Chest Radiograph Denoising with a\\[0.4em]
+    Pathology-Preserving Variational Autoencoder:\\[0.4em]
+    Systematic Loss Ablation and\\[0.4em]
+    Calibrated Aleatoric Uncertainty Quantification
+  }\\[1.8cm]
 
-  {\large\bfseries Student USN: 4730}\\[0.5em]
-  {\large Supervisor: Dr Kyriakos Flouris}\\[2cm]
+  {\LARGE\bfseries Samuel Tekle}\\[0.4em]
+  {\large Student USN: 4730}\\[0.5em]
+  {\large Supervisor: Dr Kyriakos Flouris}\\[1.2cm]
 
   {\large A dissertation submitted in partial fulfilment of the requirements\\
   for the degree of Master of Philosophy in\\
-  Population Health Sciences (Health Data Science)}\\[1.5cm]
+  Population Health Sciences (Health Data Science)}\\[0.8cm]
 
-  {\large \today}\\[1cm]
-  {\large Word Count: TBD}
+  {\large \today}\\[0.5cm]
+  {\large Word Count: $\approx$24{,}270}
 
   \vfill
-  \includegraphics[width=4cm]{cambridge_logo}   % Add logo to Overleaf project
 \end{titlepage}
 
 % ────────────────────────────────────────────────────────────
@@ -190,7 +222,7 @@
 
 This dissertation is the result of my own work and includes nothing which is the outcome of work done in collaboration, except where specifically indicated. It has not been previously submitted for any degree or other qualification at this or any other University.
 
-The total word count of this dissertation is [XXX], which is within the limit stipulated by the MPhil Population Health Sciences regulations.
+The total word count of this dissertation is approximately 24{,}270 words, which is within the limit stipulated by the MPhil Population Health Sciences regulations.
 
 \vspace{2cm}
 \noindent\textbf{Signature:} \rule{6cm}{0.4pt}\\[0.5em]
@@ -227,15 +259,15 @@ PP-VAE-Hformer demonstrates that calibrated per-pixel uncertainty quantification
 \chapter*{Acknowledgements}
 \addcontentsline{toc}{chapter}{Acknowledgements}
 
-% Acknowledge: Dr Kyriakos Flouris (supervision and direction);
-% MRC Biostatistics Unit (computational and academic environment);
-% Mastercard Foundation Scholarship (funding enabling this research);
-% Guangzhou Women and Children's Medical Center / MedMNIST consortium
-%   (open data);
-% Cambridge E-labs / SPARk 2.0 (translational inspiration);
-% any other institutional support.
+This dissertation is dedicated to my family. Their unconditional love, encouragement, and sacrifices have been the foundation of everything I have achieved. Whatever I become, I become because of them, and reaching this point would not have been possible without them.
 
+I am profoundly grateful to the Mastercard Foundation for funding my studies through the Mastercard Foundation Scholars Programme at the University of Cambridge. This scholarship has opened doors I once thought beyond my reach. I extend special thanks to Simon White and Daniela Angles, who believed in my potential during the selection process and gave me this extraordinary opportunity, one that has changed the trajectory of my life in ways I cannot fully express.
 
+I owe a great debt of gratitude to my supervisor, Dr Kyriakos Flouris, for entrusting me with this research project despite the gap in my machine learning background when we began. His patience throughout my learning curve, his willingness to give me the space to develop, and the quality of his guidance have been fundamental to my growth as a researcher. I am grateful beyond measure for the chance he gave me.
+
+I also thank Colin Star of the Cambridge Research Computing Service for his invaluable practical assistance with the CSD3 high-performance computing cluster. His expertise in troubleshooting HPC problems made the large-scale computational experiments underpinning this dissertation feasible, and his responsiveness at critical moments made a real difference.
+
+Finally, I acknowledge the MRC Biostatistics Unit and the MPhil in Population Health Sciences programme for providing an exceptional academic environment, and the open-science community behind MedMNIST and the Kermany paediatric chest radiograph dataset, whose commitment to open data made this work possible.
 
 \newpage
 
@@ -3227,13 +3259,8 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 \label{fig:results:qual:a:bacterial}
 \end{figure}
 
-\begin{figure}[!htb]
-\centering
-\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_a_l2_normal}
-\caption[Qualitative reconstruction -- Arm A, Normal cases]{
-  Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) on three Normal cases. No $\hat{\sigma}_a$ column: Arm~A has no heteroscedastic head. The absence of an uncertainty head and the MSE objective jointly explain the visually smooth but perceptually flat reconstructions.}
-\label{fig:results:qual:a:normal}
-\end{figure}
+% Normal-case panel for Arm~A moved to Appendix~\ref{app:qual:normal:suppfigs} for brevity
+% (visually comparable to the Bacterial Pneumonia panel above)
 
 \paragraph{Arm E: Posterior collapse and flat epistemic uncertainty.}
 Arm~E (PP-VAE, linear KL warmup; $31.635$~dB) achieved the lowest PSNR of all VAE arms, a $1.10$~dB deficit relative to Arm~F (cyclical KL, $32.734$~dB). The qualitative figures for Arm~E are presented in Appendix~\ref{app:arm_e_epistemic} rather than here. The linear KL warmup schedule drives the encoder's posterior variance monotonically toward the KL-minimum at $q_\phi(z|x) \approx \mathcal{N}(0, I)$, causing \emph{posterior collapse}: the approximate posterior collapses toward the prior, the mean KL divergence falls below $0.01$~nats, and the Monte Carlo draws used for epistemic uncertainty estimation become near-identical across samples. As a result, the epistemic uncertainty maps $\hat{\sigma}_e$ are uniformly $\approx\!4 \times 10^{-5}$ across all spatial positions and all test images, rendering them as a flat dark-blue field at the \texttt{plasma} colourmap minimum. This is the theoretically correct and expected behaviour of a posterior-collapsed VAE, it is not a figure generation error. Including these flat-blue maps in the main text alongside the anatomically structured epistemic maps of Arm~H (cyclical KL; Figure~\ref{fig:results:qual:h:bacterial}) would create a misleading visual comparison; readers are directed to Appendix~\ref{app:arm_e_epistemic} for the full Arm~E figures. The aleatoric maps $\hat{\sigma}_a$ remain structurally informative because the heteroscedastic reconstruction head is independent of the KL bottleneck.
@@ -3246,13 +3273,7 @@ Arm~E (PP-VAE, linear KL warmup; $31.635$~dB) achieved the lowest PSNR of all VA
 \label{fig:results:qual:dncnn:bacterial}
 \end{figure}
 
-\begin{figure}[!htb]
-\centering
-\evalfig{figures/evaluation_v2/qualitative/qualitative_dncnn_baseline_normal}
-\caption[Qualitative reconstruction -- DnCNN baseline, Normal cases]{
-  DnCNN baseline on three Normal cases. Error maps are qualitatively comparable to Arm~D at the same noise level, consistent with the moderate effect size ($d = -0.65$) measured across the full test set.}
-\label{fig:results:qual:dncnn:normal}
-\end{figure}
+% DnCNN Normal-case panel moved to Appendix~\ref{app:qual:normal:suppfigs}
 
 \begin{figure}[!htb]
 \centering
@@ -3296,13 +3317,7 @@ Arm~E (PP-VAE, linear KL warmup; $31.635$~dB) achieved the lowest PSNR of all VA
 \label{fig:results:qual:ircnn:bacterial}
 \end{figure}
 
-\begin{figure}[!htb]
-\centering
-\evalfig{figures/evaluation_v2/qualitative/qualitative_ircnn_normal}
-\caption[Qualitative reconstruction -- IRCNN baseline, Normal cases]{
-  IRCNN on three Normal cases. Reconstruction quality is comparable to Arm~D, consistent with the moderate effect size ($d=-0.78$, $p<0.001$) favouring Arm~D.}
-\label{fig:results:qual:ircnn:normal}
-\end{figure}
+Normal-case reconstruction panels for Arm~A, DnCNN, and IRCNN are presented in Appendix~\ref{app:qual:normal:suppfigs}; they are qualitatively consistent with the Bacterial Pneumonia panels shown above.
 
 \begin{figure}[!htb]
 \centering
@@ -3352,7 +3367,7 @@ The three sites were selected to stress-test complementary reconstruction proper
 \caption[Aleatoric uncertainty maps -- Arms B, D, and H]{%
   Aleatoric uncertainty panel for Arms~B (NLL), D (NLL+SSIM+FFL), and~H (best VAE), for a Normal case (rows 1--2) and a Pneumonia case (rows 3--4; $\eta=200$).
   \textit{Columns:} Noisy input | Reference | Reconstruction ($\hat{\mu}$) | Aleatoric $\hat{\sigma}_a = \exp(0.5\,\hat{\ell}_{\sigma^2})$ (inferno colourmap, $[0, 0.30]$) | Absolute error $|\hat{\mu} - y|$ (hot colourmap) | ROI crop.
-  The $\hat{\sigma}_a$ maps for all three arms preserve the Poisson-Gaussian noise structure: highest uncertainty in dark parenchymal regions (high quantum noise) and lowest in bright mediastinal structures (high photon count, low relative noise). The Pneumonia rows show elevated aleatoric uncertainty at consolidated margins for Arm~H, consistent with the VAE bottleneck's additional structural regularisatdion producing conservative uncertainty at pathological sites. Mean NLL values are annotated on each $\hat{\sigma}_a$ panel; Arms~B and~D are nearly identical (NLL $\approx -2.667$), confirming that the FFL and SSIM additions do not perturb calibration.}
+  The $\hat{\sigma}_a$ maps for all three arms preserve the Poisson-Gaussian noise structure: highest uncertainty in dark parenchymal regions (high quantum noise) and lowest in bright mediastinal structures (high photon count, low relative noise). The Pneumonia rows show elevated aleatoric uncertainty at consolidated margins for Arm~H, consistent with the VAE bottleneck's additional structural regularisation producing conservative uncertainty at pathological sites. Mean NLL values are annotated on each $\hat{\sigma}_a$ panel; Arms~B and~D are nearly identical (NLL $\approx -2.667$), confirming that the FFL and SSIM additions do not perturb calibration.}
 \label{fig:results:roi:uncertainty}
 \end{figure}
 
@@ -3702,7 +3717,7 @@ The calibration curves confirm that the NLL objective produces well-calibrated a
 
 Figure~\ref{fig:results:calibration:reliability} presents image-level reliability diagrams for all NLL and VAE arms with valid aleatoric uncertainty outputs. Each panel bins images by predicted sharpness ($\hat{\sigma}_a$), plots mean actual reconstruction RMSE per bin, and overlays the perfect-calibration line ($\sigma_a = \text{RMSE}$). A positive Pearson $r$ indicates that higher predicted uncertainty correctly corresponds to harder images; $r \approx 0.8$--$0.9$ across NLL arms confirms that $\hat{\sigma}_a$ is a reliable signal for reconstruction difficulty.
 
-\begin{figure}[httpROI]
+\begin{figure}[H]
 \centering
 \evalfig{figures/evaluation_v2/dissertation_figs/calibration_reliability_v2}
 \caption[Uncertainty calibration reliability diagrams for NLL and VAE arms]{%
@@ -4414,7 +4429,7 @@ This work makes four contributions that were not established by prior literature
 
 The immediate implication of this work is that a simple change in training objective (from MSE to NLL) is sufficient to add calibrated per-pixel uncertainty maps to an existing denoising architecture, at a cost of $\approx 1.2$~dB PSNR relative to the MSE baseline and $0.66$~dB better PSNR than a standard DnCNN baseline. For paediatric CXR specifically, where repeat acquisition carries a measurable carcinogenic risk, an uncertainty map that flags problematic reconstructions provides a meaningful clinical safety benefit: it converts an implicit confidence in the reconstruction into an explicit, quantified signal available to the radiologist at the moment of reporting.
 
-The longer-term translational pathway, reader study, full-resolution DICOM validation, regulatory submission,is outlined in Section~\ref{sec:disc:translation}. This pathway is technically feasible with the framework developed here; the principal remaining barriers are organisational (access to paired low-dose clinical data) rather than methodological.
+The longer-term translational pathway (reader study, full-resolution DICOM validation, regulatory submission) is outlined in Section~\ref{sec:disc:translation}. This pathway is technically feasible with the framework developed here; the principal remaining barriers are organisational (access to paired low-dose clinical data) rather than methodological.
 
 \section{Future Work}
 \label{sec:conc:future}
@@ -4751,6 +4766,36 @@ This is the theoretically correct and expected consequence of posterior collapse
 \caption[Arm E (PP-VAE, linear KL) -- Normal cases]{%
   Arm~E on three Normal test cases. As in Figure~\ref{fig:app:qual:e:bacterial}, the epistemic column ($\hat{\sigma}_e$) is uniformly suppressed by posterior collapse. Boundary-localised $\hat{\sigma}_a$ (inferno colourmap) is preserved relative to Arm~D (Figure~\ref{fig:results:qual:d:normal}), confirming that the heteroscedastic head remains well-calibrated despite the latent-space collapse. The $1.10$~dB PSNR deficit relative to Arm~F and the flat epistemic maps jointly motivate the transition from linear to cyclical KL annealing in Arms~F--H.}
 \label{fig:app:qual:e:normal}
+\end{figure}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Supplementary Normal-Case Qualitative Reconstructions}
+\label{app:qual:normal:suppfigs}
+
+The following figures present the Normal-case qualitative reconstruction panels for Arm~A, DnCNN, and IRCNN. These panels are qualitatively consistent with the corresponding Bacterial Pneumonia panels in Section~\ref{sec:results:recon:qual}; they are moved here for brevity and to maintain narrative focus in the main text.
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/qualitative/qualitative_arm_a_l2_normal}
+\caption[Qualitative reconstruction (appendix) -- Arm A, Normal cases]{%
+  Arm~A ($\mathcal{L}_{\mathrm{MSE}}$) on three Normal cases ($\eta=200$). No $\hat{\sigma}_a$ column: Arm~A has no heteroscedastic head. \textit{Columns:} Noisy $|$ Reference $|$ $\hat{\mu}$ $|$ $|\hat{\mu}-y|$. Reconstruction quality is comparable to the Bacterial Pneumonia panel (Figure~\ref{fig:results:qual:a:bacterial}); the MSE objective yields smooth but perceptually flat outputs without anatomically structured uncertainty.}
+\label{fig:results:qual:a:normal}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/qualitative/qualitative_dncnn_baseline_normal}
+\caption[Qualitative reconstruction (appendix) -- DnCNN baseline, Normal cases]{%
+  DnCNN baseline (retrained, $32.798$~dB) on three Normal cases ($\eta=200$). No uncertainty output is available. Error maps are qualitatively comparable to Arm~D at this noise level, consistent with the moderate effect size ($d=-0.65$, $p<0.001$).}
+\label{fig:results:qual:dncnn:normal}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/qualitative/qualitative_ircnn_normal}
+\caption[Qualitative reconstruction (appendix) -- IRCNN baseline, Normal cases]{%
+  IRCNN (retrained, $32.659$~dB) on three Normal cases ($\eta=200$). Reconstruction quality is comparable to Arm~D, consistent with the effect size ($d=-0.78$, $p<0.001$) favouring Arm~D.}
+\label{fig:results:qual:ircnn:normal}
 \end{figure}
 
 % ────────────────────────────────────────────────────────────
