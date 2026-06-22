@@ -189,10 +189,10 @@
   \vspace{0.8cm}
 
   {\Large University of Cambridge}\\[0.3em]
-  {\large MRC Biostatistics Unit}\\[0.3em]
+  {\large Department of Public Health, and Primary Care and MRC Biostatistics Unit}\\[0.3em]
   {\large MPhil in Population Health Sciences (Health Data Science)}\\[1.8cm]
 
-  {\Huge\bfseries\color{darkblue}
+  {\Large\bfseries\color{black}
     Probabilistic Low-Dose Paediatric\\[0.4em]
     Chest Radiograph Denoising with a\\[0.4em]
     Pathology-Preserving Variational Autoencoder:\\[0.4em]
@@ -209,7 +209,7 @@
   Population Health Sciences (Health Data Science)}\\[0.8cm]
 
   {\large \today}\\[0.5cm]
-  {\large Word Count: $\approx$11{,}250}
+  {\large Word Count: $\approx$12{,}000}
 
   \vfill
 \end{titlepage}
@@ -222,7 +222,7 @@
 
 This dissertation is the result of my own work and includes nothing which is the outcome of work done in collaboration, except where specifically indicated. It has not been previously submitted for any degree or other qualification at this or any other University.
 
-The total word count of this dissertation is approximately 11{,}250 words, which is within the limit stipulated by the MPhil Population Health Sciences regulations.
+The total word count of this dissertation is approximately 12{,}000 words, which is within the limit stipulated by the MPhil Population Health Sciences regulations.
 
 \vspace{2cm}
 \noindent\textbf{Signature:} \rule{6cm}{0.4pt}\\[0.5em]
@@ -1069,7 +1069,7 @@ SSIM \cite{wang_image_2004} jointly evaluates local luminance, contrast, and str
 \label{sec:lit:losses:nll}
 % ─────────────────────────────────────────────────────────
 
-Kendall and Gal \cite{kendall_what_2017} distinguished aleatoric uncertainty (irreducible data noise, e.g. low photon count) from epistemic uncertainty (model uncertainty, reducible with more data or better specification). For aleatoric uncertainty, the appropriate training loss is the heteroscedastic NLL:
+Kendall and Gal \cite{kendall_what_2017} introduced the foundational distinction between two qualitatively different sources of uncertainty in deep learning predictions. \emph{Aleatoric uncertainty} is irreducible: it arises from inherent randomness in the data-generating process (such as photon shot noise) and cannot be reduced by collecting more training data or improving the model -- it is a property of the acquisition, not the model. \emph{Epistemic uncertainty} is reducible: it reflects the model's ignorance about the correct function, which can in principle be eliminated with sufficient data or a better model specification. For image denoising, aleatoric uncertainty maps directly to the Foi Poisson-Gaussian variance $ay+b$ at each pixel; epistemic uncertainty is highest in anatomical regions or pathology types that were rare or absent in training. For aleatoric uncertainty, the appropriate training loss is the heteroscedastic NLL:
 
 \begin{equation}
 \label{eq:lit:nll}
@@ -1099,7 +1099,7 @@ Bhadra et al.\ \cite{bhadra_hallucinations_2021} showed that an inaccurate learn
 \label{sec:lit:uncertainty:retrieval}
 % ─────────────────────────────────────────────────────────
 
-A denoised and a hallucinated image can be visually indistinguishable. The Bayesian framework makes the distinction precise: the posterior $p(y \mid z) \propto p(z \mid y)\,p(y)$ is dominated by the likelihood when SNR is high (signal retrieval) and by the prior when SNR is low (prior sampling). Under the Foi model, dark anatomical regions have low SNR, so reconstructions there are necessarily prior-influenced. Mutual information theory places a hard limit: no algorithm can recover information absent from the observation \cite{lucas_dont_2019}. An L2-trained network outputs a single image $\hat{y}$ with no signal about which regime applies.
+A denoised and a hallucinated image can be visually indistinguishable. The Bayesian framework makes the distinction precise: the posterior $p(y \mid z) \propto p(z \mid y)\,p(y)$ is dominated by the likelihood term $p(z \mid y)$ when signal-to-noise ratio (SNR) is high -- the observed data strongly constrains the reconstruction -- and dominated by the prior $p(y)$ when SNR is low. The former regime is \emph{signal retrieval}: the denoised pixel is data-supported. The latter is \emph{prior sampling}: the denoised pixel reflects what the model has learned about typical anatomy from training, not what was actually measured. Under the Foi model, dark anatomical regions (pleural angles, retrocardiac spaces) have the lowest SNR and are therefore necessarily prior-sampled to the greatest degree. Mutual information theory places a hard, fundamental limit: no algorithm can recover information that is absent from the observation, regardless of model capacity \cite{lucas_dont_2019}. An L2-trained network outputs a single point estimate $\hat{y}$ with no signal about which regime applies at any given pixel, making hallucination detection impossible at inference time.
 
 The NLL-trained aleatoric variance $\hat{\sigma}^2 \approx ay+b$ \cite{foi_practical_2008, kendall_what_2017} functions as a data-reliability map: low $\hat{\sigma}^2$ indicates signal retrieval; high $\hat{\sigma}^2$ indicates prior-sampling and warrants interpretive caution. No comparison method produces such an output (Table~\ref{tab:lit:gaps}).
 
@@ -1133,7 +1133,7 @@ Zhang et al.\ \cite{zhang_comprehensive_2012} compared 11 full-reference quality
 
 The four gaps identified in Chapter~\ref{chap:intro} are confirmed by the literature reviewed here. The architecture literature has stalled: twelve years of architectural innovation add only 0.32\,dB (28.57 to 29.55\,dB on BSD68), while the loss function has never changed from pixel-wise objectives. No prior work applies a composite loss combining NLL, MS-SSIM, FFL, and KL within a single VAE framework on paediatric CXR. No comparison method produces calibrated uncertainty maps. No study evaluates on paediatric CXR at $256\times256$ with a physically principled Poisson-Gaussian noise model. Table~\ref{tab:lit:gaps} quantifies these gaps across all methods.
 
-Chapter~\ref{chap:methods} specifies the experimental design that addresses them.
+These four gaps constitute the experimental mandate for this dissertation. Chapter~\ref{chap:methods} responds to each one directly: the Poisson-Gaussian noise model (Section~\ref{sec:methods:noise}) addresses the physics gap; the composite four-term loss (Section~\ref{sec:methods:loss}) addresses the loss-function gap; calibrated uncertainty quantification via ECE (Section~\ref{sec:methods:evaluation:calibration}) addresses the calibration gap; and the Kermany evaluation framework (Section~\ref{sec:methods:dataset}) addresses the paediatric domain gap. Together, the sixteen ablation arms and five retrained baselines described there form the most systematic loss-function comparison yet reported for probabilistic paediatric chest radiograph denoising.
 
 % ============================================================
 % CHAPTER 3 — METHODS
@@ -1141,11 +1141,13 @@ Chapter~\ref{chap:methods} specifies the experimental design that addresses them
 \chapter{Methods}
 \label{chap:methods}
 
+This chapter specifies the complete experimental design of PP-VAE-Hformer. It is written to be self-contained for readers with a machine learning background: every modelling choice is motivated by the clinical and technical gaps identified in Chapters~\ref{chap:intro} and~\ref{chap:lit}, and every equation is accompanied by the physical or statistical interpretation that connects it to those gaps. The chapter covers, in order: the 16-arm ablation design; the Kermany dataset and preprocessing pipeline; the Foi Poisson-Gaussian noise simulation; the hybrid CNN-Transformer architecture and probabilistic bottleneck; the four-term composite loss function; the training protocol; the multi-metric evaluation framework; and the computational environment. Readers primarily interested in results may consult Table~\ref{tab:methods:loss_summary} (loss configurations for all 16 arms) as a reference map and proceed to Chapter~\ref{chap:results}.
+
 \section{Study Design Overview}
 \label{sec:methods:overview}
 
 
-This study evaluates PP-VAE-Hformer through a controlled ablation experiment. Sixteen arms were defined, each differing only in the loss function or a specific architectural choice (probabilistic vs.\ deterministic latent space, KL schedule, activation function), with all other aspects -- dataset, backbone, optimiser, epochs, evaluation -- held constant. This ensures observed performance differences are attributable to the specific component under test \cite{zhang_beyond_2017, liang_swinir_2021}.
+This study evaluates PP-VAE-Hformer through a controlled ablation experiment.\footnote{An \emph{ablation study} is a controlled experiment in which one component of a complex system is selectively removed or substituted while every other element remains fixed, isolating that component's causal contribution to measured performance. The term originates in neuroscience, where physical lesioning of brain regions established their functional role. In machine learning, ablation is the primary method for establishing which architectural choices and loss terms genuinely explain observed performance differences, rather than correlating with confounders such as parameter count or training compute \cite{meyes_ablation_2019}.} Sixteen arms were defined, each differing only in the loss function\footnote{The \emph{loss function} (also called the objective function or training criterion) is a scalar-valued function that the training algorithm minimises by adjusting the network's parameters. Its gradient at each training step defines the direction in which parameters move. The choice of loss function therefore determines not only what the network is optimised to produce, but also which network components receive a meaningful gradient signal: an MSE loss provides no gradient for an uncertainty head, while the heteroscedastic NLL (Section~\ref{sec:methods:loss:nll}) simultaneously trains both the reconstruction mean and the per-pixel variance \cite{kendall_what_2017}.} or a specific architectural choice (probabilistic vs.\ deterministic latent space, KL schedule, activation function), with all other aspects -- dataset, backbone, optimiser, epochs, evaluation -- held constant. This ensures observed performance differences are attributable to the specific component under test \cite{zhang_beyond_2017, liang_swinir_2021}.
 
 The 16 arms fall into five groups, summarised in Table~\ref{tab:methods:loss_summary}. Arms~A--E form the core cumulative sequence (Table~\ref{tab:methods:arms}): Arm~A is the MSE baseline, each subsequent arm adds one component (NLL, SSIM, FFL, VAE bottleneck), and Arm~E is the initial PP-VAE-Hformer proposal. Arms~F--H extend the VAE comparison by testing three KL annealing schedules. Arms~I--K investigate L1 versus L2 loss and hybrid NLL+L1 objectives. Arms~L--N add structural regularisation terms (Sobel edge loss, VGG-16 perceptual loss) to the NLL framework. Arms~O--P ablate PReLU activations, with Arm~P combining the best-performing loss terms and VAE schedule.
 \begin{table}[htbp]
@@ -1195,7 +1197,7 @@ Four sequential phases were executed: (1) dataset preparation and noise simulati
 
 The dataset used in this study is the Kermany paediatric chest radiograph collection (described in Section~\ref{sec:lit:kermany}): 5,856 anterior-posterior chest radiographs from children aged one to five years, acquired under routine clinical conditions \cite{kermany_identifying_2018}. The following describes the preprocessing applied in this study.
 
-Images were resized to $256\times256$ via bilinear interpolation, converted to single-channel float tensors, and normalised to $[0,1]$. No augmentation was applied, as it would alter the intensity statistics required by the Poisson-Gaussian noise model. The 624-image official test partition was held out throughout training. Of the remaining 5,232, 785 images (15\%, seed 42) formed the validation set and 4,447 the training set. Class labels were unused: the denoising task is self-supervised.
+Images were resized to $256\times256$ via bilinear interpolation,\footnote{Bilinear interpolation computes each output pixel as the weighted average of the four nearest neighbours in the source image, with weights proportional to proximity in both the horizontal and vertical directions. It avoids the blocking artefacts of nearest-neighbour resampling and the ringing introduced by higher-order bicubic kernels, while preserving the overall intensity structure required for correct Poisson-Gaussian noise simulation at the target resolution.} converted to single-channel float tensors, and normalised to $[0,1]$. No augmentation was applied, as it would alter the intensity statistics required by the Poisson-Gaussian noise model. The 624-image official test partition was held out throughout training. Of the remaining 5,232, 785 images (15\%, seed 42) formed the validation set and 4,447 the training set. Class labels were unused: the denoising task is self-supervised.
 
 \begin{table}[htbp]
 \centering
@@ -1232,12 +1234,12 @@ As established in Section~\ref{sec:intro:tradeoff}, radiographic noise comprises
 \label{eq:methods:foi}
 \mathrm{Var}(z \mid y) = a \cdot y + b
 \end{equation}
-where $a \geq 0$ is the Poisson gain parameter and $b \geq 0$ the Gaussian read-out variance. This affine variance relationship predicts that dark regions (pleural spaces, lung bases) are substantially noisier than bright regions (aerated parenchyma), confirmed with $R^2 > 0.99$ against real CCD sensor data \cite{foi_practical_2008}.
+where $a \geq 0$ is the Poisson gain parameter and $b \geq 0$ the Gaussian read-out variance. This \emph{affine} variance relationship\footnote{A function is \emph{affine} in a variable $y$ if it takes the form $f(y) = ay + b$: linear in $y$ with an additive constant. Equation~\ref{eq:methods:foi} states that noise variance is affine in pixel intensity, meaning each unit increase in signal contributes a proportional increase in noise variance (Poisson term $a$) on top of a fixed noise floor (Gaussian term $b$). This is distinct from a purely linear relationship ($b=0$, which would imply zero noise at zero signal) and from a constant relationship (which would correspond to additive white Gaussian noise).} predicts that dark regions (pleural spaces, lung bases) are substantially noisier than bright regions (aerated parenchyma), confirmed with $R^2 > 0.99$ against real CCD sensor data \cite{foi_practical_2008}.
 
 \subsection{Implementation}
 \label{sec:methods:noise:implementation}
 
-Noise was generated on-the-fly: a fresh independent sample was drawn for every image in every batch, so the model sees a different noisy realisation on each epoch and generalises across the noise distribution.
+Noise was generated on-the-fly: a fresh independent sample was drawn for every image in every batch, so the model sees a different noisy realisation of each clean image on every training epoch and generalises across the entire noise distribution rather than memorising a fixed noisy dataset. This approach also means training pairs are effectively infinite in number -- a substantial regularisation benefit for a model with over 1.65 million parameters trained on 4,447 clean images.
 
 The noise was generated using a Gaussian approximation to the Poisson term, following
 the same approach described by Foi et al.\ \cite{foi_practical_2008}:
@@ -1278,7 +1280,7 @@ High  & 0.08 & 0.010 & $\approx 0.204$ ($\sigma \approx 50$) & Ultra-low-dose \\
 \end{threeparttable}
 \end{table}
 
-Unlike additive Gaussian benchmarks (fixed $\sigma$ per image), the Foi model produces spatially heterogeneous noise: dark anatomical regions receive substantially higher variance than bright regions. This spatial heterogeneity is precisely what the heteroscedastic loss (Arms B--E) is designed to model.
+Unlike additive Gaussian benchmarks (fixed $\sigma$ per image), the Foi model produces spatially heterogeneous noise: the per-pixel variance $ay + b$ varies continuously across the image according to local intensity.\footnote{Spatially heterogeneous noise means the noise level is not the same everywhere in the image. In a Poisson-Gaussian radiograph, the lung parenchyma (high $y$) carries strong Poisson noise with variance $\approx ay$, while bone cortex (low $y$) is dominated by the Gaussian floor $b$. A denoiser trained with a spatially uniform loss function (MSE, L1) implicitly assumes constant noise variance and therefore systematically under-regularises high-noise regions and over-smoothes low-noise regions. Only the heteroscedastic NLL loss (Equation~\ref{eq:methods:nll}) correctly accounts for this per-pixel variance by auto-weighting pixels inversely proportional to their predicted uncertainty.} This spatial heterogeneity is precisely what the heteroscedastic loss (Arms B--E) is designed to model, and what makes the per-pixel uncertainty map clinically interpretable as a data-reliability signal.
 
 % ============================================================
 \section{Model Architecture}
@@ -1287,7 +1289,7 @@ Unlike additive Gaussian benchmarks (fixed $\sigma$ per image), the Foi model pr
 \subsection{Overview}
 \label{sec:methods:architecture:overview}
 
-The proposed model, PP-VAE-Hformer, is a U-Net encoder-decoder whose stages are built from HybridBlocks, a design
+The proposed model, PP-VAE-Hformer, is a U-Net\footnote{The U-Net \cite{ronneberger_u-net_2015} is an encoder-decoder architecture distinguished by \emph{skip connections} that concatenate feature maps from each encoder stage directly to the corresponding decoder stage. The encoder progressively downsamples spatial resolution while increasing channel depth to capture semantic context; the decoder upsamples back to the original resolution. Skip connections allow the decoder to combine high-resolution local detail (from the encoder) with the high-level abstract representation (from the bottleneck), which is critical for reconstruction tasks where fine spatial detail must be preserved. Virtually all modern medical image segmentation and restoration architectures are U-Net variants.} encoder-decoder whose stages are built from HybridBlocks, a design
 adapted from the Hformer architecture for CT denoising \cite{zhang_hformer_2023}. At
 the bottom of the U-Net, an optional probabilistic bottleneck based on a Variational
 Autoencoder (VAE) \cite{kingma_auto-encoding_2014} introduces controlled stochasticity,
@@ -1373,10 +1375,10 @@ relationships that help the network understand what a region should look like gi
 surroundings.
 
 \paragraph{ResBlock.}
-The ResBlock applies two $3 \times 3$ convolutions with GroupNorm and GELU activation, with a residual skip connection \cite{he_deep_2016}.
+The ResBlock applies two $3 \times 3$ convolutions with GroupNorm\footnote{Group Normalisation \cite{wu_group_2018} partitions the feature channels into groups and normalises the mean and variance of activations within each group independently. Unlike Batch Normalisation \cite{ioffe_batch_2015}, which normalises across the batch dimension and is statistically unstable at small batch sizes, GroupNorm is batch-size independent. This property is important for medical imaging workloads, where memory constraints often limit effective batch sizes to 4--16 images, and where per-image intensity calibration is clinically meaningful.} and GELU\footnote{The Gaussian Error Linear Unit (GELU) \cite{hendrycks_gaussian_2016} is defined as $\mathrm{GELU}(x) = x \cdot \Phi(x)$, where $\Phi$ denotes the standard normal CDF. Unlike ReLU, which hard-gates all negative inputs to zero, GELU applies a smooth probabilistic gate: inputs near zero are passed through with a weight that varies continuously. This produces smoother gradient landscapes than ReLU and has become the default activation in Transformer-based architectures including BERT \cite{devlin_bert_2019} and GPT. Its relevance here is that the smooth gradient landscape prevents the type of activation-function-induced gradient overflow that causes Arm~O's PReLU failure (Section~\ref{sec:results:error}).} activation, with a residual skip connection \cite{he_deep_2016}.
 
 \paragraph{WindowAttnBlock.}
-The WindowAttnBlock applies multi-head self-attention within non-overlapping $8\times8$ windows \cite{liu_swin_2021}, reducing the $4.3\times10^9$ pairwise scores of global attention to 4,096 per window while retaining sufficient context across anatomical boundaries. The block uses pre-normalisation with LayerNorm and a two-layer feedforward network. Two HybridBlocks are stacked at each stage.
+The WindowAttnBlock applies multi-head self-attention\footnote{Self-attention \cite{vaswani_attention_2017} computes, for each position in a feature map, a weighted sum of all other positions' values, where the weights (attention scores) measure pairwise similarity between a query vector at the current position and key vectors at all other positions. This allows the network to capture long-range dependencies regardless of spatial distance, something that fixed-kernel convolutions cannot do. In image processing, full global self-attention over a $32\times32$ feature map requires computing $(32\times32)^2 = 1,048,576$ pairwise scores. Window-restricted attention (as in the Swin Transformer \cite{liu_swin_2021}) limits each query to attend only within a small non-overlapping local window, reducing the per-window score count to $(8\times8)^2 = 4,096$ at a fraction of the global attention cost.} within non-overlapping $8\times8$ windows \cite{liu_swin_2021}, reducing the $4.3\times10^9$ pairwise scores of global attention to 4,096 per window while retaining sufficient context for the network to understand what an anatomical region should look like given its neighbours. The block uses pre-layer normalisation and a two-layer feedforward network with GELU activation. Two HybridBlocks are stacked at each stage.
 
 \subsection{Bottleneck and VAE Probabilistic Bottleneck}
 \label{sec:methods:architecture:bottleneck}
@@ -1443,9 +1445,7 @@ the epistemic uncertainty map:
 \hat{\sigma}^2_e(i) = \frac{1}{K}\sum_{k=1}^{K}\!\left(\hat{\mu}^{(k)}_y(i) - \bar{\mu}_y(i)\right)^2,
 \qquad \bar{\mu}_y(i) = \frac{1}{K}\sum_{k=1}^{K}\hat{\mu}^{(k)}_y(i)
 \end{equation}
-A high value of $\hat{\sigma}^2_e$ at a pixel means the 20 reconstructions disagree with
-one another there: the network cannot commit to a single answer, and the reconstruction is
-partly determined by the learned prior rather than by the input data. Clinically, this is the
+A high value of $\hat{\sigma}^2_e$ at a pixel means the 20 reconstructions disagree substantially with one another there: when different noise samples from the posterior produce different outputs, the network cannot commit to a single answer based on the input data alone, and the reconstruction at that pixel is partly determined by what the model learned from training images rather than by what was actually measured in the current patient.\footnote{This interpretation is the operational form of the signal retrieval versus prior sampling framework (Section~\ref{sec:lit:uncertainty:retrieval}). High $\hat{\sigma}^2_e$ identifies precisely the prior-sampling regime: pixels where the 20 reconstructions diverge are pixels where the decoder is extrapolating from the learned prior rather than anchoring to the observed data. Low $\hat{\sigma}^2_e$ with high $\hat{\sigma}^2_a$ indicates a different situation: the noise is high (aleatoric) but the model consistently agrees on the reconstruction -- meaning the model is confident even though the data is noisy. The two maps are therefore complementary, not redundant.} Clinically, this is the
 signal identified in Section~\ref{sec:lit:uncertainty:retrieval}: pixels where
 $\hat{\sigma}^2_e$ is large are candidates for targeted lung ultrasound review, because
 the denoised image value at those locations is not reliably supported by the observed
@@ -1532,7 +1532,7 @@ $\lambda_{\mathrm{FFL}} = 0.1$ in the composite loss.
 \subsection{Arm E: Full Composite Loss with KL Divergence}
 \label{sec:methods:loss:composite}
 
-Arm E adds the VAE bottleneck (Section~\ref{sec:methods:architecture:bottleneck}) and Kullback-Leibler divergence regularisation \cite{kullback_information_1951}. The KL term measures how far the learned posterior
+Arm E adds the VAE bottleneck (Section~\ref{sec:methods:architecture:bottleneck}) and Kullback-Leibler (KL) divergence regularisation \cite{kullback_information_1951}.\footnote{The Kullback-Leibler (KL) divergence $D_{\mathrm{KL}}(q \| p)$ is an information-theoretic measure of how different one probability distribution $q$ is from a reference distribution $p$. For two Gaussians, it has a closed-form expression (Equation~\ref{eq:methods:kl}). In the VAE framework \cite{kingma_auto-encoding_2014}, minimising the KL term between the learned posterior $q(z|x)$ and the standard normal prior $p(z)$ forces the encoder to produce latent codes that are regularly arranged in latent space, rather than encoding each training image at an arbitrary isolated point. This regularity is what makes Monte Carlo sampling from the posterior meaningful: if the posterior is always close to $\mathcal{N}(0,I)$, drawing different noise samples $\boldsymbol{\varepsilon}$ produces latent codes that span a connected neighbourhood, and the pixel-wise variance across the resulting reconstructions is a genuine measure of epistemic uncertainty rather than noise from a poorly constrained sampler.} The KL term measures how far the learned posterior
 distribution $q(\mathbf{z} \mid x) = \mathcal{N}(\mathbf{z}_\mu,\,\exp(\mathbf{z}_{\log\sigma^2}))$
 deviates from the standard normal prior $p(\mathbf{z}) = \mathcal{N}(\mathbf{0}, \mathbf{I})$,
 and has the closed-form expression:
@@ -1549,7 +1549,7 @@ enough that sampling from it produces plausible reconstructions -- which is the 
 that makes the Monte Carlo epistemic uncertainty estimate in
 Equation~\ref{eq:methods:epistemic} meaningful.
 
-To prevent posterior collapse \cite{fu_cyclical_2019, bowman_generating_2016}, the KL weight $\beta$ is annealed from 0 to $\beta_{\max} = 10^{-3}$
+To prevent posterior collapse\footnote{\emph{Posterior collapse} is a pathological failure mode of VAEs in which the KL penalty causes the learned posterior $q(z|x)$ to converge to the prior $p(z)$ regardless of the input $x$. When this occurs the encoder effectively discards the image, making $z$ independent of $x$, and the decoder must reconstruct the output entirely from the prior -- reducing the VAE to a blurry unconditional generator. Posterior collapse is most common when the decoder is expressive enough to reconstruct the input without using the latent code, which is precisely the case for strong CNN-Transformer decoders of the kind used here. Starting training with $\beta=0$ allows the reconstruction signal to establish a useful latent code before regularisation is introduced \cite{bowman_generating_2016, lucas_dont_2019}.} \cite{fu_cyclical_2019, bowman_generating_2016}, the KL weight $\beta$ is annealed from 0 to $\beta_{\max} = 10^{-3}$
 over the first 20 training epochs:
 \begin{equation}
 \label{eq:methods:beta}
@@ -1627,9 +1627,9 @@ P & PP-VAE best (PReLU) & & & \checkmark & \checkmark & \checkmark & \checkmark 
 \subsection{Optimiser and Learning Rate Schedule}
 \label{sec:methods:training:optimiser}
 
-All arms were trained using AdamW \cite{kingma_adam_2015} with learning rate $2\times10^{-4}$ and weight decay $10^{-4}$.
+All arms were trained using AdamW \cite{loshchilov_decoupled_2019} with learning rate $2\times10^{-4}$ and weight decay $10^{-4}$.\footnote{\emph{Weight decay} is a regularisation technique that penalises large parameter values by adding a term proportional to the squared L2 norm of all weights to the effective optimisation objective: $\mathcal{L}_{\mathrm{reg}} = \lambda_{\mathrm{wd}}\sum_\theta \theta^2$. It discourages the network from overfitting by keeping parameter magnitudes moderate. In the AdamW variant \cite{loshchilov_decoupled_2019}, weight decay is applied directly as a multiplicative shrinkage to parameter values at each update step, decoupled from the adaptive gradient scaling. This produces better regularisation behaviour than the original Adam formulation, which conflates weight decay with L2 regularisation and thereby distorts the adaptive scaling.} The cosine annealing schedule (\texttt{CosineAnnealingLR}, $T_{\max}=200$) decayed the learning rate smoothly from $2\times10^{-4}$ to $10^{-6}$ over 200 epochs, avoiding the abrupt drops of step-decay schedules that can destabilise KL annealing in VAE arms.
 
-The learning rate was decayed via cosine annealing from $2\times10^{-4}$ to $10^{-6}$ over 200 epochs (\texttt{CosineAnnealingLR}, $T_{\max}=200$). Training used automatic mixed precision (\texttt{autocast} + \texttt{GradScaler}) with gradient norm clipping at 1.0 to prevent spikes during KL annealing.
+The learning rate was decayed via cosine annealing from $2\times10^{-4}$ to $10^{-6}$ over 200 epochs (\texttt{CosineAnnealingLR}, $T_{\max}=200$). Training used automatic mixed precision\footnote{\emph{Automatic mixed precision} (AMP) \cite{micikevicius_mixed_2018} stores and computes most operations in 16-bit floating-point (\texttt{float16}) while maintaining a 32-bit master copy of parameters for weight updates and numerically sensitive operations. On NVIDIA A100 GPUs with dedicated Tensor Core units, \texttt{float16} matrix operations run approximately twice as fast and use half the memory compared to \texttt{float32}. A \texttt{GradScaler} dynamically adjusts the loss scale at each step to keep gradients within the \texttt{float16} representable range and prevent underflow, which would otherwise corrupt the gradient signal for small learning rates late in training.} (\texttt{autocast} + \texttt{GradScaler}) with gradient norm clipping at 1.0 to prevent spikes during KL annealing.
 
 \subsection{Training Schedule and Checkpointing}
 \label{sec:methods:training:schedule}
@@ -1640,7 +1640,7 @@ All arms were trained for 200 epochs, batch size 16, on CSD3 NVIDIA A100 GPUs. V
 \section{Evaluation Metrics}
 \label{sec:methods:evaluation}
 
-Metrics were computed on the 624-image held-out test set at each noise preset. Reported values are means over the test set with 95\% bootstrap confidence intervals (1,000 resamples).
+Metrics were computed on the 624-image held-out test set at each noise preset. Reported values are means over the test set with 95\% bootstrap confidence intervals (1,000 resamples).\footnote{\emph{Bootstrap resampling} \cite{efron_bootstrap_1979} estimates the sampling distribution of a statistic -- here, the mean PSNR across the 624 test images -- by repeatedly drawing samples of size $n=624$ with replacement from the observed test set and computing the statistic on each resample. The 2.5th and 97.5th percentiles of the resulting 1,000 bootstrap statistics form the 95\% confidence interval without assuming a parametric form for the underlying distribution. This is preferable to the normal approximation when the test set is small or the metric distribution is skewed.}
 
 \subsection{Reconstruction Metrics}
 \label{sec:methods:evaluation:recon}
@@ -1668,7 +1668,7 @@ blurring of anatomical boundaries.
 \label{sec:methods:evaluation:perceptual}
 
 \paragraph{FSIM.}
-Feature Similarity Index \cite{zhang_fsim_2011} is the primary perceptual metric, computed from phase congruency and gradient magnitude maps. Zhang et al.\ \cite{zhang_comprehensive_2012} ranked FSIM first among 11 metrics ($\rho=0.91$ vs.\ human judgement), outperforming PSNR (0.69) and SSIM (0.87). Computed via \texttt{piq}.
+Feature Similarity Index \cite{zhang_fsim_2011} is the primary perceptual metric, computed from phase congruency\footnote{\emph{Phase congruency} \cite{morrone_feature_1987} measures the degree to which Fourier components of a local image region are all in phase (i.e.\ peak at the same spatial location). When multiple frequency harmonics align in phase, a perceptually significant feature -- an edge, ridge, or textured boundary -- is present. Phase congruency is dimensionless and contrast-invariant, unlike gradient magnitude which scales with local intensity difference. FSIM \cite{zhang_fsim_2011} uses phase congruency as a quality weight: regions of high phase congruency (structurally informative edges) contribute more to the overall similarity score than smooth, low-information areas, making FSIM more sensitive than PSNR or SSIM to the preservation of diagnostically relevant boundaries.} and gradient magnitude maps. Zhang et al.\ \cite{zhang_comprehensive_2012} ranked FSIM first among 11 metrics ($\rho=0.91$ vs.\ human judgement), outperforming PSNR (0.69) and SSIM (0.87). Computed via \texttt{piq}.
 
 \paragraph{LPIPS.}
 Learned Perceptual Image Patch Similarity \cite{zhang_unreasonable_2018} uses deep
@@ -1721,7 +1721,7 @@ vs.\ adjacent lung (evaluating cardiac border sharpness). Higher CNR indicates t
 clinically relevant contrast is better preserved after denoising.
 
 \paragraph{Edge Preservation Index (EPI).}
-The EPI measures gradient preservation at anatomical boundaries, computed as SSIM between the Sobel gradient maps of the denoised and clean images. EPI near 1.0 indicates perfect edge preservation; below 0.9 suggests boundary blurring.
+The EPI measures gradient preservation at anatomical boundaries, computed as SSIM between the Sobel\footnote{The \emph{Sobel operator} \cite{sobel_presentation_1968} is a pair of $3\times3$ convolutional kernels that compute discrete approximations to the horizontal and vertical intensity gradients of an image. The gradient magnitude $|\nabla I| = \sqrt{(\partial I/\partial x)^2 + (\partial I/\partial y)^2}$ is large at edges and near-zero in homogeneous regions. Sobel edges are used in the Edge Preservation Index as a proxy for anatomical boundary fidelity, and appear as the supervision signal in Arm~L's edge loss ($\mathcal{L}_{\mathrm{Edge}}$), where L1 distance between the Sobel maps of the reconstruction and clean image penalises boundary blurring.} gradient maps of the denoised and clean images. EPI near 1.0 indicates perfect edge preservation; below 0.9 suggests boundary blurring.
 
 \paragraph{Noise Power Spectrum (NPS).}
 The NPS characterises the frequency content of residual noise after denoising via the
@@ -1803,6 +1803,8 @@ With the experimental apparatus fully specified, Chapter~\ref{chap:results} pres
 % ============================================================
 \chapter{Results}
 \label{chap:results}
+
+This chapter reports the quantitative and qualitative outcomes of the 16-arm ablation experiment and five retrained baseline comparisons described in Chapter~\ref{chap:methods}. All numerical results derive from the held-out 624-image Kermany test set; no result reported here was accessible during hyperparameter selection or training. The chapter proceeds from aggregate reconstruction metrics (Section~\ref{sec:results:recon}), through dose-curve behaviour (Section~\ref{sec:results:recon:dosecurve}), curriculum fine-tuning (Section~\ref{sec:results:curriculum}), latent space geometry (Section~\ref{sec:results:latent}), and uncertainty calibration (Section~\ref{sec:results:calibration}), to held-out perceptual metrics, failure mode analysis, and a final summary that maps each finding to its stated research objective.
 
 % Length target: 3,000 – 4,000 words (tables and figures do the work).
 % EXAMINER SIGNAL: Results chapter must be strictly descriptive.
@@ -2882,11 +2884,15 @@ Reconstruction error concentrates at anatomical boundaries (cardiac silhouette, 
 \item \textbf{Failure modes (RO8).} PReLU instability (Arm~O, $-5.54$~dB), posterior collapse (Arm~E, $-3.0$~dB), and loss interference (Arms~M/N, $-1.4$--$-2.9$~dB) are quantified in Section~\ref{sec:results:error}.
 \end{enumerate}
 
+These eight empirical findings are consistent and mutually reinforcing: the composite loss framework outperforms any single-term baseline, calibrated uncertainty is obtainable at no PSNR cost relative to the best CNN baselines, and three distinct failure modes reveal principled design constraints for future probabilistic denoisers. Chapter~\ref{chap:discussion} interprets these findings in the context of prior literature and the clinical mandate, asking not only what the numbers show but what they require of any system that seeks to deploy uncertainty-aware AI safely in paediatric imaging.
+
 % ============================================================
 % CHAPTER 5 — DISCUSSION
 % ============================================================
 \chapter{Discussion}
 \label{chap:discussion}
+
+The preceding chapter reported what the numbers are. This chapter asks what they mean -- for loss function design, for the practical value of probabilistic denoising, and for the clinical deployment of uncertainty-aware AI in paediatric radiology. The discussion is structured around the research objectives stated in Chapter~\ref{chap:intro}: first interpreting reconstruction performance and the role of each loss term, then addressing latent space geometry and KL schedule behaviour, then examining uncertainty calibration, and finally situating the findings relative to prior literature and the clinical mandate. Limitations and generalisability are addressed explicitly so that the boundaries of inference are clear.
 
 \section{Interpretation of Principal Findings}
 \label{sec:disc:findings}
