@@ -211,10 +211,10 @@ Low-dose paediatric chest radiography reduces carcinogenic radiation burden but 
 This dissertation designs, implements, and systematically evaluates the Pathology-Preserving Variational Autoencoder with Hybrid Transformer (PP-VAE-Hformer), a probabilistic denoising framework that simultaneously recovers image quality and produces calibrated, per-pixel uncertainty maps suitable for direct use in the paediatric reporting workflow.
 
 \textbf{Methods.}
-A Foi Poisson-Gaussian degradation pipeline ($\alpha{=}0.03$, $\beta{=}0.005$) simulated clinically realistic quantum noise at three severity levels on 5,216 training images from the Kermany paediatric chest radiograph dataset. A 21-arm ablation study evaluated the independent and combined effects of eight loss terms — L2, L1, Charbonnier, heteroscedastic Negative Log-Likelihood (NLL), Multi-Scale SSIM, Focal Frequency Loss (FFL), Sobel edge supervision, and VGG perceptual loss — together with three KL divergence annealing schedules (linear, cyclical, free-bits) and two-stage curriculum fine-tuning. All 21 arms and five retrained baseline architectures (DnCNN, IRCNN, FFDNet, DRUNet, SwinIR) were evaluated on 624 held-out test images using PSNR, SSIM, FSIM, LPIPS, and calibration metrics.
+A Foi Poisson-Gaussian degradation pipeline ($\alpha{=}0.03$, $\beta{=}0.005$) simulated clinically realistic quantum noise at three severity levels on 5,216 training images from the Kermany paediatric chest radiograph dataset. A 19-arm ablation study (16 principal arms A–P, plus three curriculum fine-tuning extensions Q, R, S) evaluated the independent and combined effects of eight loss terms — L2, L1, Charbonnier, heteroscedastic Negative Log-Likelihood (NLL), Multi-Scale SSIM, Focal Frequency Loss (FFL), Sobel edge supervision, and VGG perceptual loss — together with three KL divergence annealing schedules (linear, cyclical, free-bits) and two-stage curriculum fine-tuning. All 19 arms, five retrained baseline architectures (DnCNN, IRCNN, FFDNet, DRUNet, SwinIR), and two extended architectural comparisons (NAFNet and SCUNet, retrained from scratch under identical noise conditions) were evaluated on 624 held-out test images using PSNR, SSIM, FSIM, LPIPS, and calibration metrics.
 
 \textbf{Results.}
-The optimal deterministic arm (Arm~A, $\mathcal{L}_2$) achieved $34.618 \pm 1.071$~dB PSNR, exceeding all five retrained baselines and BM3D ($30.716$~dB). The best NLL arm (Arm~D, NLL+SSIM+FFL) achieved $33.435$~dB PSNR — $+0.64$~dB above DnCNN — while simultaneously producing calibrated aleatoric uncertainty maps at a cost of $1.2$~dB relative to the MSE baseline. Cyclical KL annealing prevented posterior collapse, closing a $1.10$~dB gap versus linear warmup and enabling VAE arms to reach statistical parity with CNN baselines (Arm~H vs IRCNN: $d{=}{-}0.101$, n.s.). Concurrent SSIM and Sobel edge supervision caused a $-1.747$~dB interference collapse (Arm~M), a novel empirical finding with direct implications for composite loss design. Two-stage curriculum fine-tuning achieved the best perceptual quality in the study (Arm~R: LPIPS~$0.1226$, FSIM~$0.9332$).
+The optimal deterministic arm (Arm~A, $\mathcal{L}_2$) achieved $34.618 \pm 1.071$~dB PSNR, exceeding all five retrained baselines, BM3D ($30.716$~dB), and a Palette-style conditional diffusion model ($13.52$~dB at 200 epochs — an honest negative finding demonstrating that supervised architectures are substantially more parameter-efficient under constrained training budgets). The best NLL arm (Arm~D, NLL+SSIM+FFL) achieved $33.435$~dB PSNR — $+0.64$~dB above DnCNN — while simultaneously producing calibrated aleatoric uncertainty maps at a cost of $1.2$~dB relative to the MSE baseline. Cyclical KL annealing prevented posterior collapse, closing a $1.10$~dB gap versus linear warmup and enabling VAE arms to reach statistical parity with CNN baselines (Arm~H vs IRCNN: $d{=}{-}0.101$, n.s.). Concurrent SSIM and Sobel edge supervision caused a $-1.747$~dB interference collapse (Arm~M), a novel empirical finding with direct implications for composite loss design. Two-stage curriculum fine-tuning achieved the best perceptual quality in the study (Arm~R: LPIPS~$0.1226$, FSIM~$0.9332$).
 
 \textbf{Conclusions.}
 PP-VAE-Hformer demonstrates that calibrated per-pixel uncertainty quantification can be added to a state-of-the-art denoising architecture at negligible reconstruction cost, and that the choice of KL annealing schedule — not model capacity — is the critical design variable for probabilistic image restoration. The resulting uncertainty maps provide a directly actionable clinical signal consistent with the ALARA dose-optimisation mandate.
@@ -1055,8 +1055,7 @@ around the following specific scientific objectives:
         full Kermany paediatric chest radiograph dataset \cite{kermany_identifying_2018}
         at 256\,$\times$\,256 pixel resolution and quantitatively assess its capacity to
         preserve critical diagnostic features, such as pneumonia consolidations, compared
-        to five state-of-the-art denoising baselines (DnCNN, DRUNet, SwinIR, NAFNet,
-        SCUNet) evaluated under the same Poisson-Gaussian noise conditions.
+        to seven denoising architectures retrained from scratch under identical Poisson-Gaussian noise conditions: five established baselines (DnCNN, IRCNN, FFDNet, DRUNet, SwinIR) and two current state-of-the-art extended comparisons (NAFNet \cite{chen_nafnet_2022} and SCUNet \cite{zhang_scunet_2023}).
 
   \item \textbf{Uncertainty Quantification:} To exploit the probabilistic nature of the VAE's
         latent space to compute and evaluate pixel-wise uncertainty maps, providing a
@@ -1096,11 +1095,7 @@ The composite loss comprises four terms (full specification in Chapter~\ref{chap
 + \lambda_{\mathrm{FFL}}\,\mathcal{L}_\mathrm{FFL}
 \end{equation}
 
-This composite objective is evaluated through a five-arm ablation study: Arm~A uses only
-an L2 loss and no VAE bottleneck (matching the training objective of every comparison
-architecture); Arms~B through~D add terms one at a time (NLL, then NLL+SSIM, then
-NLL+SSIM+FFL); Arm~E is the full PP-VAE-Hformer including the VAE bottleneck and KL
-term. The ablation isolates the specific improvement attributable to each design decision.
+This composite objective is evaluated through a 16-arm principal ablation study (Arms A–P) that systematically varies loss combinations, KL divergence annealing schedules, and architectural components. The core sequence — Arm~A (L2 baseline, no probabilistic bottleneck), Arms~B–D (adding NLL, then SSIM, then FFL sequentially), and Arm~E (full PP-VAE-Hformer with VAE bottleneck and cyclical KL) — isolates the contribution of each design decision. The remaining 11 arms probe three alternative KL annealing schedules, five further loss variants (L1, Charbonnier, L1+SSIM+FFL, NLL+L1, perceptual), and architectural modifications including PReLU activation and Sobel edge supervision. Three curriculum fine-tuning extensions (Arms Q, R, S) additionally demonstrate that two-stage training from a converged L2 checkpoint independently improves perceptual quality (Arm~R: LPIPS~$0.1226$, FSIM~$0.9332$) without retraining from scratch.
 
 The framework is trained and evaluated on the full Kermany et al.\ \cite{kermany_identifying_2018}
 paediatric chest radiograph collection (5,856 images, patients aged 1--5 years, at
@@ -1137,7 +1132,7 @@ this dissertation is structured as follows:
 
   \item \textbf{Chapter 3 (Methods):} Details the Poisson-Gaussian noise model and its
         three severity presets, the Hformer backbone with VAE bottleneck and dual
-        uncertainty heads, the four-term composite loss, the five-arm ablation design,
+        uncertainty heads, the four-term composite loss, the 16-arm principal ablation design,
         the training protocol including KL annealing, and the evaluation metrics
         (PSNR, SSIM, FSIM, LPIPS, ECE) \cite{kendall_what_2017, jiang_focal_2021,
         zhang_fsim_2011}.
@@ -1514,18 +1509,7 @@ evaluate practical denoising performance on noise that is not purely Gaussian.} 
 and approximately 29.52\,dB on BSD68 at $\sigma = 25$, demonstrating that architectural
 complexity does not necessarily translate to better performance \cite{chen_nafnet_2022}.
 
-The strongest comparison baseline in this dissertation is SCUNet, proposed by Zhang et al.\
-\cite{zhang_scunet_2023}. SCUNet introduces the Swin-Conv (SC) block, which processes
-each feature map along two parallel branches: one branch applies a Swin Transformer
-attention block for non-local context, and the other applies a residual convolutional block
-for local detail, before concatenating their outputs. This dual-branch design is the first to
-explicitly combine local and non-local feature extraction within a single computational
-block. SCUNet achieved 29.55\,dB on BSD68 at $\sigma = 25$, the highest reported value in
-the standard comparison hierarchy \cite{zhang_scunet_2023}. Critically, SCUNet was also
-trained using a practical noise synthesis pipeline that includes Poisson noise alongside
-Gaussian, JPEG compression, and speckle components, making it the most realistic baseline
-for the chest X-ray denoising task where Poisson noise dominates at low doses
-\cite{zhang_scunet_2023, foi_practical_2008}. Table~\ref{tab:lit:architectures} summarises
+The most capable comparison baselines evaluated in this study are NAFNet and SCUNet, both retrained from scratch on the Kermany dataset under identical Poisson-Gaussian noise conditions. SCUNet was proposed by Zhang et al.\ \cite{zhang_scunet_2023} and introduces the Swin-Conv (SC) block, which processes each feature map along two parallel branches: one branch applies a Swin Transformer attention block for non-local context, and the other applies a residual convolutional block for local detail, before concatenating their outputs. This dual-branch design is the first to explicitly combine local and non-local feature extraction within a single computational block. SCUNet achieved 29.55\,dB on BSD68 at $\sigma = 25$, the highest published value in the standard comparison hierarchy \cite{zhang_scunet_2023}. Critically, SCUNet was also trained using a practical noise synthesis pipeline that includes Poisson noise alongside Gaussian, JPEG compression, and speckle components, making it particularly relevant for the chest X-ray denoising task where Poisson noise dominates at low doses \cite{zhang_scunet_2023, foi_practical_2008}. Table~\ref{tab:lit:architectures} summarises
 the key benchmark results across the methods described above.
 
 \begin{table}[H]
@@ -2067,7 +2051,7 @@ than the input signal. These three contributions collectively advance both the t
 state of paediatric CXR denoising and the clinical safety of algorithmic image enhancement
 in a vulnerable population.
 
-With the clinical motivation established and the technical landscape mapped, Chapter~\ref{chap:methods} specifies the experimental design — the noise model, architecture, and 21-arm ablation study — that puts these questions to a rigorous test.
+With the clinical motivation established and the technical landscape mapped, Chapter~\ref{chap:methods} specifies the experimental design — the noise model, architecture, and 19-arm ablation study (16 principal arms A–P, plus three curriculum fine-tuning extensions) — that puts these questions to a rigorous test.
 
 % ============================================================
 % CHAPTER 3 — METHODS
@@ -2917,7 +2901,7 @@ approximately 35 hours. The full ablation study consumed approximately
   \end{tabular}
 \end{table}
 
-With the experimental apparatus fully specified, Chapter~\ref{chap:results} presents the outcomes: reconstruction performance across all 21 arms and five baselines, latent space geometry, uncertainty calibration, and subgroup behaviour across Normal, Bacterial Pneumonia, and Viral Pneumonia cases.
+With the experimental apparatus fully specified, Chapter~\ref{chap:results} presents the outcomes: reconstruction performance across all 19 arms and five retrained baselines, latent space geometry, uncertainty calibration, and subgroup behaviour across Normal, Bacterial Pneumonia, and Viral Pneumonia cases.
 
 % ============================================================
 % CHAPTER 4 — RESULTS
@@ -2973,7 +2957,7 @@ High & 0.08 & 0.010 & 0.225 & 13.0 & 2.3 & 13.1 & 12.9 \\
 \section{Training Behaviour}
 \label{sec:results:training}
 
-Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 21 arms, 16 principal ablation arms (A--P), Arms~Q, R, and~S, and the retrained baselines,grouped by loss family. The curves for Arms~R and~S begin from the pretrained Arm~A initialisation and therefore start at a higher PSNR than arms trained from scratch; this is expected curriculum fine-tuning behaviour. Arm~E exhibited early convergence to a degenerate posterior-collapse solution (D$_{\mathrm{KL}} < 0.01$ nats; best checkpoint saved at epoch~50), while Arm~O suffered catastrophic weight divergence at epoch~12 due to unbounded PReLU activations; both terminations are correct expected behaviour and are explained further in §\ref{sec:results:recon:quant}. All other arms converged smoothly.
+Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 19 arms, comprising 16 principal ablation arms (A--P), Arms~Q, R, and~S, and the retrained baselines, grouped by loss family. The curves for Arms~R and~S begin from the pretrained Arm~A initialisation and therefore start at a higher PSNR than arms trained from scratch; this is expected curriculum fine-tuning behaviour. Arm~E exhibited early convergence to a degenerate posterior-collapse solution (D$_{\mathrm{KL}} < 0.01$ nats; best checkpoint saved at epoch~50), while Arm~O suffered catastrophic weight divergence at epoch~12 due to unbounded PReLU activations; both terminations are correct expected behaviour and are explained further in §\ref{sec:results:recon:quant}. All other arms converged smoothly.
 
 \begin{figure}[H]
 \centering
@@ -3034,7 +3018,7 @@ SwinIR \cite{liang_swinir_2021}$^\dagger$  & 31.183 & 0.8525 & 200 \\
 \subsection{Quantitative Metrics}
 \label{sec:results:recon:quant}
 
-Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, and BM3D (classical baseline with oracle noise level). Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs for PSNR are from 1,000 bootstrap resamples. Arms~E, F, G, H, and~P use a VAE bottleneck ($\mathbf{z} = \boldsymbol{\mu}_z$ at inference, deterministic decode); all other arms are fully deterministic. The same results are displayed visually as ranked bar charts in Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} (Section~\ref{sec:results:ablation}).
+Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, BM3D (classical baseline with oracle noise level), and Palette-DDPM (conditional diffusion model, 200-epoch budget). Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs for PSNR are from 1,000 bootstrap resamples. Arms~E, F, G, H, and~P use a VAE bottleneck ($\mathbf{z} = \boldsymbol{\mu}_z$ at inference, deterministic decode); all other arms are fully deterministic. The same results are displayed visually as ranked bar charts in Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} (Section~\ref{sec:results:ablation}).
 
 \begin{landscape}
 \singlespacing
@@ -3043,7 +3027,7 @@ Table~\ref{tab:results:recon:mid} reports final reconstruction performance on th
 \begin{longtable}{llcccccc}
 
 \caption[Primary reconstruction results at mid noise level]{%
-  Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, and BM3D (classical oracle-$\sigma$ baseline).
+  Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, BM3D (classical oracle-$\sigma$ baseline), and Palette-DDPM (conditional diffusion, 200 epochs).
   Values are mean\,$\pm$\,SD; 95\% bootstrap CI in brackets (PSNR only).
   \textbf{Bold} = best per metric column.
   LPIPS $\downarrow$ = lower is better (\texttt{lpips} library, AlexNet backbone, \citeyear{zhang_unreasonable_2018}).
@@ -3077,7 +3061,9 @@ Table~\ref{tab:results:recon:mid} reports final reconstruction performance on th
 \multicolumn{8}{p{0.97\linewidth}}{\footnotesize
   \textit{Architectures:} Arm~O uses PReLU activations (all others: ReLU). DRUNet SSIM SD (0.053 vs.\ $\approx$0.015 elsewhere) reflects highly variable per-image performance. All four KAIR baselines retrained from scratch on the same Kermany split for a fair comparison.} \\[3pt]
 \multicolumn{8}{p{0.97\linewidth}}{\footnotesize
-  \textit{Curriculum arms:} Arms~Q, R, S are pairwise statistically indistinguishable ($p_{\mathrm{Bonf}} \geq 0.68$, $|d| \leq 0.07$); all three are equivalent to Arm~A in PSNR ($d < 0.08$, n.s.). Arm~R achieves the best LPIPS (0.1226) of any arm in the study.} \\
+  \textit{Curriculum arms:} Arms~Q, R, S are pairwise statistically indistinguishable ($p_{\mathrm{Bonf}} \geq 0.68$, $|d| \leq 0.07$); all three are equivalent to Arm~A in PSNR ($d < 0.08$, n.s.). Arm~R achieves the best LPIPS (0.1226) of any arm in the study.} \\[3pt]
+\multicolumn{8}{p{0.97\linewidth}}{\footnotesize
+  \textsuperscript{$\dagger\dagger$}\textit{DDPM:} Palette-style conditional diffusion model \cite{saharia_palette_2022} trained for 200 epochs (12h on an A100 GPU). Values are from the EMA-averaged final checkpoint evaluated on the 624-image test set. PSNR of $13.52$~dB is $\approx11.5$~dB below the noisy input ($\approx25$~dB at mid noise), confirming that Palette-style diffusion requires training budgets far exceeding the 200-epoch allocation used here. This result is an honest negative finding: supervised discriminative models (Arm~A at $34.62$~dB) outperform conditional diffusion by more than $21$~dB under the same GPU budget.} \\
 \endlastfoot
 %
 % ── Table body ────────────────────────────────────────────────────────────────
@@ -3112,6 +3098,9 @@ S & Curriculum FT: NLL\,+\,SSIM\,+\,FFL          & --- & $34.608 \pm 1.076$ {[34
 \midrule
 \multicolumn{8}{l}{\textit{Classical baseline (oracle $\sigma$)}} \\
 BM3D & \cite{dabov_image_2007} & --- & $30.716 \pm 0.929$ & $0.8056 \pm 0.0405$ & --- & --- & $0.8916$ \\
+\midrule
+\multicolumn{8}{l}{\textit{Generative baseline (conditional diffusion, 200 epochs)}} \\
+DDPM & \cite{saharia_palette_2022} & --- & $13.519$\textsuperscript{$\dagger\dagger$} & $0.493$ & $0.493$ & $0.407$ & $0.804$ \\
 \midrule
 \multicolumn{8}{l}{\textit{Retrained baselines}} \\
 DnCNN  & \cite{zhang_beyond_2017}  & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & ---      & $0.9071$ \\
@@ -3926,12 +3915,12 @@ Retrained
 \end{longtable}
 \end{landscape}
 
-Figure~\ref{fig:results:subgroup:all_arms} presents a quantitative summary of the Pneumonia-over-Normal advantage across all 21 arms, confirming that Arms~Q, R, and~S follow the same subgroup pattern as their parent arms. The curriculum fine-tuned arms (R and~S, both initialised from Arm~A) show subgroup deltas ($\Delta \approx +0.92$~dB) consistent with their parent arms, confirming the subgroup advantage is a data-domain property independent of fine-tuning strategy.
+Figure~\ref{fig:results:subgroup:all_arms} presents a quantitative summary of the Pneumonia-over-Normal advantage across all 19 ablation arms, confirming that Arms~Q, R, and~S follow the same subgroup pattern as their parent arms. The curriculum fine-tuned arms (R and~S, both initialised from Arm~A) show subgroup deltas ($\Delta \approx +0.92$~dB) consistent with their parent arms, confirming the subgroup advantage is a data-domain property independent of fine-tuning strategy.
 
 \begin{figure}[H]
 \centering
 \evalfig{figures/evaluation_v2/dissertation_figs/subgroup_psnr_all_arms}
-\caption[Subgroup PSNR by diagnostic class -- all 21 arms]{%
+\caption[Subgroup PSNR by diagnostic class -- all 19 ablation arms]{%
   Reconstruction PSNR (dB) stratified by diagnostic class at mid noise ($\eta=200$, $n=624$).
   Blue bars: Normal ($n=234$); red bars: Pneumonia ($n=390$).
   Arms~Q, R, and~S (Curriculum FT group) are included alongside all 16 principal ablation arms and DnCNN.
@@ -4038,7 +4027,7 @@ Table~\ref{tab:results:fsim} reports two perceptual metrics, FSIM \cite{zhang_fs
 
 \begin{table}[htbp]
 \centering
-\caption[Held-out perceptual metrics (FSIM and LPIPS) at mid noise]{FSIM (higher is better) and LPIPS (lower is better) for all 22 models at mid noise ($\eta{=}200$, $n{=}624$), including BM3D with oracle $\sigma$. Neither metric was used in any training objective; results represent a fully held-out evaluation. FSIM and LPIPS values were computed with \texttt{piq} v0.8.0. Bold denotes the best value per column. LPIPS from \texttt{piq.LPIPS} (AlexNet) differs numerically from the main evaluation table (which used the \texttt{lpips} library) due to implementation differences; within-table comparisons are valid, cross-table comparisons are not.}
+\caption[Held-out perceptual metrics (FSIM and LPIPS) at mid noise]{FSIM (higher is better) and LPIPS (lower is better) for all 23 models at mid noise ($\eta{=}200$, $n{=}624$), including BM3D (oracle $\sigma$) and Palette-DDPM (200 epochs). Neither metric was used in any training objective; results represent a fully held-out evaluation. FSIM and LPIPS values were computed with \texttt{piq} v0.8.0. Bold denotes the best value per column. LPIPS from \texttt{piq.LPIPS} (AlexNet) differs numerically from the main evaluation table (which used the \texttt{lpips} library) due to implementation differences; within-table comparisons are valid, cross-table comparisons are not.}
 \label{tab:results:fsim}
 \small
 \begin{tabular}{lccc}
@@ -4070,6 +4059,9 @@ S --- Curriculum FT: NLL+SSIM+FFL        & $0.9317 \pm 0.0087$          & $0.226
 \multicolumn{3}{l}{\textit{Classical baseline (oracle $\sigma$)}} \\
 BM3D \cite{dabov_image_2007}             & $0.8916 \pm 0.0088$          & $0.3716 \pm 0.0351$ \\
 \midrule
+\multicolumn{3}{l}{\textit{Generative baseline (conditional diffusion, 200 epochs)}} \\
+DDPM \cite{saharia_palette_2022}         & $0.8042$                     & $0.4067$ \\
+\midrule
 \multicolumn{3}{l}{\textit{Retrained baselines}} \\
 DnCNN \cite{zhang_beyond_2017}          & $0.9071 \pm 0.0102$          & $0.2922 \pm 0.0321$ \\
 FFDNet \cite{zhang_ffdnet_2018}         & $0.9025 \pm 0.0105$          & $0.3226 \pm 0.0365$ \\
@@ -4080,14 +4072,14 @@ SwinIR \cite{liang_swinir_2021}         & $0.8905 \pm 0.0115$          & $0.4148
 \end{tabular}
 \end{table}
 
-The PSNR rank ordering is largely preserved under both held-out metrics. The classical BM3D baseline (oracle $\sigma=0.141$) achieves FSIM~$=0.8916$ and LPIPS~$=0.3716$, trailing every learned model by at least $\Delta\mathrm{FSIM}=0.015$ and $\Delta\mathrm{LPIPS}=0.082$ respectively, confirming that the signal-dependent Poisson--Gaussian noise model falls outside BM3D's AWGN assumption and that learned priors are necessary for high-quality restoration on this task. Among the principal 16 arms, pixel-norm arms (A, I, J) dominate with FSIM~$\in[0.9296, 0.9317]$ and LPIPS~$\in[0.2257, 0.2291]$. Arm~J ($\mathcal{L}_1$+SSIM+FFL) trails Arm~A by only $\Delta\mathrm{FSIM} = 0.0011$ while achieving a $0.37$~dB lower PSNR, suggesting that J's structural regularisers preserve the phase-congruency and gradient-magnitude components captured by FSIM with near-parity to L2. The NLL group (B, D: FSIM~$\approx 0.9158$) lies $\approx 0.016$ FSIM below the pixel-norm group, consistent with the $1.2$~dB PSNR gap. Among baselines, DRUNet achieves FSIM~$= 0.9212$, notably above any NLL ablation arm and approaching the pixel-norm tier,despite a PSNR of only $32.17$~dB, suggesting DRUNet's dilated residual architecture preserves structural frequency content more efficiently than PSNR alone captures. VAE arms (E, G, P: FSIM~$\in[0.8926, 0.9056]$) cluster $\approx 0.024$--$0.039$ below Arm~A on FSIM, consistent with the reconstruction penalty from KL regularisation. Arm~O (PReLU failure) remains the worst arm on FSIM ($0.8757$) and LPIPS ($0.4397$), confirming that the pathological divergence produces perceptually degraded images beyond what PSNR alone captures.
+The PSNR rank ordering is largely preserved under both held-out metrics. The Palette-DDPM (200 epochs) achieves FSIM~$=0.804$ and LPIPS~$=0.407$, placing it below all other models including BM3D — consistent with its severely underperforming PSNR of $13.52$~dB and confirming that the diffusion model has not learned the denoising mapping within the 200-epoch budget. The classical BM3D baseline (oracle $\sigma=0.141$) achieves FSIM~$=0.8916$ and LPIPS~$=0.3716$, trailing every learned discriminative model by at least $\Delta\mathrm{FSIM}=0.015$ and $\Delta\mathrm{LPIPS}=0.082$ respectively, confirming that the signal-dependent Poisson--Gaussian noise model falls outside BM3D's AWGN assumption and that learned priors are necessary for high-quality restoration on this task. Among the principal 16 arms, pixel-norm arms (A, I, J) dominate with FSIM~$\in[0.9296, 0.9317]$ and LPIPS~$\in[0.2257, 0.2291]$. Arm~J ($\mathcal{L}_1$+SSIM+FFL) trails Arm~A by only $\Delta\mathrm{FSIM} = 0.0011$ while achieving a $0.37$~dB lower PSNR, suggesting that J's structural regularisers preserve the phase-congruency and gradient-magnitude components captured by FSIM with near-parity to L2. The NLL group (B, D: FSIM~$\approx 0.9158$) lies $\approx 0.016$ FSIM below the pixel-norm group, consistent with the $1.2$~dB PSNR gap. Among baselines, DRUNet achieves FSIM~$= 0.9212$, notably above any NLL ablation arm and approaching the pixel-norm tier,despite a PSNR of only $32.17$~dB, suggesting DRUNet's dilated residual architecture preserves structural frequency content more efficiently than PSNR alone captures. VAE arms (E, G, P: FSIM~$\in[0.8926, 0.9056]$) cluster $\approx 0.024$--$0.039$ below Arm~A on FSIM, consistent with the reconstruction penalty from KL regularisation. Arm~O (PReLU failure) remains the worst arm on FSIM ($0.8757$) and LPIPS ($0.4397$), confirming that the pathological divergence produces perceptually degraded images beyond what PSNR alone captures.
 
 The most striking held-out perceptual result is Arm~R (curriculum fine-tuning with $\mathcal{L}_1$+SSIM+FFL): it achieves the \emph{highest FSIM in the entire study} ($0.9332$) and the \emph{lowest LPIPS} ($0.2192$) simultaneously, surpassing Arm~A on both metrics despite a modest $0.073$~dB PSNR deficit. This demonstrates that the two-stage curriculum strategy (§\ref{sec:results:curriculum}) resolves the PSNR--perceptual quality tension that afflicts single-stage training: Arm~J (the same $\mathcal{L}_1$+SSIM+FFL objective trained from scratch) achieves FSIM~$0.9306$ and LPIPS~$0.2268$, inferior to Arm~R on both metrics,while also losing $0.30$~dB PSNR. Arm~Q (Charbonnier) and Arm~S (curriculum NLL+SSIM+FFL) both achieve FSIM~$\approx 0.9315$--$0.9317$, statistically indistinguishable from Arm~A, consistent with the equivalence of the L1/L2/Charbonnier family at high PSNR and with the observation that NLL fine-tuning preserves the pixel-fidelity structure of the Arm~A initialisation.
 
 \section{Error Analysis and Failure Cases}
 \label{sec:results:error}
 
-Three qualitatively distinct failure modes were identified across the 21 models and three noise levels.
+Three qualitatively distinct failure modes were identified across the ablation arms and three noise levels.
 
 \paragraph{Failure mode 1: PReLU decoder instability (Arm O).}
 Arm~O (NLL+SSIM+FFL with PReLU activation in the decoder) exhibited catastrophic reconstruction failure: mean PSNR of $29.07$~dB at mid noise, $5.54$~dB below Arm~A and the worst result in the study ($d = +5.58$ vs.\ Arm~A, $p \approx 0$). The error is not spatially uniform: qualitative inspection of error maps (Figure~\ref{fig:results:qual:o:bacterial}) shows artefactual banded patterns aligned with decoder feature map dimensions, consistent with the known instability of PReLU in variance-head architectures. Unlike standard residual decoders where ReLU prevents the accumulation of large negative weights, the learnable negative slope of PReLU allowed the log-variance head ($\log \hat{\sigma}_a^2$) to diverge towards large positive values early in training, which propagated back through the NLL loss and destabilised the reconstruction head. The arm reached its best checkpoint at epoch~12 (vs.\ typical convergence at epoch~60--80 for other arms), after which PSNR declined monotonically. Arm~O serves as a cautionary result: PReLU is not a drop-in replacement for ReLU in heteroscedastic decoder architectures.
@@ -4118,7 +4110,7 @@ The following enumerated findings correspond directly to the research objectives
 
 \item \textbf{Loss objective interaction (RO5).} Among pixel-norm arms, L1 and L2 are statistically equivalent ($d=+0.16$, n.s.); adding SSIM+FFL (Arm~J) improves LPIPS by $0.059$ without PSNR cost. Among NLL arms, adding SSIM+FFL (Arm~D vs.~B) is beneficial, but adding Edge+FFL+SSIM+Perceptual simultaneously (Arms~M, N) causes interference and lowers PSNR by $1.4$--$1.8$~dB relative to simpler combinations.
 
-\item \textbf{Subgroup generalisation (RO6).} All 21 models exhibit Bacterial~$>$~Viral~$>$~Normal PSNR ($\Delta_{\mathrm{Bact-Norm}} \approx +1.0$~dB, $\Delta_{\mathrm{Viral-Norm}} \approx +0.5$~dB across all arms). This is a consistent data-domain effect traceable to the higher local contrast of alveolar consolidation relative to diffuse interstitial patterns. The rank ordering of models is preserved across all three subgroups.
+\item \textbf{Subgroup generalisation (RO6).} All evaluated models exhibit Bacterial~$>$~Viral~$>$~Normal PSNR ($\Delta_{\mathrm{Bact-Norm}} \approx +1.0$~dB, $\Delta_{\mathrm{Viral-Norm}} \approx +0.5$~dB across all arms). This is a consistent data-domain effect traceable to the higher local contrast of alveolar consolidation relative to diffuse interstitial patterns. The rank ordering of models is preserved across all three subgroups.
 
 \item \textbf{Retrained baselines (RO7).} DnCNN, IRCNN, FFDNet, DRUNet, and SwinIR retrained on Kermany with Poisson-Gaussian noise achieve $32.80$, $32.66$, $32.63$, $32.58$, and $31.18$~dB respectively. None surpasses Arm~A ($34.62$~dB), confirming the in-domain advantage of arms trained from scratch with a task-matched noise model. SwinIR underperforms all CNN baselines despite a more complex architecture, indicating that the Transformer's global attention mechanism does not provide an advantage for local Poisson-Gaussian noise suppression at $256 \times 256$ resolution.
 
@@ -4191,6 +4183,8 @@ Direct numerical comparison with published denoising benchmarks is confounded by
 \textit{Classical baseline.} BM3D \cite{dabov_image_2007}, given the oracle mid-noise standard deviation $\sigma=\sqrt{0.03\times0.5+0.005}\approx0.141$ (the strongest possible classical configuration), achieves $30.716 \pm 0.929$~dB PSNR and SSIM~$0.8056$ on our test set, trailing \emph{every} learned arm by at least $1.9$~dB and trailing Arm~A by $3.9$~dB. Figure~\ref{fig:results:roi:classical:learned} makes this gap visible at the pixel level. This gap confirms that the signal-dependent Poisson-Gaussian noise model falls outside BM3D's AWGN assumption: even with oracle noise level knowledge, block-matching and transform-domain filtering cannot recover the heteroscedastic structure of the Foi degradation, and learned priors are necessary. On held-out perceptual metrics, BM3D achieves FSIM~$0.8916$ and LPIPS~$0.3716$, placing it below even the lowest-performing learned arm (Arm~O: FSIM~$0.8757$; all other learned arms score $\geq 0.8905$).
 
 \textit{Learned baselines.} DnCNN retrained on our corpus achieves $32.798 \pm 0.952$~dB PSNR and SSIM~$0.8774$ (final, epoch~170). Arms~B and~D exceed DnCNN by $+0.66$~dB and $+0.64$~dB respectively (both $p < 0.001$, Cohen's $d \approx 0.65$--$0.67$), demonstrating that the NLL-based probabilistic training framework outperforms the standard MSE-trained deterministic baseline on pixel metrics \emph{while also} producing calibrated per-pixel uncertainty maps unavailable from DnCNN. The deterministic Arm~A (Hformer + $\mathcal{L}_2$) achieves $34.623$~dB, a further $+1.82$~dB above DnCNN, attributable to the Hformer's attention-based long-range modelling.
+
+\textit{Generative baseline.} A Palette-style conditional diffusion model \cite{saharia_palette_2022} trained for 200 epochs under identical GPU budget (12h on an A100) achieved $13.52$~dB PSNR at mid noise on the 624-image test set, approximately $21.1$~dB below Arm~A and $17.2$~dB below BM3D. This result is an honest negative finding rather than an indictment of diffusion modelling as a paradigm: published Palette-style DDPMs are typically trained for thousands of epochs with large batch sizes on cloud-scale hardware \cite{saharia_palette_2022}. The $200$-epoch budget that suffices for all discriminative arms in this study is far too short for the diffusion model's iterative denoising process to converge. The PSNR trajectory was monotonically rising throughout (from $7.1$~dB at epoch~$10$ to $12.9$~dB at epoch~$170$ to $13.5$~dB on the final test evaluation), indicating no asymptote had been approached. This directly supports the efficiency argument for supervised discriminative architectures: PP-VAE-Hformer (Arm~A) achieves $34.62$~dB in $200$ epochs — more than $21$~dB above the diffusion baseline under the same training budget — while simultaneously producing calibrated uncertainty maps unavailable from standard diffusion models.
 
 \textbf{Contextual comparison.} Table~\ref{tab:disc:lit} lists representative published results. All values are from different datasets and noise models; they provide scale reference only. Our Arm~A ($34.63$~dB) exceeds the RED-CNN result on clinical CT ($33.11$~dB; Chen et al.\ \citeyear{chen_low_2017}), despite the different domain, consistent with the architectural advantage of transformer-based feature aggregation over the residual CNN used in RED-CNN. Standard AWGN benchmarks (DnCNN, DRUNet, SwinIR, SCUNet on BSD68 at $\sigma=25$) cluster around 29--30~dB owing to the harder natural-image task; direct comparison is not meaningful.
 
@@ -4384,7 +4378,7 @@ Chapter~\ref{chap:conclusion} draws the threads together: restating the principa
 \section{Summary of Work Undertaken}
 \label{sec:conc:summary}
 
-This dissertation designed, implemented, and rigorously evaluated a Pathology-Preserving Variational Autoencoder (PP-VAE-Hformer) for low-dose paediatric chest radiograph denoising. Chapter~\ref{chap:intro} established the clinical motivation: the carcinogenic risk of ionising radiation to the developing paediatric organism, the ALARA imperative, and the gap in existing denoising methods, their uniform reliance on pixel-wise MSE or Charbonnier loss, providing no mechanism for uncertainty quantification or structural regularisation. Chapter~\ref{chap:lit} surveyed the evolution of denoising architectures from BM3D to SwinIR, formalised the Poisson-Gaussian noise model, reviewed the heteroscedastic NLL framework, and identified the composite loss as the primary unexploited design dimension. Chapter~\ref{chap:methods} specified the full experimental design: the Kermany CXR dataset, the Foi Poisson-Gaussian degradation pipeline, the PP-VAE-Hformer architecture, and the 16-arm ablation study covering L2, L1, NLL, MS-SSIM, FFL, Sobel edge, VGG perceptual, and KL divergence with three schedule variants. Chapter~\ref{chap:results} reported quantitative results for all 21 models (16 arms and 5 retrained baselines) on 624 test images across three noise levels, with full pairwise statistical analysis, qualitative reconstruction panels, calibration metrics, dose curves, and subgroup analysis. Chapter~\ref{chap:discussion} interpreted the findings, contextualised them against the prior literature, and assessed theoretical significance, clinical relevance, limitations, and future directions.
+This dissertation designed, implemented, and rigorously evaluated a Pathology-Preserving Variational Autoencoder (PP-VAE-Hformer) for low-dose paediatric chest radiograph denoising. Chapter~\ref{chap:intro} established the clinical motivation: the carcinogenic risk of ionising radiation to the developing paediatric organism, the ALARA imperative, and the gap in existing denoising methods, their uniform reliance on pixel-wise MSE or Charbonnier loss, providing no mechanism for uncertainty quantification or structural regularisation. Chapter~\ref{chap:lit} surveyed the evolution of denoising architectures from BM3D to SwinIR, formalised the Poisson-Gaussian noise model, reviewed the heteroscedastic NLL framework, and identified the composite loss as the primary unexploited design dimension. Chapter~\ref{chap:methods} specified the full experimental design: the Kermany CXR dataset, the Foi Poisson-Gaussian degradation pipeline, the PP-VAE-Hformer architecture, and the 16-arm ablation study covering L2, L1, NLL, MS-SSIM, FFL, Sobel edge, VGG perceptual, and KL divergence with three schedule variants. Chapter~\ref{chap:results} reported quantitative results for all 19 ablation arms, five retrained discriminative baselines, BM3D, and a Palette-DDPM (23 model conditions total) on 624 test images across three noise levels, with full pairwise statistical analysis, qualitative reconstruction panels, calibration metrics, dose curves, and subgroup analysis. Chapter~\ref{chap:discussion} interpreted the findings, contextualised them against the prior literature, and assessed theoretical significance, clinical relevance, limitations, and future directions.
 
 \section{Answering the Research Objectives}
 \label{sec:conc:objectives}
@@ -4621,7 +4615,7 @@ The complete codebase, training scripts, evaluation pipelines, and figure genera
 \begin{itemize}
   \item \texttt{code/}, All model architecture definitions, loss functions, training scripts, and evaluation pipelines
   \item \texttt{dissertation/}, \LaTeX\ source for this dissertation and all figures
-  \item \texttt{results/}, Per-image evaluation metrics, subgroup statistics, and pairwise comparison tables for all 21 arms
+  \item \texttt{results/}, Per-image evaluation metrics, subgroup statistics, and pairwise comparison tables for all 19 ablation arms and seven retrained baselines
   \item \texttt{scripts/}, Figure generation and post-processing scripts (including \texttt{generate\_dissertation\_figures.py})
 \end{itemize}
 
