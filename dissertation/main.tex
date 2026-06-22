@@ -2954,7 +2954,7 @@ High & 0.08 & 0.010 & 0.225 & 13.0 & 2.3 & 13.1 & 12.9 \\
 \section{Training Behaviour}
 \label{sec:results:training}
 
-Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 21 arms --- 16 principal ablation arms (A--P), Arms~Q, R, and~S, and the retrained baselines --- grouped by loss family. The curves for Arms~R and~S begin from a pretrained initialisation (Arms~J and~D respectively) and therefore start at a higher PSNR than arms trained from scratch; this is expected curriculum fine-tuning behaviour. Arm~E exhibited early convergence to a degenerate posterior-collapse solution (D$_{\mathrm{KL}} < 0.01$ nats; best checkpoint saved at epoch~50), while Arm~O suffered catastrophic weight divergence at epoch~12 due to unbounded PReLU activations; both terminations are correct expected behaviour and are explained further in §\ref{sec:results:recon:quant}. All other arms converged smoothly.
+Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 21 arms --- 16 principal ablation arms (A--P), Arms~Q, R, and~S, and the retrained baselines --- grouped by loss family. The curves for Arms~R and~S begin from the pretrained Arm~A initialisation and therefore start at a higher PSNR than arms trained from scratch; this is expected curriculum fine-tuning behaviour. Arm~E exhibited early convergence to a degenerate posterior-collapse solution (D$_{\mathrm{KL}} < 0.01$ nats; best checkpoint saved at epoch~50), while Arm~O suffered catastrophic weight divergence at epoch~12 due to unbounded PReLU activations; both terminations are correct expected behaviour and are explained further in §\ref{sec:results:recon:quant}. All other arms converged smoothly.
 
 \begin{figure}[H]
 \centering
@@ -2997,8 +2997,8 @@ N — NLL + Perc + SSIM + FFL$^\dagger$     & 32.423 & 0.8876 & 200 \\
 O — NLL + SSIM + FFL (PReLU)$^\dagger$    & 29.074 & 0.8037 & 200 \\
 P — PP-VAE best (PReLU)$^\dagger$          & 31.667 & 0.8739 & 200 \\
 Q — Charbonnier                            & 34.442 & 0.9130 & 199 \\
-R — Curriculum FT from Arm~J$^\dagger$     & 34.545 & 0.9155 & 200 \\
-S — Curriculum FT from Arm~D$^\dagger$     & 34.608 & 0.9140 & 200 \\
+R — Curriculum FT from Arm~A (L1+SSIM+FFL)$^\dagger$ & 34.545 & 0.9155 & 200 \\
+S — Curriculum FT from Arm~A (NLL+SSIM+FFL)$^\dagger$ & 34.608 & 0.9140 & 200 \\
 \midrule
 DnCNN \cite{zhang_beyond_2017}           & 32.569 & 0.8774 & 170 \\
 FFDNet \cite{zhang_ffdnet_2018}$^\dagger$  & 32.625 & 0.8907 & 200 \\
@@ -3314,7 +3314,7 @@ The three sites were selected to stress-test complementary reconstruction proper
 \evalfig{figures/roi_panels_v2/fig_c_roi_comparison}
 \caption[ROI comparison -- Normal, right costophrenic angle]{%
   Fourteen-model ROI comparison at the right costophrenic angle (Normal case, $\eta=200$, mid noise). \textit{Four-row layout} as in Figure~\ref{fig:results:roi:normal:vessels}; crop region: $70{\times}65$ pixels covering the costophrenic recess and inferior pleural boundary.
-  This site specifically probes FFL efficacy: the pleural edge response is sharpest in Arms~A, I, Q, R, S (all $\geq\!36.5$~dB at this image), with Arms~R and~S showing that curriculum fine-tuning from Arm~D preserves the pleural sharpness achieved by the deterministic reference arms. Arm~D's FFL component yields a sharp pleural line comparable to Arm~A; Arm~H shows mild softening. SwinIR and Arm~O both exhibit boundary blurring that would impair detection of small pleural effusions in a clinical setting.}
+  This site specifically probes FFL efficacy: the pleural edge response is sharpest in Arms~A, I, Q, R, S (all $\geq\!36.5$~dB at this image), with Arms~R and~S showing that curriculum fine-tuning from Arm~A preserves the pleural sharpness achieved by the deterministic reference arms. Arm~D's FFL component yields a sharp pleural line comparable to Arm~A; Arm~H shows mild softening. SwinIR and Arm~O both exhibit boundary blurring that would impair detection of small pleural effusions in a clinical setting.}
 \label{fig:results:roi:normal:pleural}
 \end{figure}
 
@@ -3813,7 +3813,7 @@ Table~\ref{tab:results:subgroup:combined} stratifies mean PSNR by diagnostic cla
 \end{tabular}
 \end{sidewaystable}
 
-Figure~\ref{fig:results:subgroup:all_arms} presents a quantitative summary of the Pneumonia-over-Normal advantage across all 21 arms, confirming that Arms~Q, R, and~S follow the same subgroup pattern as their parent arms. The curriculum fine-tuned arms (R~from~J, S~from~D) show subgroup deltas ($\Delta \approx +0.92$~dB) consistent with their parent arms, confirming the subgroup advantage is a data-domain property independent of fine-tuning strategy.
+Figure~\ref{fig:results:subgroup:all_arms} presents a quantitative summary of the Pneumonia-over-Normal advantage across all 21 arms, confirming that Arms~Q, R, and~S follow the same subgroup pattern as their parent arms. The curriculum fine-tuned arms (R and~S, both initialised from Arm~A) show subgroup deltas ($\Delta \approx +0.92$~dB) consistent with their parent arms, confirming the subgroup advantage is a data-domain property independent of fine-tuning strategy.
 
 \begin{figure}[H]
 \centering
@@ -4324,8 +4324,8 @@ A  & L2 (MSE)              & 200 & 8.6 & \\
 I  & L1 (MAE)              & 200 & 9.7 & \\
 J  & L1+SSIM+FFL           & 200 & 8.8 & \\
 Q  & Charbonnier           & 200 & 8.6 & \\
-R  & Curriculum FT from J  & 100 & 4.4 & Init.\ from J checkpoint \\
-S  & Curriculum FT from D  & 100 & 4.4 & Init.\ from D checkpoint \\
+R  & Curriculum FT from A (L1+SSIM+FFL) & 100 & 4.4 & Init.\ from Arm~A checkpoint \\
+S  & Curriculum FT from A (NLL+SSIM+FFL) & 100 & 4.4 & Init.\ from Arm~A checkpoint \\
 B  & NLL only              & 9   & 0.4 & Stopped early (val loss plateau) \\
 D  & NLL+SSIM+FFL          & 200 & 8.9 & \\
 K  & NLL+L1                & 200 & 8.7 & \\
@@ -4398,8 +4398,8 @@ A (L2)                   & 200 & 8.6 \\
 I (L1)                   & 200 & 9.7 \\
 J (L1+SSIM+FFL)          & 200 & 8.8 \\
 Q (Charbonnier)          & 200 & 8.6 \\
-R (FT from J)            & 100 & 4.4 \\
-S (FT from D)            & 100 & 4.4 \\
+R (FT from A: L1+SSIM+FFL) & 100 & 4.4 \\
+S (FT from A: NLL+SSIM+FFL) & 100 & 4.4 \\
 B (NLL)                  & 9   & 0.4 \\
 D (NLL+SSIM+FFL)         & 200 & 8.9 \\
 K (NLL+L1)               & 200 & 8.7 \\
