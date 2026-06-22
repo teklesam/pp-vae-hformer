@@ -3730,7 +3730,7 @@ Figure~\ref{fig:results:calibration:reliability} presents image-level reliabilit
 \label{sec:results:ablation}
 Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} summarise the incremental effect of each loss term as horizontal bar charts, with models sorted by PSNR. Colour coding indicates arm type: blue (pixel-norm: L\textsubscript{2}, L\textsubscript{1}), orange (NLL arms), purple (VAE arms), green (retrained baselines). Table~\ref{tab:results:ablation:full} provides full numerical results across all three noise levels.
 
-\begin{figure}[H]
+\begin{figure}[http]
 \centering
 \evalfig{figures/evaluation_v2/ablation_barchart_v2}
 \caption[Ablation study PSNR -- horizontal bar chart]{%
@@ -4622,7 +4622,8 @@ The complete codebase, training scripts, evaluation pipelines, and figure genera
   \item \texttt{code/}, All model architecture definitions, loss functions, training scripts, and evaluation pipelines
   \item \texttt{dissertation/}, \LaTeX\ source for this dissertation and all figures
   \item \texttt{results/}, Per-image evaluation metrics, subgroup statistics, and pairwise comparison tables for all 21 arms
-  \item \texttt{scripts/}, Figure generation and post-processing scripts (including \texttt{generate\_dissertation\_figures.py})
+  \item \texttt{scripts/}, Figure generation and post-processing scripts 
+  (including \texttt{generate\_dissertation\_figures.py})
 \end{itemize}
 
 % ────────────────────────────────────────────────────────────
