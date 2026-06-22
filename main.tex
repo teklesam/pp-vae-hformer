@@ -3024,58 +3024,59 @@ Table~\ref{tab:results:recon:mid} reports final reconstruction performance on th
   Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, and BM3D (classical oracle-$\sigma$ baseline).
   Values are mean\,$\pm$\,SD; 95\% bootstrap CI in brackets (PSNR only).
   \textbf{Bold} = best per metric column.
-  LPIPS $\downarrow$ = lower is better (AlexNet backbone, \citeyear{zhang_unreasonable_2018}).}
+  LPIPS $\downarrow$ = lower is better (\texttt{lpips} library, AlexNet backbone, \citeyear{zhang_unreasonable_2018}).
+  FSIM $\uparrow$ = higher is better (\texttt{piq} v0.8.0, greyscale, \citeyear{zhang_fsim_2011}; held-out metric, not used in any training objective).}
 \label{tab:results:recon:mid}
 \begin{threeparttable}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{llccccc}
+\begin{tabular}{llcccccc}
 \toprule
-\textbf{Arm} & \textbf{Loss / Architecture} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{MS-SSIM} & \textbf{LPIPS $\downarrow$} \\
+\textbf{Arm} & \textbf{Loss / Architecture} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{MS-SSIM} & \textbf{LPIPS $\downarrow$} & \textbf{FSIM $\uparrow$} \\
 \midrule
-\multicolumn{7}{l}{\textit{L2 / L1 deterministic arms}} \\
-A & $\mathcal{L}_{\mathrm{MSE}}$    & --- & $\mathbf{34.618 \pm 1.071}$ {[34.53, 34.71]} & $\mathbf{0.9269 \pm 0.0144}$ & $\mathbf{0.9730}$ & $0.1287$ \\
-I & $\mathcal{L}_{\mathrm{L1}}$     & --- & $34.444 \pm 1.052$ {[34.36, 34.52]}          & $0.9249 \pm 0.0145$          & $0.9723$          & $0.1296$ \\
-J & L1 + SSIM + FFL                 & --- & $34.319 \pm 1.060$ {[34.24, 34.40]}          & $0.9246 \pm 0.0143$          & $0.9722$          & $\mathbf{0.1268}$ \\
+\multicolumn{8}{l}{\textit{L2 / L1 deterministic arms}} \\
+A & $\mathcal{L}_{\mathrm{MSE}}$    & --- & $\mathbf{34.618 \pm 1.071}$ {[34.53, 34.71]} & $\mathbf{0.9269 \pm 0.0144}$ & $\mathbf{0.9730}$ & $0.1287$ & $0.9317$ \\
+I & $\mathcal{L}_{\mathrm{L1}}$     & --- & $34.444 \pm 1.052$ {[34.36, 34.52]}          & $0.9249 \pm 0.0145$          & $0.9723$          & $0.1296$ & $0.9296$ \\
+J & L1 + SSIM + FFL                 & --- & $34.319 \pm 1.060$ {[34.24, 34.40]}          & $0.9246 \pm 0.0143$          & $0.9722$          & $0.1268$ & $0.9306$ \\
 \midrule
-\multicolumn{7}{l}{\textit{NLL deterministic arms}} \\
-B & NLL                             & --- & $33.456 \pm 1.029$ {[33.38, 33.54]} & $0.9092 \pm 0.0163$ & $0.9646$ & $0.1595$ \\
-D & NLL + SSIM + FFL                & --- & $33.435 \pm 1.026$ {[33.35, 33.52]} & $0.9089 \pm 0.0164$ & $0.9644$ & $0.1582$ \\
-K & NLL + L1                        & --- & $33.279 \pm 1.025$ {[33.19, 33.37]} & $0.9052 \pm 0.0166$ & $0.9628$ & $0.1640$ \\
-L & NLL + Edge + FFL                & --- & $33.140 \pm 1.016$ {[33.06, 33.22]} & $0.9036 \pm 0.0167$ & $0.9615$ & $0.1660$ \\
-N & NLL + Perc + SSIM + FFL         & --- & $32.423 \pm 1.021$ {[32.34, 32.50]} & $0.8876 \pm 0.0187$ & $0.9528$ & $0.1739$ \\
-C & NLL + SSIM                      & --- & $32.357 \pm 1.017$ {[32.28, 32.44]} & $0.8866 \pm 0.0190$ & $0.9523$ & $0.1858$ \\
-M & NLL + SSIM + Edge + FFL         & --- & $31.688 \pm 0.964$ {[31.61, 31.77]} & $0.8755 \pm 0.0193$ & $0.9480$ & $0.1933$ \\
+\multicolumn{8}{l}{\textit{NLL deterministic arms}} \\
+B & NLL                             & --- & $33.456 \pm 1.029$ {[33.38, 33.54]} & $0.9092 \pm 0.0163$ & $0.9646$ & $0.1595$ & $0.9157$ \\
+D & NLL + SSIM + FFL                & --- & $33.435 \pm 1.026$ {[33.35, 33.52]} & $0.9089 \pm 0.0164$ & $0.9644$ & $0.1582$ & $0.9160$ \\
+K & NLL + L1                        & --- & $33.279 \pm 1.025$ {[33.19, 33.37]} & $0.9052 \pm 0.0166$ & $0.9628$ & $0.1640$ & $0.9131$ \\
+L & NLL + Edge + FFL                & --- & $33.140 \pm 1.016$ {[33.06, 33.22]} & $0.9036 \pm 0.0167$ & $0.9615$ & $0.1660$ & $0.9116$ \\
+N & NLL + Perc + SSIM + FFL         & --- & $32.423 \pm 1.021$ {[32.34, 32.50]} & $0.8876 \pm 0.0187$ & $0.9528$ & $0.1739$ & $0.9017$ \\
+C & NLL + SSIM                      & --- & $32.357 \pm 1.017$ {[32.28, 32.44]} & $0.8866 \pm 0.0190$ & $0.9523$ & $0.1858$ & $0.8997$ \\
+M & NLL + SSIM + Edge + FFL         & --- & $31.688 \pm 0.964$ {[31.61, 31.77]} & $0.8755 \pm 0.0193$ & $0.9480$ & $0.1933$ & $0.8956$ \\
 \midrule
-\multicolumn{7}{l}{\textit{VAE arms (KL regularisation)}} \\
-H & NLL + SSIM + FFL + KL (cyc+fb)  & \checkmark & $32.762 \pm 1.064$ {[32.68, 32.84]} & $0.8957 \pm 0.0183$ & $0.9603$ & $0.1692$ \\
-F & NLL + SSIM + FFL + KL (cyclic)   & \checkmark & $32.734 \pm 1.023$ {[32.65, 32.82]} & $0.8982 \pm 0.0186$ & $0.9615$ & $0.1696$ \\
-G & NLL + SSIM + FFL + KL (free-bits)& \checkmark & $32.482 \pm 1.028$ {[32.40, 32.56]} & $0.8890 \pm 0.0185$ & $0.9545$ & $0.1802$ \\
-P & PP-VAE best (PReLU, cyc+fb)       & \checkmark & $31.667 \pm 0.960$ {[31.59, 31.74]} & $0.8739 \pm 0.0197$ & $0.9470$ & $0.2171$ \\
-E & PP-VAE (linear KL, ep.50)         & \checkmark & $31.635 \pm 0.951$ {[31.57, 31.71]} & $0.8726 \pm 0.0207$ & $0.9472$ & $0.2031$ \\
+\multicolumn{8}{l}{\textit{VAE arms (KL regularisation)}} \\
+H & NLL + SSIM + FFL + KL (cyc+fb)  & \checkmark & $32.762 \pm 1.064$ {[32.68, 32.84]} & $0.8957 \pm 0.0183$ & $0.9603$ & $0.1692$ & $0.9056$ \\
+F & NLL + SSIM + FFL + KL (cyclic)   & \checkmark & $32.734 \pm 1.023$ {[32.65, 32.82]} & $0.8982 \pm 0.0186$ & $0.9615$ & $0.1696$ & $0.9072$ \\
+G & NLL + SSIM + FFL + KL (free-bits)& \checkmark & $32.482 \pm 1.028$ {[32.40, 32.56]} & $0.8890 \pm 0.0185$ & $0.9545$ & $0.1802$ & $0.9018$ \\
+P & PP-VAE best (PReLU, cyc+fb)       & \checkmark & $31.667 \pm 0.960$ {[31.59, 31.74]} & $0.8739 \pm 0.0197$ & $0.9470$ & $0.2171$ & $0.8929$ \\
+E & PP-VAE (linear KL, ep.50)         & \checkmark & $31.635 \pm 0.951$ {[31.57, 31.71]} & $0.8726 \pm 0.0207$ & $0.9472$ & $0.2031$ & $0.8926$ \\
 \midrule
-\multicolumn{7}{l}{\textit{Activation ablation}} \\
-O & NLL + SSIM + FFL (PReLU)          & --- & $29.074 \pm 0.909$ {[29.00, 29.15]} & $0.8037 \pm 0.0401$ & $0.9343$ & $0.2817$ \\
+\multicolumn{8}{l}{\textit{Activation ablation}} \\
+O & NLL + SSIM + FFL (PReLU)          & --- & $29.074 \pm 0.909$ {[29.00, 29.15]} & $0.8037 \pm 0.0401$ & $0.9343$ & $0.2817$ & $0.8757$ \\
 \midrule
-\multicolumn{7}{l}{\textit{Loss function variants (Charbonnier; curriculum fine-tuning)}} \\
-Q & Charbonnier ($\mathcal{L}_{\mathrm{Charb}}$) & --- & $34.535 \pm 1.057$ {[34.45, 34.61]} & $0.9265 \pm 0.0143$ & $0.9731$ & $0.1249$ \\
-R & Curriculum FT: L1\,+\,SSIM\,+\,FFL           & --- & $34.545 \pm 1.067$ {[34.46, 34.63]} & $0.9269 \pm 0.0143$ & $0.9727$ & $\mathbf{0.1226}$ \\
-S & Curriculum FT: NLL\,+\,SSIM\,+\,FFL          & --- & $34.608 \pm 1.076$ {[34.52, 34.69]} & $0.9266 \pm 0.0145$ & $0.9730$ & $0.1296$ \\
+\multicolumn{8}{l}{\textit{Loss function variants (Charbonnier; curriculum fine-tuning)}} \\
+Q & Charbonnier ($\mathcal{L}_{\mathrm{Charb}}$) & --- & $34.535 \pm 1.057$ {[34.45, 34.61]} & $0.9265 \pm 0.0143$ & $0.9731$ & $0.1249$ & $0.9315$ \\
+R & Curriculum FT: L1\,+\,SSIM\,+\,FFL           & --- & $34.545 \pm 1.067$ {[34.46, 34.63]} & $0.9269 \pm 0.0143$ & $0.9727$ & $\mathbf{0.1226}$ & $\mathbf{0.9332}$ \\
+S & Curriculum FT: NLL\,+\,SSIM\,+\,FFL          & --- & $34.608 \pm 1.076$ {[34.52, 34.69]} & $0.9266 \pm 0.0145$ & $0.9730$ & $0.1296$ & $0.9317$ \\
 \midrule
-\multicolumn{7}{l}{\textit{Classical baseline (oracle $\sigma$)}} \\
-BM3D & \cite{dabov_image_2007} & --- & $30.716 \pm 0.929$ & $0.8056 \pm 0.0405$ & --- & --- \\
+\multicolumn{8}{l}{\textit{Classical baseline (oracle $\sigma$)}} \\
+BM3D & \cite{dabov_image_2007} & --- & $30.716 \pm 0.929$ & $0.8056 \pm 0.0405$ & --- & --- & $0.8916$ \\
 \midrule
-\multicolumn{7}{l}{\textit{Retrained baselines}} \\
-DnCNN & \cite{zhang_beyond_2017}       & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & --- \\
-IRCNN & \cite{zhang_learning_2017}     & --- & $32.659 \pm 0.966$ {[32.58, 32.73]} & $0.8901 \pm 0.0184$ & $0.9535$ & $0.1778$ \\
-FFDNet & \cite{zhang_ffdnet_2018}      & --- & $32.625 \pm 0.977$ {[32.55, 32.70]} & $0.8907 \pm 0.0188$ & $0.9549$ & $0.1873$ \\
-DRUNet & \cite{zhang_drunet_2021}& --- & $32.583 \pm 1.097$ {[32.50, 32.67]} & $0.8655 \pm 0.0529$ & $0.9683$ & $0.1276$ \\
-SwinIR & \cite{liang_swinir_2021}      & --- & $31.183 \pm 0.885$ {[31.11, 31.25]} & $0.8525 \pm 0.0199$ & $0.9401$ & $0.2771$ \\
+\multicolumn{8}{l}{\textit{Retrained baselines}} \\
+DnCNN & \cite{zhang_beyond_2017}       & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & ---    & $0.9071$ \\
+IRCNN & \cite{zhang_learning_2017}     & --- & $32.659 \pm 0.966$ {[32.58, 32.73]} & $0.8901 \pm 0.0184$ & $0.9535$ & $0.1778$ & $0.9027$ \\
+FFDNet & \cite{zhang_ffdnet_2018}      & --- & $32.625 \pm 0.977$ {[32.55, 32.70]} & $0.8907 \pm 0.0188$ & $0.9549$ & $0.1873$ & $0.9025$ \\
+DRUNet & \cite{zhang_drunet_2021}& --- & $32.583 \pm 1.097$ {[32.50, 32.67]} & $0.8655 \pm 0.0529$ & $0.9683$ & $0.1276$ & $0.9212$ \\
+SwinIR & \cite{liang_swinir_2021}      & --- & $31.183 \pm 0.885$ {[31.11, 31.25]} & $0.8525 \pm 0.0199$ & $0.9401$ & $0.2771$ & $0.8905$ \\
 \bottomrule
 \end{tabular}%
 }
 \begin{tablenotes}
 \footnotesize
-\item PSNR and SSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN or BM3D (not computed in the main evaluation pipeline). Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
+\item PSNR, SSIM, MS-SSIM, FSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN or BM3D (not computed in the main evaluation pipeline). MS-SSIM not reported for BM3D. Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
 \item BM3D is given the oracle mid-noise standard deviation $\sigma=\sqrt{0.03\times0.5+0.005}\approx0.141$ (the theoretical noise level at mean image intensity), providing the strongest possible classical baseline. Despite oracle knowledge, BM3D trails all learned models by at least 1.9~dB, confirming that signal-dependent Poisson--Gaussian noise requires learned priors.
 \item Arm~O uses PReLU activations in the decoder; all other arms use ReLU. DRUNet's elevated SSIM SD (0.053 vs.\ $\approx$0.015 elsewhere) reflects highly variable per-image performance.
 \item All four KAIR architectures were retrained from scratch on the Kermany Poisson-Gaussian noise dataset (same train/val/test split, same Foi noise generator) to ensure a fair architectural comparison.
