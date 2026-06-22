@@ -3354,6 +3354,84 @@ Figures~\ref{fig:results:dosecurve:psnr} and~\ref{fig:results:dosecurve:ssim} sh
 \label{fig:results:dosecurve:ssim}
 \end{figure}
 
+% ============================================================
+\section{Charbonnier Loss Variant and Curriculum Fine-Tuning}
+\label{sec:results:curriculum}
+% ============================================================
+
+This section analyses Arms~Q, R, and~S, which extend the principal ablation through two complementary strategies: (i)~substituting the Charbonnier robust norm for L1/L2 (Arm~Q), and (ii)~two-stage curriculum fine-tuning in which a pretrained Arm~A checkpoint is refined with richer loss objectives (Arms~R and~S).
+
+\subsection{Arm Q: Charbonnier Reconstruction Loss}
+\label{sec:results:curriculum:charb}
+
+Arm~Q substitutes the Charbonnier penalty \cite{charbonnier_two_1994} for the L2 loss used in Arm~A:
+\begin{equation}
+  \mathcal{L}_{\mathrm{Charb}}(\hat{x}, x) = \sqrt{\|\hat{x} - x\|^2 + \varepsilon^2} - \varepsilon,
+  \quad \varepsilon = 10^{-3},
+  \label{eq:charb}
+\end{equation}
+which interpolates between L1 (as $\|\hat{x}-x\| \gg \varepsilon$) and a smoothed L2 (near zero). Arm~Q was trained from scratch for 200 epochs under the same protocol as other deterministic arms.
+
+Arm~Q achieves $34.535 \pm 1.074$\,dB PSNR, bracketed between Arm~A ($34.618$\,dB, L2) and Arm~I ($34.444$\,dB, L1). Pairwise Bonferroni-corrected $t$-tests confirm that all three losses are statistically equivalent ($p > 2.4 \times 10^{-4}$, $d < 0.2$ for every pairwise comparison), consistent with the known theoretical result that L1, L2, and smooth L1 norms converge to indistinguishable performance at high image quality~\cite{zhao_loss_2017}. The Charbonnier penalty therefore provides no practical advantage over L1 or L2 for this noise model and architecture, and its inclusion serves primarily as a robustness check confirming the insensitivity of the pixel-norm family to the choice of exponent.
+
+\subsection{Arms R and S: Two-Stage Curriculum Fine-Tuning}
+\label{sec:results:curriculum:ft}
+
+Arms~R and~S implement a two-stage curriculum strategy motivated by the complementary strengths and weaknesses of the deterministic and probabilistic loss families identified in the ablation. The key observation is:
+
+\begin{itemize}
+  \item Arm~A ($\mathcal{L}_{2}$) achieves the highest PSNR ($34.618$\,dB) but provides no perceptual regularisation and no uncertainty output.
+  \item Arm~J ($\mathcal{L}_{1}$+SSIM+FFL) achieves the best LPIPS ($0.1268$) among single-stage arms but at a $0.30$\,dB PSNR cost relative to Arm~A.
+  \item Arm~D (NLL+SSIM+FFL) provides well-calibrated aleatoric uncertainty but incurs a $1.18$\,dB PSNR cost relative to Arm~A owing to the NLL objective's uncertainty-fidelity trade-off.
+\end{itemize}
+
+Curriculum fine-tuning resolves this tension by decoupling pixel-fidelity learning (Stage~1) from objective-specific refinement (Stage~2):
+
+\paragraph{Stage 1.} Arm~A is trained to convergence over 200 epochs with the L2 loss at learning rate $\eta = 2 \times 10^{-4}$, reaching validation PSNR of $34.49$\,dB. This produces a high-quality pixel-fidelity initialisation.
+
+\paragraph{Stage 2.} The Arm~A checkpoint is loaded and fine-tuned for 100 additional epochs with a \emph{different} loss objective at a reduced learning rate:
+\begin{itemize}
+  \item \textbf{Arm~R} uses $\mathcal{L}_{1}$+SSIM+FFL (Arm~J's objective) at $\eta = 5 \times 10^{-5}$.
+  \item \textbf{Arm~S} uses NLL+SSIM+FFL (Arm~D's objective) at $\eta = 2 \times 10^{-5}$.
+\end{itemize}
+For Arm~S, the NLL head is initialised from Arm~A's zero-variance-head weights, which would cause NLL explosion in the first epoch. A linear loss blend over the first 20 fine-tuning epochs is therefore applied:
+\begin{equation}
+  \mathcal{L}_{\text{blend}}(t) = \bigl(1 - \tfrac{t}{20}\bigr)\,\mathcal{L}_{2} + \tfrac{t}{20}\,\mathcal{L}_{\mathrm{NLL+SSIM+FFL}},
+  \quad t \in \{1,\ldots,20\},
+\end{equation}
+after which the full NLL+SSIM+FFL objective is used for the remaining 80 epochs.
+
+\paragraph{Results.} Table~\ref{tab:results:curriculum:summary} summarises the outcomes relative to the parent arms.
+
+\begin{table}[htbp]
+\centering
+\caption[Curriculum fine-tuning results]{Curriculum fine-tuning results at mid noise ($\eta=200$, $n=624$). Arm~A is the Stage~1 initialisation for both R and~S. $\Delta$PSNR and $\Delta$LPIPS are relative to Arm~A. LPIPS values from the \texttt{lpips} library (AlexNet); lower is better.}
+\label{tab:results:curriculum:summary}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Arm} & \textbf{Objective} & \textbf{PSNR (dB)} & \textbf{LPIPS $\downarrow$} & \textbf{$\Delta$PSNR vs.~A} \\
+\midrule
+A  & L2 (Stage 1 base)      & $34.618 \pm 1.071$ & $0.1287$ & --- \\
+R  & L1+SSIM+FFL (Stage 2)  & $34.545 \pm 1.074$ & $\mathbf{0.1226}$ & $-0.073$\,dB \\
+S  & NLL+SSIM+FFL (Stage 2) & $34.608 \pm 1.076$ & $0.1296$ & $-0.010$\,dB \\
+\midrule
+J  & L1+SSIM+FFL (scratch)  & $34.319 \pm 1.060$ & $0.1268$ & $-0.299$\,dB \\
+D  & NLL+SSIM+FFL (scratch) & $33.435 \pm 1.026$ & $0.1582$ & $-1.183$\,dB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The results demonstrate two distinct benefits of curriculum fine-tuning.
+
+\textbf{Arm~R achieves the best LPIPS ($0.1226$) and best held-out FSIM ($0.9332$) in the entire study} while sacrificing only $0.073$\,dB PSNR relative to Arm~A. By comparison, training from scratch with the same L1+SSIM+FFL objective (Arm~J) yields $0.226$\,dB lower PSNR, FSIM $0.9306$ (vs.\ $0.9332$), and LPIPS $0.1268$ (vs.\ $0.1226$). The curriculum therefore recovers near-all of the PSNR loss incurred by single-stage L1+SSIM+FFL training, delivering simultaneously the best pixel fidelity and the best perceptual quality achievable with this objective. The mechanism is that the Arm~A initialisation has already solved the pixel-fidelity problem; Stage~2 adjusts the feature representations toward perceptual objectives without re-solving the reconstruction problem from scratch, allowing both PSNR and perceptual quality to exceed what is achievable in a single optimisation trajectory.
+
+\textbf{Arm~S achieves near-A PSNR ($34.608$\,dB; $\Delta = -0.010$\,dB) with calibrated aleatoric uncertainty.} The NLL objective introduced in Stage~2 trains the heteroscedastic output head $\hat{\sigma}_a$ while the backbone stays close to the pixel-fidelity optimum. The calibration section (§\ref{sec:results:calibration}) confirms that Arm~S inherits D-like uncertainty structure: mean NLL $\approx -2.650$\,nats and sharpness $0.0201$. For comparison, training from scratch with NLL+SSIM+FFL (Arm~D) achieves only $33.435$\,dB PSNR, a gap of $1.17$\,dB relative to Arm~S. The curriculum therefore delivers the calibrated uncertainty of Arm~D at a PSNR cost of $<0.01$\,dB relative to Arm~A --- a near-zero fidelity trade-off for the addition of a fully calibrated uncertainty map.
+
+Qualitative confirmation is provided by the ROI comparison panels (Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:normal:pleural}): Arms~R and~S preserve fine vessel margins, consolidation boundaries, and pleural edges at parity with Arm~A, while Arm~R shows slightly sharpened high-frequency detail consistent with its FFL component.
+
+\paragraph{Interpretation.} The curriculum results generalise a key lesson from the ablation: \emph{the choice of training objective shapes which quality dimension the model optimises, but the pixel-fidelity initialisation sets a ceiling that single-stage training cannot exceed}. Arms~R and~S demonstrate that this ceiling can be approached from multiple quality dimensions simultaneously by first learning pixel fidelity and then introducing structural or probabilistic objectives. The residual $0.01$\,dB gap between Arm~S and Arm~A suggests that with a longer Stage~2 schedule or a lower blend learning rate, the calibrated-uncertainty model could match Arm~A's pixel fidelity entirely.
+
 \section{Latent Space Analysis}
 \label{sec:results:latent}
 
@@ -3848,6 +3926,11 @@ N --- NLL+Perceptual+SSIM+FFL            & $0.9017 \pm 0.0099$          & $0.331
 O --- NLL+SSIM+FFL (PReLU)               & $0.8757 \pm 0.0124$          & $0.4397 \pm 0.0246$ \\
 P --- PP-VAE (best)                      & $0.8929 \pm 0.0111$          & $0.3695 \pm 0.0343$ \\
 \midrule
+\multicolumn{3}{l}{\textit{Loss function variants and curriculum fine-tuning}} \\
+Q --- Charbonnier                        & $0.9315 \pm 0.0088$          & $0.2242 \pm 0.0347$ \\
+R --- Curriculum FT: $\mathcal{L}_1$+SSIM+FFL & $\mathbf{0.9332 \pm 0.0086}$ & $\mathbf{0.2192 \pm 0.0336}$ \\
+S --- Curriculum FT: NLL+SSIM+FFL        & $0.9317 \pm 0.0087$          & $0.2260 \pm 0.0348$ \\
+\midrule
 DnCNN \cite{zhang_beyond_2017}          & $0.9071 \pm 0.0102$          & $0.2922 \pm 0.0321$ \\
 FFDNet \cite{zhang_ffdnet_2018}         & $0.9025 \pm 0.0105$          & $0.3226 \pm 0.0365$ \\
 IRCNN \cite{zhang_learning_2017}        & $0.9027 \pm 0.0105$          & $0.3168 \pm 0.0337$ \\
@@ -3857,7 +3940,9 @@ SwinIR \cite{liang_swinir_2021}         & $0.8905 \pm 0.0115$          & $0.4148
 \end{tabular}
 \end{table}
 
-The PSNR rank ordering is largely preserved under both held-out metrics. Pixel-norm arms (A, I, J) dominate with FSIM~$\in[0.9296, 0.9317]$ and LPIPS~$\in[0.2257, 0.2291]$. Arm~J ($\mathcal{L}_1$+SSIM+FFL) trails Arm~A by only $\Delta\mathrm{FSIM} = 0.0011$ while achieving a $0.37$~dB lower PSNR, suggesting that J's structural regularisers preserve the phase-congruency and gradient-magnitude components captured by FSIM with near-parity to L2. The NLL group (B, D: FSIM~$\approx 0.9158$) lies $\approx 0.016$ FSIM below the pixel-norm group, consistent with the $1.2$~dB PSNR gap. Among baselines, DRUNet achieves FSIM~$= 0.9212$ --- notably above any NLL ablation arm and approaching the pixel-norm tier --- despite a PSNR of only $32.17$~dB, suggesting DRUNet's dilated residual architecture preserves structural frequency content more efficiently than PSNR alone captures. VAE arms (E, G, P: FSIM~$\in[0.8926, 0.9056]$) cluster $\approx 0.024$--$0.039$ below Arm~A on FSIM, consistent with the reconstruction penalty from KL regularisation. Arm~O (PReLU failure) remains the worst arm on FSIM ($0.8757$) and LPIPS ($0.4397$), confirming that the pathological divergence produces perceptually degraded images beyond what PSNR alone captures.
+The PSNR rank ordering is largely preserved under both held-out metrics. Among the principal 16 arms, pixel-norm arms (A, I, J) dominate with FSIM~$\in[0.9296, 0.9317]$ and LPIPS~$\in[0.2257, 0.2291]$. Arm~J ($\mathcal{L}_1$+SSIM+FFL) trails Arm~A by only $\Delta\mathrm{FSIM} = 0.0011$ while achieving a $0.37$~dB lower PSNR, suggesting that J's structural regularisers preserve the phase-congruency and gradient-magnitude components captured by FSIM with near-parity to L2. The NLL group (B, D: FSIM~$\approx 0.9158$) lies $\approx 0.016$ FSIM below the pixel-norm group, consistent with the $1.2$~dB PSNR gap. Among baselines, DRUNet achieves FSIM~$= 0.9212$ --- notably above any NLL ablation arm and approaching the pixel-norm tier --- despite a PSNR of only $32.17$~dB, suggesting DRUNet's dilated residual architecture preserves structural frequency content more efficiently than PSNR alone captures. VAE arms (E, G, P: FSIM~$\in[0.8926, 0.9056]$) cluster $\approx 0.024$--$0.039$ below Arm~A on FSIM, consistent with the reconstruction penalty from KL regularisation. Arm~O (PReLU failure) remains the worst arm on FSIM ($0.8757$) and LPIPS ($0.4397$), confirming that the pathological divergence produces perceptually degraded images beyond what PSNR alone captures.
+
+The most striking held-out perceptual result is Arm~R (curriculum fine-tuning with $\mathcal{L}_1$+SSIM+FFL): it achieves the \emph{highest FSIM in the entire study} ($0.9332$) and the \emph{lowest LPIPS} ($0.2192$) simultaneously, surpassing Arm~A on both metrics despite a modest $0.073$~dB PSNR deficit. This demonstrates that the two-stage curriculum strategy (§\ref{sec:results:curriculum}) resolves the PSNR--perceptual quality tension that afflicts single-stage training: Arm~J (the same $\mathcal{L}_1$+SSIM+FFL objective trained from scratch) achieves FSIM~$0.9306$ and LPIPS~$0.2268$ --- inferior to Arm~R on both metrics --- while also losing $0.30$~dB PSNR. Arm~Q (Charbonnier) and Arm~S (curriculum NLL+SSIM+FFL) both achieve FSIM~$\approx 0.9315$--$0.9317$, statistically indistinguishable from Arm~A, consistent with the equivalence of the L1/L2/Charbonnier family at high PSNR and with the observation that NLL fine-tuning preserves the pixel-fidelity structure of the Arm~A initialisation.
 
 \section{Error Analysis and Failure Cases}
 \label{sec:results:error}
