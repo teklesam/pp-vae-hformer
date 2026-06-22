@@ -4196,34 +4196,56 @@ Direct numerical comparison with published denoising benchmarks is confounded by
 
 The most architecturally comparable prior work is Xu et al.\ \cite{xuLowdoseComputedTomography2025}, who combined a residual dense network with transformer attention for LDCT denoising — a design closely paralleling PP-VAE-Hformer's hybrid backbone. The critical distinction is that their architecture is entirely deterministic: it produces a single point-estimate reconstruction with no mechanism for uncertainty quantification. PP-VAE-Hformer's VAE bottleneck provides calibrated per-pixel uncertainty maps (Figures~\ref{fig:results:uncertainty:arm_b}--\ref{fig:results:uncertainty:arm_h}), a capability unavailable in any deterministic hybrid architecture including Xu et al.\ \cite{xuLowdoseComputedTomography2025}, Hformer \cite{zhang_hformer_2023}, and SCUNet \cite{zhang_scunet_2023}. This uncertainty output is directly actionable in the paediatric CXR clinical workflow, where a radiologist can use a high-uncertainty reconstruction region as a flag to request a repeat exposure or a second opinion.
 
-\begin{table}[htbp]
-\centering
-\caption[Contextual literature comparison]{Contextual literature comparison. All values are from datasets and noise conditions \emph{different} from this study; they are provided for scale reference only and should not be interpreted as performance comparisons.}
-\label{tab:disc:lit}
-\begin{tabular}{llccl}
+\begin{landscape}
+\singlespacing
+\small
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{llccl}
+
+\caption[Contextual literature comparison]{Contextual literature comparison. All values from datasets and noise conditions \emph{different} from this study are provided for scale reference only and should not be interpreted as direct performance comparisons.}
+\label{tab:disc:lit}\\
+%
 \toprule
 \textbf{Method} & \textbf{Reference} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{Condition} \\
 \midrule
-BM3D           & Dabov et al.\ \citeyear{dabov_image_2007}  & 28.57 & ---    & BSD68, AWGN $\sigma{=}25$ \\
-DnCNN          & Zhang et al.\ \citeyear{zhang_beyond_2017} & 29.23 & ---    & BSD68, AWGN $\sigma{=}25$ \\
-RED-CNN        & Chen et al.\ \citeyear{chen_low_2017}      & 33.11 & 0.8983 & Clinical CT, quarter-dose \\
-DRUNet         & Zhang et al.\ \citeyear{zhang_plug_2021}   & 29.48 & ---    & BSD68, AWGN $\sigma{=}25$ \\
-SwinIR         & Liang et al.\ \citeyear{liang_swinir_2021} & 29.50 & ---    & BSD68, AWGN $\sigma{=}25$ \\
-NAFNet         & Chen et al.\ \citeyear{chen_simple_2022}   & 40.30 & 0.9601 & SIDD, real sensor noise \\
-SCUNet         & Zhang et al.\ \citeyear{zhang_practical_2023} & 29.58 & --- & BSD68, AWGN $\sigma{=}25$ \\
-Xu et al.\ (hybrid Tr.+RDN) & \citeyear{xuLowdoseComputedTomography2025} & ---  & --- & Mayo LDCT, clinical quarter-dose \\
+\endfirsthead
+%
+\multicolumn{5}{l}{\small\itshape Table~\ref{tab:disc:lit} \textit{continued from previous page}} \\[3pt]
+\toprule
+\textbf{Method} & \textbf{Reference} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{Condition} \\
 \midrule
-\multicolumn{5}{l}{\textit{This study (Kermany CXR, Poisson-Gaussian, mid noise level)}} \\
-Arm A (Hformer + $\mathcal{L}_2$)    & ---  & 34.63 & 0.9137 & Same data, fair \\
-Arm R (Curriculum FT: $\mathcal{L}_1$+SSIM+FFL) & --- & 34.55 & 0.9132 & Same data, fair; best FSIM/LPIPS \\
-Arm D (NLL + SSIM + FFL)  & ---  & 33.43 & 0.8945 & Same data, fair, + UQ \\
-DnCNN (retrained)$^\ddagger$ & ---  & 32.69 & 0.8756 & Same data, fair \\
-BM3D (oracle $\sigma$)$^\dagger$ & \citeyear{dabov_image_2007} & 30.72 & 0.8056 & Same data, fair; classical \\
+\endhead
+%
+\midrule
+\multicolumn{5}{r}{\small\itshape Continued on next page\ldots} \\
+\endfoot
+%
 \bottomrule
-\end{tabular}
-{\footnotesize $^\dagger$ Given oracle $\sigma\approx0.141$; strongest possible classical configuration.
-$^\ddagger$ Retrained on Kermany CXR with identical Poisson-Gaussian noise model.}
-\end{table}
+\multicolumn{5}{p{0.97\linewidth}}{\footnotesize
+  $^\dagger$ BM3D given oracle $\sigma\approx0.141$; strongest possible classical configuration.
+  $^\ddagger$ Retrained on Kermany CXR with identical Poisson-Gaussian noise model.
+  Cross-study PSNR comparisons (contextual rows) are informative for scale only; dataset and noise-model differences preclude direct interpretation.} \\
+\endlastfoot
+%
+\multicolumn{5}{l}{\textit{Contextual reference (different dataset / noise model)}} \\
+BM3D           & Dabov et al.\ \citeyear{dabov_image_2007}     & 28.57 & ---    & BSD68, AWGN $\sigma{=}25$ \\
+DnCNN          & Zhang et al.\ \citeyear{zhang_beyond_2017}    & 29.23 & ---    & BSD68, AWGN $\sigma{=}25$ \\
+RED-CNN        & Chen et al.\ \citeyear{chen_low_2017}          & 33.11 & 0.8983 & Clinical CT, quarter-dose \\
+DRUNet         & Zhang et al.\ \citeyear{zhang_plug_2021}       & 29.48 & ---    & BSD68, AWGN $\sigma{=}25$ \\
+SwinIR         & Liang et al.\ \citeyear{liang_swinir_2021}    & 29.50 & ---    & BSD68, AWGN $\sigma{=}25$ \\
+NAFNet         & Chen et al.\ \citeyear{chen_simple_2022}       & 40.30 & 0.9601 & SIDD, real sensor noise \\
+SCUNet         & Zhang et al.\ \citeyear{zhang_practical_2023} & 29.58 & ---    & BSD68, AWGN $\sigma{=}25$ \\
+Xu et al.\ (hybrid Tr.+RDN) & \citeyear{xuLowdoseComputedTomography2025} & --- & --- & Mayo LDCT, clinical quarter-dose \\
+\midrule
+\multicolumn{5}{l}{\textit{This study (Kermany CXR, Poisson-Gaussian, mid noise) — fair comparison}} \\
+Arm A (Hformer + $\mathcal{L}_2$)             & ---                          & 34.63 & 0.9137 & Same data, fair \\
+Arm R (Curriculum FT: $\mathcal{L}_1$+SSIM+FFL) & ---                       & 34.55 & 0.9132 & Same data, fair; best FSIM/LPIPS \\
+Arm D (NLL + SSIM + FFL)                      & ---                          & 33.43 & 0.8945 & Same data, fair; + calibrated UQ \\
+DnCNN (retrained)$^\ddagger$                  & ---                          & 32.69 & 0.8756 & Same data, fair \\
+BM3D (oracle $\sigma$)$^\dagger$              & \citeyear{dabov_image_2007}  & 30.72 & 0.8056 & Same data, fair; classical \\
+%
+\end{longtable}
+\end{landscape}
 
 \section{Theoretical Significance}
 \label{sec:disc:theory}
