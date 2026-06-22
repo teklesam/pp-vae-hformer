@@ -2621,9 +2621,9 @@ Table~\ref{tab:results:subgroup:combined} stratifies PSNR by class at mid noise.
 
 \begin{landscape}
 \singlespacing
-\small
+\footnotesize
 \setlength{\LTcapwidth}{\linewidth}
-\begin{longtable}{llccc}
+\begin{longtable}{p{2.4cm}p{7.0cm}ccc}
 
 \caption[Reconstruction PSNR by diagnostic class -- all 21 models]{%
   Reconstruction PSNR (dB) stratified by diagnostic class at mid noise level ($\eta=200$, mean\,$\pm$\,SD).
@@ -2638,19 +2638,19 @@ Table~\ref{tab:results:subgroup:combined} stratifies PSNR by class at mid noise.
 \midrule
 \endfirsthead
 %
-\multicolumn{5}{l}{\small\itshape Table~\ref{tab:results:subgroup:combined} \textit{continued from previous page}} \\[3pt]
+\multicolumn{5}{l}{\footnotesize\itshape Table~\ref{tab:results:subgroup:combined} \textit{continued from previous page}} \\[3pt]
 \toprule
 \textbf{Group} & \textbf{Arm / Model} & \textbf{Normal PSNR (dB)} & \textbf{Pneumonia PSNR (dB)} & $\bm{\Delta}$ \\
 \midrule
 \endhead
 %
 \midrule
-\multicolumn{5}{r}{\small\itshape Continued on next page\ldots} \\
+\multicolumn{5}{r}{\footnotesize\itshape Continued on next page\ldots} \\
 \endfoot
 %
 \bottomrule
-\multicolumn{5}{p{0.97\linewidth}}{\footnotesize
-  $\Delta$ = Pneumonia PSNR $-$ Normal PSNR (dB). The Pneumonia-over-Normal advantage ($\Delta \approx +1.0$~dB) is consistent across all arms and reflects a data-domain property: alveolar consolidation produces stronger local contrast gradients than the clear lung field, providing richer per-pixel reconstruction signal. All pairwise differences are significant at $p<0.001$ (independent-samples $t$-test, Bonferroni-corrected for 21 comparisons).} \\
+\multicolumn{5}{p{\linewidth}}{\footnotesize
+  $\Delta$ = Pneumonia PSNR $-$ Normal PSNR (dB). Pneumonia-over-Normal advantage ($\Delta \approx +1.0$~dB) is consistent across all arms: a data-domain property traceable to stronger local contrast in alveolar consolidation. All pairwise differences significant at $p<0.001$ (Bonferroni-corrected).} \\
 \endlastfoot
 %
 \multirow{4}{*}{Baselines}
