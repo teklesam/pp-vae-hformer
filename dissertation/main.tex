@@ -2928,7 +2928,7 @@ Pairing integrity was validated by verifying that identical random seeds reprodu
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{figures/evaluation/dataset_noise_examples.png}
+\includegraphics[width=\linewidth]{figures/evaluation_v2/dataset_noise_examples.png}
 \caption[Representative paediatric CXRs at three Foi Poisson-Gaussian noise levels]{
   Representative paediatric chest radiographs at three Foi Poisson-Gaussian degradation levels. Each row shows one case: Normal (top), Bacterial Pneumonia (middle), and Viral Pneumonia (bottom). Left column: clean reference image. Columns 2--4: noisy input at Low, Mid, and High presets respectively ($\sigma_{\mathrm{eff}} \approx 0.084$, $0.142$, $0.225$ at mean intensity $\bar{y}=0.5$). At the High preset the fine bronchopulmonary markings are visually obliterated, motivating the denoising task. Images are from the Kermany 2018 test partition \citep{kermany_identifying_2018}, resized to $256 \times 256$ grayscale.}
 \label{fig:results:dataset:noise_levels}
@@ -3329,6 +3329,21 @@ The three sites were selected to stress-test complementary reconstruction proper
 \label{fig:results:roi:uncertainty}
 \end{figure}
 
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/roi_panels_v2/fig_f_classical_vs_learned}
+\caption[Classical vs learned ROI comparison -- BM3D, DnCNN, Arm A, Arm R]{%
+  Classical-versus-learned ROI comparison at two anatomical sites (mid noise, $\eta=200$).
+  \textbf{Top pair:} Right mid-lung vascular margins (Normal case).
+  \textbf{Bottom pair:} Alveolar consolidation boundary (Pneumonia case).
+  Each pair shows the full $256{\times}256$ field (top row, with red ROI box and per-image PSNR) and the zoomed crop (bottom row, red border).
+  \textit{Columns:} Noisy $|$ Reference $|$ BM3D (oracle $\sigma\approx0.141$) $|$ DnCNN $|$ Arm~A ($\mathcal{L}_2$) $|$ Arm~R (FT: $\mathcal{L}_1$+SSIM+FFL).
+  BM3D over-smooths fine vessel margins and consolidation boundaries despite oracle noise knowledge, confirming that the signal-dependent Poisson-Gaussian model requires learned priors.
+  DnCNN recovers the broad signal but lacks the texture fidelity of the Hformer-based arms.
+  Arm~R's FFL component produces the sharpest vessel margins and clearest consolidation edges of any model shown.}
+\label{fig:results:roi:classical:learned}
+\end{figure}
+
 \subsection{Performance as a Function of Degradation Severity}
 \label{sec:results:recon:dosecurve}
 
@@ -3452,7 +3467,21 @@ The results demonstrate two distinct benefits of curriculum fine-tuning.
 
 \textbf{Arm~S achieves near-A PSNR ($34.608$\,dB; $\Delta = -0.010$\,dB) with calibrated aleatoric uncertainty.} The NLL objective introduced in Stage~2 trains the heteroscedastic output head $\hat{\sigma}_a$ while the backbone stays close to the pixel-fidelity optimum. The brief PSNR dip visible at epochs~200--205 in Figure~\ref{fig:results:curriculum:loss} (top) reflects the 20-epoch linear NLL blend warmup, after which PSNR recovers monotonically as calibration improves. The calibration section (§\ref{sec:results:calibration}) confirms that Arm~S inherits D-like uncertainty structure: mean NLL $\approx -2.650$\,nats and sharpness $0.0201$. For comparison, training from scratch with NLL+SSIM+FFL (Arm~D) achieves only $33.435$\,dB PSNR, a gap of $1.17$\,dB relative to Arm~S. The curriculum therefore delivers the calibrated uncertainty of Arm~D at a PSNR cost of $<0.01$\,dB relative to Arm~A --- a near-zero fidelity trade-off for the addition of a fully calibrated uncertainty map.
 
-Qualitative confirmation is provided by the ROI comparison panels (Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:normal:pleural}): Arms~R and~S preserve fine vessel margins, consolidation boundaries, and pleural edges at parity with Arm~A, while Arm~R shows slightly sharpened high-frequency detail consistent with its FFL component.
+Qualitative confirmation is provided by Figure~\ref{fig:results:roi:curriculum:qrs}, which isolates Arms~Q, R, and~S against the Arm~A baseline across three diagnostic sites. Arms~R and~S preserve fine vessel margins, consolidation boundaries, and pleural edges at parity with Arm~A, while Arm~R shows slightly sharpened high-frequency detail consistent with its FFL component. The Charbonnier arm (Q) is visually indistinguishable from Arm~A, consistent with the statistical equivalence established in §\ref{sec:results:curriculum:charb}. The broader ROI comparison across all 14 models is presented in Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:normal:pleural}.
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/roi_panels_v2/fig_e_qrs_roi}
+\caption[Focused ROI comparison -- Arms Q, R, S vs Arm A (curriculum fine-tuning)]{%
+  Focused vascular and edge ROI comparison for the curriculum fine-tuning arms at mid noise ($\eta=200$).
+  Three anatomical sites (rows): right mid-lung vessel margin, alveolar consolidation boundary, right costophrenic angle.
+  Six columns per site: Noisy $|$ Reference $|$ Arm~A ($\mathcal{L}_2$, Stage~1 base) $|$ Arm~Q (Charbonnier) $|$ Arm~R (FT: $\mathcal{L}_1$+SSIM+FFL) $|$ Arm~S (FT: NLL+SSIM+FFL).
+  PSNR annotations (white, bottom-right) are per-image values; red boxes indicate the zoomed ROI crop region.
+  Arm~Q is visually equivalent to Arm~A ($\Delta$PSNR $< 0.1$\,dB at each site), confirming that Charbonnier provides no qualitative advantage over L2 at this noise level.
+  Arm~R's FFL component sharpens the vessel wall and pleural line relative to Arm~A, consistent with its superior held-out FSIM ($0.9332$) and LPIPS ($0.2192$).
+  Arm~S preserves the qualitative reconstruction of Arm~A while acquiring calibrated aleatoric uncertainty (§\ref{sec:results:calibration}).}
+\label{fig:results:roi:curriculum:qrs}
+\end{figure}
 
 \paragraph{Interpretation.} The curriculum results generalise a key lesson from the ablation: \emph{the choice of training objective shapes which quality dimension the model optimises, but the pixel-fidelity initialisation sets a ceiling that single-stage training cannot exceed}. Arms~R and~S demonstrate that this ceiling can be approached from multiple quality dimensions simultaneously by first learning pixel fidelity and then introducing structural or probabilistic objectives. The residual $0.01$\,dB gap between Arm~S and Arm~A suggests that with a longer Stage~2 schedule or a lower blend learning rate, the calibrated-uncertainty model could match Arm~A's pixel fidelity entirely.
 
@@ -4078,7 +4107,7 @@ Direct numerical comparison with published denoising benchmarks is confounded by
 
 \textbf{Fair comparison.} Fair baselines evaluated on the same Kermany CXR corpus with the identical Poisson-Gaussian noise model fall into two categories: classical and learned.
 
-\textit{Classical baseline.} BM3D \cite{dabov_image_2007}, given the oracle mid-noise standard deviation $\sigma=\sqrt{0.03\times0.5+0.005}\approx0.141$ (the strongest possible classical configuration), achieves $30.716 \pm 0.929$~dB PSNR and SSIM~$0.8056$ on our test set --- trailing \emph{every} learned arm by at least $1.9$~dB and trailing Arm~A by $3.9$~dB. This gap confirms that the signal-dependent Poisson-Gaussian noise model falls outside BM3D's AWGN assumption: even with oracle noise level knowledge, block-matching and transform-domain filtering cannot recover the heteroscedastic structure of the Foi degradation, and learned priors are necessary. On held-out perceptual metrics, BM3D achieves FSIM~$0.8916$ and LPIPS~$0.3716$, placing it below even the lowest-performing learned arm (Arm~O: FSIM~$0.8757$; all other learned arms score $\geq 0.8905$).
+\textit{Classical baseline.} BM3D \cite{dabov_image_2007}, given the oracle mid-noise standard deviation $\sigma=\sqrt{0.03\times0.5+0.005}\approx0.141$ (the strongest possible classical configuration), achieves $30.716 \pm 0.929$~dB PSNR and SSIM~$0.8056$ on our test set --- trailing \emph{every} learned arm by at least $1.9$~dB and trailing Arm~A by $3.9$~dB. Figure~\ref{fig:results:roi:classical:learned} makes this gap visible at the pixel level. This gap confirms that the signal-dependent Poisson-Gaussian noise model falls outside BM3D's AWGN assumption: even with oracle noise level knowledge, block-matching and transform-domain filtering cannot recover the heteroscedastic structure of the Foi degradation, and learned priors are necessary. On held-out perceptual metrics, BM3D achieves FSIM~$0.8916$ and LPIPS~$0.3716$, placing it below even the lowest-performing learned arm (Arm~O: FSIM~$0.8757$; all other learned arms score $\geq 0.8905$).
 
 \textit{Learned baselines.} DnCNN retrained on our corpus achieves $32.798 \pm 0.952$~dB PSNR and SSIM~$0.8774$ (final, epoch~170). Arms~B and~D exceed DnCNN by $+0.66$~dB and $+0.64$~dB respectively (both $p < 0.001$, Cohen's $d \approx 0.65$--$0.67$), demonstrating that the NLL-based probabilistic training framework outperforms the standard MSE-trained deterministic baseline on pixel metrics \emph{while also} producing calibrated per-pixel uncertainty maps unavailable from DnCNN. The deterministic Arm~A (Hformer + $\mathcal{L}_2$) achieves $34.623$~dB, a further $+1.82$~dB above DnCNN, attributable to the Hformer's attention-based long-range modelling.
 
