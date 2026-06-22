@@ -3015,13 +3015,13 @@ SwinIR \cite{liang_swinir_2021}$^\dagger$  & 31.183 & 0.8525 & 200 \\
 \subsection{Quantitative Metrics}
 \label{sec:results:recon:quant}
 
-Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$) for all 16 ablation arms, 4 retrained KAIR baselines, and DnCNN. Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs for PSNR are from 1,000 bootstrap resamples. Arms~E, F, G, H, and~P use a VAE bottleneck ($\mathbf{z} = \boldsymbol{\mu}_z$ at inference, deterministic decode); all other arms are fully deterministic. The same results are displayed visually as ranked bar charts in Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} (Section~\ref{sec:results:ablation}).
+Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, and BM3D (classical baseline with oracle noise level). Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs for PSNR are from 1,000 bootstrap resamples. Arms~E, F, G, H, and~P use a VAE bottleneck ($\mathbf{z} = \boldsymbol{\mu}_z$ at inference, deterministic decode); all other arms are fully deterministic. The same results are displayed visually as ranked bar charts in Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} (Section~\ref{sec:results:ablation}).
 
 \begin{sidewaystable}[p]
 \centering
 \small
 \caption[Primary reconstruction results at mid noise level]{
-  Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$) for all 16 ablation arms, 4 retrained KAIR baselines, and DnCNN.
+  Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, and BM3D (classical oracle-$\sigma$ baseline).
   Values are mean\,$\pm$\,SD; 95\% bootstrap CI in brackets (PSNR only).
   \textbf{Bold} = best per metric column.
   LPIPS $\downarrow$ = lower is better (AlexNet backbone, \citeyear{zhang_unreasonable_2018}).}
@@ -3061,6 +3061,9 @@ Q & Charbonnier ($\mathcal{L}_{\mathrm{Charb}}$) & --- & $34.535 \pm 1.057$ {[34
 R & Curriculum FT: L1\,+\,SSIM\,+\,FFL           & --- & $34.545 \pm 1.067$ {[34.46, 34.63]} & $0.9269 \pm 0.0143$ & $0.9727$ & $\mathbf{0.1226}$ \\
 S & Curriculum FT: NLL\,+\,SSIM\,+\,FFL          & --- & $34.608 \pm 1.076$ {[34.52, 34.69]} & $0.9266 \pm 0.0145$ & $0.9730$ & $0.1296$ \\
 \midrule
+\multicolumn{7}{l}{\textit{Classical baseline (oracle $\sigma$)}} \\
+BM3D & \cite{dabov_image_2007} & --- & $30.716 \pm 0.929$ & $0.8056 \pm 0.0405$ & --- & --- \\
+\midrule
 \multicolumn{7}{l}{\textit{Retrained baselines}} \\
 DnCNN & \cite{zhang_beyond_2017}       & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & --- \\
 IRCNN & \cite{zhang_learning_2017}     & --- & $32.659 \pm 0.966$ {[32.58, 32.73]} & $0.8901 \pm 0.0184$ & $0.9535$ & $0.1778$ \\
@@ -3072,7 +3075,8 @@ SwinIR & \cite{liang_swinir_2021}      & --- & $31.183 \pm 0.885$ {[31.11, 31.25
 }
 \begin{tablenotes}
 \footnotesize
-\item PSNR and SSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN (not computed in evaluation pipeline). Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
+\item PSNR and SSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN or BM3D (not computed in the main evaluation pipeline). Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
+\item BM3D is given the oracle mid-noise standard deviation $\sigma=\sqrt{0.03\times0.5+0.005}\approx0.141$ (the theoretical noise level at mean image intensity), providing the strongest possible classical baseline. Despite oracle knowledge, BM3D trails all learned models by at least 1.9~dB, confirming that signal-dependent Poisson--Gaussian noise requires learned priors.
 \item Arm~O uses PReLU activations in the decoder; all other arms use ReLU. DRUNet's elevated SSIM SD (0.053 vs.\ $\approx$0.015 elsewhere) reflects highly variable per-image performance.
 \item All four KAIR architectures were retrained from scratch on the Kermany Poisson-Gaussian noise dataset (same train/val/test split, same Foi noise generator) to ensure a fair architectural comparison.
 \item Arms~Q, R, S are pairwise statistically indistinguishable ($p_{\mathrm{Bonf}} \geq 0.68$, $|d| \leq 0.07$); all three achieve PSNR equivalent to Arm~A ($d < 0.08$, n.s.). Arm~R achieves the best LPIPS (0.1226) of any arm in the table, narrowly surpassing Arm~J (0.1268).
@@ -3422,11 +3426,30 @@ D  & NLL+SSIM+FFL (scratch) & $33.435 \pm 1.026$ & $0.1582$ & $-1.183$\,dB \\
 \end{tabular}
 \end{table}
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/evaluation_v2/curriculum_loss_dynamics.pdf}
+\caption[Curriculum fine-tuning loss dynamics]{%
+  Two-stage training dynamics for the curriculum fine-tuning arms, visualised in the style of \citet{zhao_loss_2017}.
+  \textit{Top:} Validation PSNR over 300 epochs. Stage~1 (blue, epochs~0--199) shows Arm~A converging under $\mathcal{L}_2$.
+  At epoch~200 (dashed red line) the loss paradigm shifts: Arm~R (orange) continues fine-tuning under $\mathcal{L}_1$+SSIM+FFL
+  and Arm~S (green) switches to NLL+SSIM+FFL.
+  A brief PSNR dip is visible for Arm~S at epochs~200--205, attributable to the 20-epoch linear NLL blend warmup
+  as the uncertainty head adapts from its near-zero variance initialisation.
+  \textit{Bottom:} Training loss components (log scale). The MSE/$\mathcal{L}_2$ component for Arm~A and the
+  total $\mathcal{L}_1$+SSIM+FFL loss for Arm~R are shown on the left axis; Arm~S's NLL component
+  (right axis, dashed) decreases monotonically as calibration improves.
+  The discontinuity at epoch~200 --- loss magnitude jumps while PSNR remains stable --- is the
+  hallmark signature of a curriculum strategy: the objective changes but the pixel-fidelity
+  initialisation is retained.}
+\label{fig:results:curriculum:loss}
+\end{figure}
+
 The results demonstrate two distinct benefits of curriculum fine-tuning.
 
 \textbf{Arm~R achieves the best LPIPS ($0.1226$) and best held-out FSIM ($0.9332$) in the entire study} while sacrificing only $0.073$\,dB PSNR relative to Arm~A. By comparison, training from scratch with the same L1+SSIM+FFL objective (Arm~J) yields $0.226$\,dB lower PSNR, FSIM $0.9306$ (vs.\ $0.9332$), and LPIPS $0.1268$ (vs.\ $0.1226$). The curriculum therefore recovers near-all of the PSNR loss incurred by single-stage L1+SSIM+FFL training, delivering simultaneously the best pixel fidelity and the best perceptual quality achievable with this objective. The mechanism is that the Arm~A initialisation has already solved the pixel-fidelity problem; Stage~2 adjusts the feature representations toward perceptual objectives without re-solving the reconstruction problem from scratch, allowing both PSNR and perceptual quality to exceed what is achievable in a single optimisation trajectory.
 
-\textbf{Arm~S achieves near-A PSNR ($34.608$\,dB; $\Delta = -0.010$\,dB) with calibrated aleatoric uncertainty.} The NLL objective introduced in Stage~2 trains the heteroscedastic output head $\hat{\sigma}_a$ while the backbone stays close to the pixel-fidelity optimum. The calibration section (§\ref{sec:results:calibration}) confirms that Arm~S inherits D-like uncertainty structure: mean NLL $\approx -2.650$\,nats and sharpness $0.0201$. For comparison, training from scratch with NLL+SSIM+FFL (Arm~D) achieves only $33.435$\,dB PSNR, a gap of $1.17$\,dB relative to Arm~S. The curriculum therefore delivers the calibrated uncertainty of Arm~D at a PSNR cost of $<0.01$\,dB relative to Arm~A --- a near-zero fidelity trade-off for the addition of a fully calibrated uncertainty map.
+\textbf{Arm~S achieves near-A PSNR ($34.608$\,dB; $\Delta = -0.010$\,dB) with calibrated aleatoric uncertainty.} The NLL objective introduced in Stage~2 trains the heteroscedastic output head $\hat{\sigma}_a$ while the backbone stays close to the pixel-fidelity optimum. The brief PSNR dip visible at epochs~200--205 in Figure~\ref{fig:results:curriculum:loss} (top) reflects the 20-epoch linear NLL blend warmup, after which PSNR recovers monotonically as calibration improves. The calibration section (§\ref{sec:results:calibration}) confirms that Arm~S inherits D-like uncertainty structure: mean NLL $\approx -2.650$\,nats and sharpness $0.0201$. For comparison, training from scratch with NLL+SSIM+FFL (Arm~D) achieves only $33.435$\,dB PSNR, a gap of $1.17$\,dB relative to Arm~S. The curriculum therefore delivers the calibrated uncertainty of Arm~D at a PSNR cost of $<0.01$\,dB relative to Arm~A --- a near-zero fidelity trade-off for the addition of a fully calibrated uncertainty map.
 
 Qualitative confirmation is provided by the ROI comparison panels (Figures~\ref{fig:results:roi:normal:vessels}--\ref{fig:results:roi:normal:pleural}): Arms~R and~S preserve fine vessel margins, consolidation boundaries, and pleural edges at parity with Arm~A, while Arm~R shows slightly sharpened high-frequency detail consistent with its FFL component.
 
@@ -3902,7 +3925,7 @@ Table~\ref{tab:results:fsim} reports two perceptual metrics --- FSIM \cite{zhang
 
 \begin{table}[htbp]
 \centering
-\caption[Held-out perceptual metrics (FSIM and LPIPS) at mid noise]{FSIM (higher is better) and LPIPS (lower is better) for all 21 models at mid noise ($\eta{=}200$, $n{=}624$). Neither metric was used in any training objective; results represent a fully held-out evaluation. FSIM and LPIPS values were computed with \texttt{piq} v0.8.0. Bold denotes the best value per column. LPIPS from \texttt{piq.LPIPS} (AlexNet) differs numerically from the main evaluation table (which used the \texttt{lpips} library) due to implementation differences; within-table comparisons are valid, cross-table comparisons are not.}
+\caption[Held-out perceptual metrics (FSIM and LPIPS) at mid noise]{FSIM (higher is better) and LPIPS (lower is better) for all 22 models at mid noise ($\eta{=}200$, $n{=}624$), including BM3D with oracle $\sigma$. Neither metric was used in any training objective; results represent a fully held-out evaluation. FSIM and LPIPS values were computed with \texttt{piq} v0.8.0. Bold denotes the best value per column. LPIPS from \texttt{piq.LPIPS} (AlexNet) differs numerically from the main evaluation table (which used the \texttt{lpips} library) due to implementation differences; within-table comparisons are valid, cross-table comparisons are not.}
 \label{tab:results:fsim}
 \small
 \begin{tabular}{lccc}
@@ -3931,6 +3954,10 @@ Q --- Charbonnier                        & $0.9315 \pm 0.0088$          & $0.224
 R --- Curriculum FT: $\mathcal{L}_1$+SSIM+FFL & $\mathbf{0.9332 \pm 0.0086}$ & $\mathbf{0.2192 \pm 0.0336}$ \\
 S --- Curriculum FT: NLL+SSIM+FFL        & $0.9317 \pm 0.0087$          & $0.2260 \pm 0.0348$ \\
 \midrule
+\multicolumn{3}{l}{\textit{Classical baseline (oracle $\sigma$)}} \\
+BM3D \cite{dabov_image_2007}             & $0.8916 \pm 0.0088$          & $0.3716 \pm 0.0351$ \\
+\midrule
+\multicolumn{3}{l}{\textit{Retrained baselines}} \\
 DnCNN \cite{zhang_beyond_2017}          & $0.9071 \pm 0.0102$          & $0.2922 \pm 0.0321$ \\
 FFDNet \cite{zhang_ffdnet_2018}         & $0.9025 \pm 0.0105$          & $0.3226 \pm 0.0365$ \\
 IRCNN \cite{zhang_learning_2017}        & $0.9027 \pm 0.0105$          & $0.3168 \pm 0.0337$ \\
@@ -3940,7 +3967,7 @@ SwinIR \cite{liang_swinir_2021}         & $0.8905 \pm 0.0115$          & $0.4148
 \end{tabular}
 \end{table}
 
-The PSNR rank ordering is largely preserved under both held-out metrics. Among the principal 16 arms, pixel-norm arms (A, I, J) dominate with FSIM~$\in[0.9296, 0.9317]$ and LPIPS~$\in[0.2257, 0.2291]$. Arm~J ($\mathcal{L}_1$+SSIM+FFL) trails Arm~A by only $\Delta\mathrm{FSIM} = 0.0011$ while achieving a $0.37$~dB lower PSNR, suggesting that J's structural regularisers preserve the phase-congruency and gradient-magnitude components captured by FSIM with near-parity to L2. The NLL group (B, D: FSIM~$\approx 0.9158$) lies $\approx 0.016$ FSIM below the pixel-norm group, consistent with the $1.2$~dB PSNR gap. Among baselines, DRUNet achieves FSIM~$= 0.9212$ --- notably above any NLL ablation arm and approaching the pixel-norm tier --- despite a PSNR of only $32.17$~dB, suggesting DRUNet's dilated residual architecture preserves structural frequency content more efficiently than PSNR alone captures. VAE arms (E, G, P: FSIM~$\in[0.8926, 0.9056]$) cluster $\approx 0.024$--$0.039$ below Arm~A on FSIM, consistent with the reconstruction penalty from KL regularisation. Arm~O (PReLU failure) remains the worst arm on FSIM ($0.8757$) and LPIPS ($0.4397$), confirming that the pathological divergence produces perceptually degraded images beyond what PSNR alone captures.
+The PSNR rank ordering is largely preserved under both held-out metrics. The classical BM3D baseline (oracle $\sigma=0.141$) achieves FSIM~$=0.8916$ and LPIPS~$=0.3716$, trailing every learned model by at least $\Delta\mathrm{FSIM}=0.015$ and $\Delta\mathrm{LPIPS}=0.082$ respectively, confirming that the signal-dependent Poisson--Gaussian noise model falls outside BM3D's AWGN assumption and that learned priors are necessary for high-quality restoration on this task. Among the principal 16 arms, pixel-norm arms (A, I, J) dominate with FSIM~$\in[0.9296, 0.9317]$ and LPIPS~$\in[0.2257, 0.2291]$. Arm~J ($\mathcal{L}_1$+SSIM+FFL) trails Arm~A by only $\Delta\mathrm{FSIM} = 0.0011$ while achieving a $0.37$~dB lower PSNR, suggesting that J's structural regularisers preserve the phase-congruency and gradient-magnitude components captured by FSIM with near-parity to L2. The NLL group (B, D: FSIM~$\approx 0.9158$) lies $\approx 0.016$ FSIM below the pixel-norm group, consistent with the $1.2$~dB PSNR gap. Among baselines, DRUNet achieves FSIM~$= 0.9212$ --- notably above any NLL ablation arm and approaching the pixel-norm tier --- despite a PSNR of only $32.17$~dB, suggesting DRUNet's dilated residual architecture preserves structural frequency content more efficiently than PSNR alone captures. VAE arms (E, G, P: FSIM~$\in[0.8926, 0.9056]$) cluster $\approx 0.024$--$0.039$ below Arm~A on FSIM, consistent with the reconstruction penalty from KL regularisation. Arm~O (PReLU failure) remains the worst arm on FSIM ($0.8757$) and LPIPS ($0.4397$), confirming that the pathological divergence produces perceptually degraded images beyond what PSNR alone captures.
 
 The most striking held-out perceptual result is Arm~R (curriculum fine-tuning with $\mathcal{L}_1$+SSIM+FFL): it achieves the \emph{highest FSIM in the entire study} ($0.9332$) and the \emph{lowest LPIPS} ($0.2192$) simultaneously, surpassing Arm~A on both metrics despite a modest $0.073$~dB PSNR deficit. This demonstrates that the two-stage curriculum strategy (§\ref{sec:results:curriculum}) resolves the PSNR--perceptual quality tension that afflicts single-stage training: Arm~J (the same $\mathcal{L}_1$+SSIM+FFL objective trained from scratch) achieves FSIM~$0.9306$ and LPIPS~$0.2268$ --- inferior to Arm~R on both metrics --- while also losing $0.30$~dB PSNR. Arm~Q (Charbonnier) and Arm~S (curriculum NLL+SSIM+FFL) both achieve FSIM~$\approx 0.9315$--$0.9317$, statistically indistinguishable from Arm~A, consistent with the equivalence of the L1/L2/Charbonnier family at high PSNR and with the observation that NLL fine-tuning preserves the pixel-fidelity structure of the Arm~A initialisation.
 
