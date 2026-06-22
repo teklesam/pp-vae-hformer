@@ -3017,22 +3017,51 @@ SwinIR \cite{liang_swinir_2021}$^\dagger$  & 31.183 & 0.8525 & 200 \\
 
 Table~\ref{tab:results:recon:mid} reports final reconstruction performance on the 624-image held-out test set at mid noise level ($\eta = 200$, $n_{\mathrm{Normal}}=234$, $n_{\mathrm{Pneumonia}}=390$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, and BM3D (classical baseline with oracle noise level). Four metrics are reported: PSNR (pixel fidelity), SSIM (structural similarity), MS-SSIM (multi-scale structural similarity; Wang et al.\ 2003), and LPIPS (learned perceptual image patch similarity via AlexNet; Zhang et al.\ 2018; lower is better). Mean and SD are computed over all 624 test images; 95\% CIs for PSNR are from 1,000 bootstrap resamples. Arms~E, F, G, H, and~P use a VAE bottleneck ($\mathbf{z} = \boldsymbol{\mu}_z$ at inference, deterministic decode); all other arms are fully deterministic. The same results are displayed visually as ranked bar charts in Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} (Section~\ref{sec:results:ablation}).
 
-\begin{sidewaystable}[p]
-\centering
+\begin{landscape}
+\singlespacing
 \small
-\caption[Primary reconstruction results at mid noise level]{
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{llcccccc}
+
+\caption[Primary reconstruction results at mid noise level]{%
   Test-set reconstruction performance at \textit{mid} noise level ($\eta=200$, $n=624$) for all 16 ablation arms, 4 retrained KAIR baselines, DnCNN, and BM3D (classical oracle-$\sigma$ baseline).
   Values are mean\,$\pm$\,SD; 95\% bootstrap CI in brackets (PSNR only).
   \textbf{Bold} = best per metric column.
   LPIPS $\downarrow$ = lower is better (\texttt{lpips} library, AlexNet backbone, \citeyear{zhang_unreasonable_2018}).
   FSIM $\uparrow$ = higher is better (\texttt{piq} v0.8.0, greyscale, \citeyear{zhang_fsim_2011}; held-out metric, not used in any training objective).}
-\label{tab:results:recon:mid}
-\begin{threeparttable}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{llcccccc}
+\label{tab:results:recon:mid}\\
+%
+% ── First-page header ─────────────────────────────────────────────────────────
 \toprule
 \textbf{Arm} & \textbf{Loss / Architecture} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{MS-SSIM} & \textbf{LPIPS $\downarrow$} & \textbf{FSIM $\uparrow$} \\
 \midrule
+\endfirsthead
+%
+% ── Continuation-page header ──────────────────────────────────────────────────
+\multicolumn{8}{l}{\small\itshape Table~\ref{tab:results:recon:mid} \textit{continued from previous page}} \\[3pt]
+\toprule
+\textbf{Arm} & \textbf{Loss / Architecture} & \textbf{VAE} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{MS-SSIM} & \textbf{LPIPS $\downarrow$} & \textbf{FSIM $\uparrow$} \\
+\midrule
+\endhead
+%
+% ── Non-last-page footer ──────────────────────────────────────────────────────
+\midrule
+\multicolumn{8}{r}{\small\itshape Continued on next page\ldots} \\
+\endfoot
+%
+% ── Last-page footer (notes) ──────────────────────────────────────────────────
+\bottomrule
+\multicolumn{8}{p{0.97\linewidth}}{\footnotesize
+  \textit{Metrics:} PSNR, SSIM, MS-SSIM, FSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN or BM3D. MS-SSIM not reported for BM3D. Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.} \\[3pt]
+\multicolumn{8}{p{0.97\linewidth}}{\footnotesize
+  \textit{BM3D:} Given the oracle mid-noise $\sigma=\sqrt{0.03\times0.5+0.005}\approx0.141$, providing the strongest possible classical baseline. Despite oracle knowledge, BM3D trails all learned models by $\geq 1.9$~dB, confirming that signal-dependent Poisson--Gaussian noise requires learned priors.} \\[3pt]
+\multicolumn{8}{p{0.97\linewidth}}{\footnotesize
+  \textit{Architectures:} Arm~O uses PReLU activations (all others: ReLU). DRUNet SSIM SD (0.053 vs.\ $\approx$0.015 elsewhere) reflects highly variable per-image performance. All four KAIR baselines retrained from scratch on the same Kermany split for a fair comparison.} \\[3pt]
+\multicolumn{8}{p{0.97\linewidth}}{\footnotesize
+  \textit{Curriculum arms:} Arms~Q, R, S are pairwise statistically indistinguishable ($p_{\mathrm{Bonf}} \geq 0.68$, $|d| \leq 0.07$); all three are equivalent to Arm~A in PSNR ($d < 0.08$, n.s.). Arm~R achieves the best LPIPS (0.1226) of any arm in the study.} \\
+\endlastfoot
+%
+% ── Table body ────────────────────────────────────────────────────────────────
 \multicolumn{8}{l}{\textit{L2 / L1 deterministic arms}} \\
 A & $\mathcal{L}_{\mathrm{MSE}}$    & --- & $\mathbf{34.618 \pm 1.071}$ {[34.53, 34.71]} & $\mathbf{0.9269 \pm 0.0144}$ & $\mathbf{0.9730}$ & $0.1287$ & $0.9317$ \\
 I & $\mathcal{L}_{\mathrm{L1}}$     & --- & $34.444 \pm 1.052$ {[34.36, 34.52]}          & $0.9249 \pm 0.0145$          & $0.9723$          & $0.1296$ & $0.9296$ \\
@@ -3066,24 +3095,14 @@ S & Curriculum FT: NLL\,+\,SSIM\,+\,FFL          & --- & $34.608 \pm 1.076$ {[34
 BM3D & \cite{dabov_image_2007} & --- & $30.716 \pm 0.929$ & $0.8056 \pm 0.0405$ & --- & --- & $0.8916$ \\
 \midrule
 \multicolumn{8}{l}{\textit{Retrained baselines}} \\
-DnCNN & \cite{zhang_beyond_2017}       & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & ---    & $0.9071$ \\
-IRCNN & \cite{zhang_learning_2017}     & --- & $32.659 \pm 0.966$ {[32.58, 32.73]} & $0.8901 \pm 0.0184$ & $0.9535$ & $0.1778$ & $0.9027$ \\
-FFDNet & \cite{zhang_ffdnet_2018}      & --- & $32.625 \pm 0.977$ {[32.55, 32.70]} & $0.8907 \pm 0.0188$ & $0.9549$ & $0.1873$ & $0.9025$ \\
-DRUNet & \cite{zhang_drunet_2021}& --- & $32.583 \pm 1.097$ {[32.50, 32.67]} & $0.8655 \pm 0.0529$ & $0.9683$ & $0.1276$ & $0.9212$ \\
-SwinIR & \cite{liang_swinir_2021}      & --- & $31.183 \pm 0.885$ {[31.11, 31.25]} & $0.8525 \pm 0.0199$ & $0.9401$ & $0.2771$ & $0.8905$ \\
-\bottomrule
-\end{tabular}%
-}
-\begin{tablenotes}
-\footnotesize
-\item PSNR, SSIM, MS-SSIM, FSIM: higher is better. LPIPS: lower is better. LPIPS not reported for DnCNN or BM3D (not computed in the main evaluation pipeline). MS-SSIM not reported for BM3D. Arms~E, F, G, H, P: VAE bottleneck active; inference uses deterministic decode ($\mathbf{z}=\boldsymbol{\mu}_z$) with stochastic sampling reserved for epistemic uncertainty estimation.
-\item BM3D is given the oracle mid-noise standard deviation $\sigma=\sqrt{0.03\times0.5+0.005}\approx0.141$ (the theoretical noise level at mean image intensity), providing the strongest possible classical baseline. Despite oracle knowledge, BM3D trails all learned models by at least 1.9~dB, confirming that signal-dependent Poisson--Gaussian noise requires learned priors.
-\item Arm~O uses PReLU activations in the decoder; all other arms use ReLU. DRUNet's elevated SSIM SD (0.053 vs.\ $\approx$0.015 elsewhere) reflects highly variable per-image performance.
-\item All four KAIR architectures were retrained from scratch on the Kermany Poisson-Gaussian noise dataset (same train/val/test split, same Foi noise generator) to ensure a fair architectural comparison.
-\item Arms~Q, R, S are pairwise statistically indistinguishable ($p_{\mathrm{Bonf}} \geq 0.68$, $|d| \leq 0.07$); all three achieve PSNR equivalent to Arm~A ($d < 0.08$, n.s.). Arm~R achieves the best LPIPS (0.1226) of any arm in the table, narrowly surpassing Arm~J (0.1268).
-\end{tablenotes}
-\end{threeparttable}
-\end{sidewaystable}
+DnCNN  & \cite{zhang_beyond_2017}  & --- & $32.798 \pm 0.952$ {[32.72, 32.88]} & $0.8774 \pm 0.0165$ & $0.9555$ & ---      & $0.9071$ \\
+IRCNN  & \cite{zhang_learning_2017}& --- & $32.659 \pm 0.966$ {[32.58, 32.73]} & $0.8901 \pm 0.0184$ & $0.9535$ & $0.1778$ & $0.9027$ \\
+FFDNet & \cite{zhang_ffdnet_2018}  & --- & $32.625 \pm 0.977$ {[32.55, 32.70]} & $0.8907 \pm 0.0188$ & $0.9549$ & $0.1873$ & $0.9025$ \\
+DRUNet & \cite{zhang_drunet_2021}  & --- & $32.583 \pm 1.097$ {[32.50, 32.67]} & $0.8655 \pm 0.0529$ & $0.9683$ & $0.1276$ & $0.9212$ \\
+SwinIR & \cite{liang_swinir_2021}  & --- & $31.183 \pm 0.885$ {[31.11, 31.25]} & $0.8525 \pm 0.0199$ & $0.9401$ & $0.2771$ & $0.8905$ \\
+%
+\end{longtable}
+\end{landscape}
 
 \subsection{Statistical Comparisons}
 \label{sec:results:recon:stats}
