@@ -40,7 +40,7 @@
 \usepackage[square,numbers]{natbib}           % Vancouver-style (numbered)
 \usepackage{chngcntr}
 \usepackage{pdflscape}
-\usepackage{appendix}
+\usepackage[toc,page]{appendix}
 \usepackage{pdfpages}
 \usepackage{fancyhdr}
 \usepackage{titlesec}
@@ -3035,7 +3035,7 @@ Ranked by clinical impact:
 \begin{figure}[htbp]
   \centering
   \evalfig{figures/evaluation_v2/fig_uncertainty_hotspot}
-  \caption{%
+  \caption[Uncertainty-guided clinical hotspot detection -- Arm S (NLL curriculum FT)]{%
     \textbf{Uncertainty-guided clinical hotspot detection across three diagnostic groups (Arm~S, NLL curriculum FT).}
     Each row corresponds to one representative test case; each column shows a distinct view of the same image.
     \textbf{(a) Noisy input:} Poisson--Gaussian corrupted chest radiograph ($\alpha{=}0.03$, $\beta{=}0.005$).
