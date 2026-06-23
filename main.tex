@@ -472,7 +472,7 @@ Diffusion models (DDPMs \cite{ho_denoising_2020}) achieve the highest perceptual
 The Variational Autoencoder (VAE) \cite{kingma_auto-encoding_2014} offers a probabilistic alternative: the encoder maps input $x$ to a posterior $q_\phi(z|x)$ in a latent space, enabling pixel-wise epistemic uncertainty maps via repeated sampling. However, the standard ELBO's factorised Gaussian likelihood reduces to unweighted MSE, producing blur, and the KL penalty can force the posterior to collapse to the prior, causing the model to output a generic average image regardless of patient anatomy \cite{bredell_explicitly_2023, zhao_loss_2017, lucas_dont_2019}.
 
 Table~\ref{tab:intro:comparison} provides a comparative synthesis of these five methodological
-families across the dimensions most relevant to paediatric clinical deployment and Figure~\ref{fig:intro:evotree} depicts on the evolution of the different variants for denoising task of medical images.
+families across the dimensions most relevant to paediatric clinical deployment and Figure~\ref{fig:architecture_evolution} depicts on the evolution of the different variants for denoising task of medical images.
 
 \renewcommand{\arraystretch}{0.8} % Compresses row height by 5%
 
