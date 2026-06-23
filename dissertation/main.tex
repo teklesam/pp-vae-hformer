@@ -40,7 +40,7 @@
 \usepackage[square,numbers]{natbib}           % Vancouver-style (numbered)
 \usepackage{chngcntr}
 \usepackage{pdflscape}
-\usepackage{appendix}
+\usepackage[toc,page]{appendix}
 \usepackage{pdfpages}
 \usepackage{fancyhdr}
 \usepackage{titlesec}
@@ -261,13 +261,13 @@ PP-VAE-Hformer demonstrates that calibrated per-pixel uncertainty quantification
 
 This dissertation is dedicated to my family. Their unconditional love, encouragement, and sacrifices have been the foundation of everything I have achieved. Whatever I become, I become because of them, and reaching this point would not have been possible without them.
 
-I am profoundly grateful to the Mastercard Foundation for funding my studies through the Mastercard Foundation Scholars Programme at the University of Cambridge. This scholarship has opened doors I once thought beyond my reach. I extend special thanks to Dr Simon White and Prof Daniela Angles, who believed in my potential during the selection process and gave me this extraordinary opportunity, one that has changed the trajectory of my life in ways I cannot fully express.
+I am profoundly grateful to the Mastercard Foundation for funding my studies through the Mastercard Foundation Scholars Programme at the University of Cambridge. This scholarship has opened doors I once thought beyond my reach. I extend special thanks to Prof Daniela De Angelis and  Dr Simon White, who believed in my potential during the interview part of the selection process and gave me this extraordinary opportunity, one that has changed the trajectory of my life in ways I cannot fully express.
 
-I owe a great debt of gratitude to my supervisor, Dr Kyriakos Flouris, for entrusting me with this research project despite the gap in my machine learning background when we began. His patience throughout my learning curve, his willingness to give me the space to develop, and the quality of his guidance have been fundamental to my growth as a researcher. I am grateful beyond measure for the chance he gave me.
+I owe a great debt of gratitude to my supervisor, Dr Kyriakos Flouris, for entrusting me with this research project despite the gap in my machine learning background when we began. His patience throughout my learning curve, his willingness to give me the space to develop, and the quality of his guidance have been fundamental to my growth as a researcher.
 
 I also thank Dr Martin Law, whose guidance throughout the course, including our meetings to practise scientific communication and develop teamwork skills, was consistently valuable and whose support contributed greatly to my development as a researcher.
 
-I also thank Colin Star of the Cambridge Research Computing Service for his invaluable practical assistance with the CSD3 high-performance computing cluster. His expertise in troubleshooting HPC problems made the large-scale computational experiments underpinning this dissertation feasible, and his responsiveness at critical moments made a real difference.
+I also thank Colin Star at the MRC Biostatistics unit for his invaluable practical hands on assistance with the CSD3 high-performance computing cluster. His expertise in troubleshooting HPC problems made the large-scale computational experiments underpinning this dissertation feasible, and his responsiveness at critical moments made a real difference.
 
 Finally, I acknowledge the MRC Biostatistics Unit and the MPhil in Population Health Sciences programme for providing an exceptional academic environment, and the open-science community behind MedMNIST and the Kermany paediatric chest radiograph dataset, whose commitment to open data made this work possible.
 
@@ -3035,7 +3035,7 @@ Ranked by clinical impact:
 \begin{figure}[htbp]
   \centering
   \evalfig{figures/evaluation_v2/fig_uncertainty_hotspot}
-  \caption{%
+  \caption[Uncertainty-guided clinical hotspot detection -- Arm S (NLL curriculum FT)]{%
     \textbf{Uncertainty-guided clinical hotspot detection across three diagnostic groups (Arm~S, NLL curriculum FT).}
     Each row corresponds to one representative test case; each column shows a distinct view of the same image.
     \textbf{(a) Noisy input:} Poisson--Gaussian corrupted chest radiograph ($\alpha{=}0.03$, $\beta{=}0.005$).
