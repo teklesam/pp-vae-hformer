@@ -22,6 +22,7 @@
 \usepackage{amsmath, amssymb, bm}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{lineno}
 \usepackage{threeparttable}
 \usepackage{longtable}
 \usepackage{multirow}
@@ -62,6 +63,7 @@
 \usepackage{booktabs}
 \usepackage{threeparttable}
 \usepackage{amssymb} % for \checkmark
+
 
 \usepackage{tikz}
 \usepackage{amsmath}
@@ -237,6 +239,8 @@ The total word count of this dissertation is approximately 12{,}000 words, which
 \addcontentsline{toc}{chapter}{Abstract}
 
 \textbf{Background.}
+
+\linenumber
 Low-dose paediatric chest radiography reduces carcinogenic radiation burden but produces noise-corrupted images that can conceal diagnostic findings. Existing deep learning denoisers achieve high pixel fidelity yet provide no measure of reconstruction confidence, leaving clinicians without a signal to distinguish reliable from uncertain image regions.
 
 \textbf{Objective.}
@@ -1141,7 +1145,7 @@ These four gaps constitute the experimental mandate for this dissertation. Chapt
 \chapter{Methods}
 \label{chap:methods}
 
-This chapter specifies the complete experimental design of PP-VAE-Hformer. It is written to be self-contained for readers with a machine learning background: every modelling choice is motivated by the clinical and technical gaps identified in Chapters~\ref{chap:intro} and~\ref{chap:lit}, and every equation is accompanied by the physical or statistical interpretation that connects it to those gaps. The chapter covers, in order: the 16-arm ablation design; the Kermany dataset and preprocessing pipeline; the Foi Poisson-Gaussian noise simulation; the hybrid CNN-Transformer architecture and probabilistic bottleneck; the four-term composite loss function; the training protocol; the multi-metric evaluation framework; and the computational environment. Readers primarily interested in results may consult Table~\ref{tab:methods:loss_summary} (loss configurations for all 16 arms) as a reference map and proceed to Chapter~\ref{chap:results}.
+This chapter specifies the complete experimental design of PP-VAE-Hformer. Every modelling choice is motivated by the clinical and technical gaps identified in Chapters~\ref{chap:intro} and~\ref{chap:lit}, and every equation is accompanied by the physical or statistical interpretation that connects it to those gaps. The chapter covers, in order: the 16-arm ablation design; the Kermany dataset and preprocessing pipeline; the Foi Poisson-Gaussian noise simulation; the hybrid CNN-Transformer architecture and probabilistic bottleneck; the four-term composite loss function; the training protocol; the multi-metric evaluation framework; and the computational environment. Readers primarily interested in results may consult Table~\ref{tab:methods:loss_summary} (loss configurations for all 16 arms) as a reference map and proceed to Chapter~\ref{chap:results}.
 
 \section{Study Design Overview}
 \label{sec:methods:overview}
@@ -1297,30 +1301,7 @@ enabling epistemic uncertainty estimation via repeated stochastic forward passes
 output head at the final decoder stage produces two outputs simultaneously: a denoised
 image mean and a per-pixel aleatoric uncertainty map.
 
-\begin{figure}[htbp]
-\centering
-  % References your standalone compiled PDF file and fits it to the text width
-  \includegraphics[width=\textwidth]{architecture_diagram.pdf}
-\caption[PP-VAE-Hformer architecture]{%
-  PP-VAE-Hformer encoder--decoder architecture.
-  A $1\!\times\!256\!\times\!256$ noisy input passes through a stem convolution
-  and three encoder stages (\textbf{E1--E3}), each comprising two HybridBlocks
-  (HB$\times$2) followed by a strided downsampling convolution.
-  The bottleneck operates at $512\!\times\!32\!\times\!32$.
-  \textit{Arm E only:} a VAE probabilistic bottleneck applies the
-  reparameterisation trick ($\mathbf{z} = \mathbf{z}_\mu + \boldsymbol{\varepsilon}
-  \odot e^{\frac{1}{2}\mathbf{z}_{\log\sigma^2}}$, $\boldsymbol{\varepsilon}\sim\mathcal{N}(\mathbf{0},\mathbf{I})$);
-  Arms A--D bypass this module (deterministic path, curved arrow).
-  Three symmetric decoder stages (\textbf{D3--D1}) upsample the feature map and
-  concatenate skip connections $s_1$--$s_3$ from the corresponding encoder stage
-  (dashed arrows).
-  The dual $3\!\times\!3$ output head produces the denoised image $\hat{\mu}_y$
-  and the per-pixel aleatoric log-variance $\log\hat{\sigma}^2_a$ in parallel.
-  \textit{Inset:} the HybridBlock (HB) applies a convolutional ResBlock
-  (GroupNorm + GELU) followed by a window self-attention block
-  ($8\!\times\!8$ non-overlapping windows), with a residual connection.}
-\label{fig:methods:architecture}
-\end{figure}
+\input{fig_architecture_overview}
 
 
 
@@ -1377,8 +1358,12 @@ surroundings.
 \paragraph{ResBlock.}
 The ResBlock applies two $3 \times 3$ convolutions with GroupNorm\footnote{Group Normalisation \cite{wu_group_2018} partitions the feature channels into groups and normalises the mean and variance of activations within each group independently. Unlike Batch Normalisation \cite{ioffe_batch_2015}, which normalises across the batch dimension and is statistically unstable at small batch sizes, GroupNorm is batch-size independent. This property is important for medical imaging workloads, where memory constraints often limit effective batch sizes to 4--16 images, and where per-image intensity calibration is clinically meaningful.} and GELU\footnote{The Gaussian Error Linear Unit (GELU) \cite{hendrycks_gaussian_2016} is defined as $\mathrm{GELU}(x) = x \cdot \Phi(x)$, where $\Phi$ denotes the standard normal CDF. Unlike ReLU, which hard-gates all negative inputs to zero, GELU applies a smooth probabilistic gate: inputs near zero are passed through with a weight that varies continuously. This produces smoother gradient landscapes than ReLU and has become the default activation in Transformer-based architectures including BERT \cite{devlin_bert_2019} and GPT. Its relevance here is that the smooth gradient landscape prevents the type of activation-function-induced gradient overflow that causes Arm~O's PReLU failure (Section~\ref{sec:results:error}).} activation, with a residual skip connection \cite{he_deep_2016}.
 
+\input{fig_architecture_resblock}
+
 \paragraph{WindowAttnBlock.}
 The WindowAttnBlock applies multi-head self-attention\footnote{Self-attention \cite{vaswani_attention_2017} computes, for each position in a feature map, a weighted sum of all other positions' values, where the weights (attention scores) measure pairwise similarity between a query vector at the current position and key vectors at all other positions. This allows the network to capture long-range dependencies regardless of spatial distance, something that fixed-kernel convolutions cannot do. In image processing, full global self-attention over a $32\times32$ feature map requires computing $(32\times32)^2 = 1,048,576$ pairwise scores. Window-restricted attention (as in the Swin Transformer \cite{liu_swin_2021}) limits each query to attend only within a small non-overlapping local window, reducing the per-window score count to $(8\times8)^2 = 4,096$ at a fraction of the global attention cost.} within non-overlapping $8\times8$ windows \cite{liu_swin_2021}, reducing the $4.3\times10^9$ pairwise scores of global attention to 4,096 per window while retaining sufficient context for the network to understand what an anatomical region should look like given its neighbours. The block uses pre-layer normalisation and a two-layer feedforward network with GELU activation. Two HybridBlocks are stacked at each stage.
+
+\input{fig_architecture_hybridblock}
 
 \subsection{Bottleneck and VAE Probabilistic Bottleneck}
 \label{sec:methods:architecture:bottleneck}
