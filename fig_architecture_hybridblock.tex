@@ -1,0 +1,186 @@
+% fig_architecture_hybridblock.tex
+% Figure 3 -- HybridBlock structure  (Hformer Fig-3 style)
+% \input{fig_architecture_hybridblock} from main.tex
+\begin{figure}[htbp]
+\centering
+\resizebox{0.92\linewidth}{!}{%
+\begin{tikzpicture}[
+  >=Stealth,
+  every node/.style={font=\small},
+  imgblk/.style={inner sep=1pt, outer sep=0pt},
+  rbbox/.style={draw=blue!55!black, fill=blue!9, rounded corners=3pt,
+                minimum width=3.2cm, minimum height=0.85cm,
+                align=center, line width=0.7pt},
+  rbnorm/.style={draw=teal!60!black, fill=teal!8, rounded corners=3pt,
+                 minimum width=3.2cm, minimum height=0.85cm,
+                 align=center, line width=0.7pt},
+  rbact/.style={draw=orange!60!black, fill=orange!8, rounded corners=3pt,
+                minimum width=3.2cm, minimum height=0.85cm,
+                align=center, line width=0.7pt},
+  wabox/.style={draw=purple!55!black, fill=purple!8, rounded corners=3pt,
+                minimum width=3.2cm, minimum height=0.85cm,
+                align=center, line width=0.7pt},
+  wanorm/.style={draw=teal!60!black, fill=teal!8, rounded corners=3pt,
+                 minimum width=3.2cm, minimum height=0.85cm,
+                 align=center, line width=0.7pt},
+  waffn/.style={draw=orange!55!black, fill=orange!9, rounded corners=3pt,
+                minimum width=3.2cm, minimum height=0.85cm,
+                align=center, line width=0.7pt},
+  addnode/.style={draw=gray!60, fill=gray!12, circle,
+                  minimum size=0.62cm, align=center, line width=0.7pt,
+                  font=\normalsize},
+  groupbox/.style={draw=gray!45, fill=gray!4, rounded corners=5pt,
+                   dashed, line width=0.9pt},
+  dimtag/.style={font=\fontsize{7}{8}\selectfont, text=gray!65, align=center},
+  arrmain/.style={->, line width=1.0pt, gray!60},
+  arrskip/.style={->, line width=0.9pt, blue!50, dashed},
+  arrwa/.style={->, line width=0.9pt, purple!55, dashed},
+]
+
+% ════════════════════════════════════════════════════════════════════
+% CENTRAL COLUMN: sequential HybridBlock flow  (x = 0)
+% ════════════════════════════════════════════════════════════════════
+
+% ── Input ────────────────────────────────────────────────────────────
+\node[dimtag] at (0,14.0) {$\mathbf{f}_{\mathrm{in}}$\;($H{\times}W{\times}C$)};
+\node[imgblk] (fin_img) at (0,12.8)
+  {\includegraphics[width=1.7cm,height=1.7cm,keepaspectratio]%
+    {figures/arch/arch_input_noisy.png}};
+\begin{scope}[shift={(-0.85,12.0)}]
+  \draw[white,line width=0.5pt,step=0.2125] (0,0) grid (1.7,1.7);
+  \draw[white,line width=0.85pt] (0,0) rectangle (1.7,1.7);
+\end{scope}
+
+% ── ResBlock ─────────────────────────────────────────────────────────
+\node[rbbox]  (rb_c1)  at (0,11.0) {\textbf{Conv}\;$3{\times}3$,\;pad\;1};
+\node[rbnorm] (rb_gn1) at (0,10.1) {\textbf{GroupNorm}\;($G{=}8$)};
+\node[rbact]  (rb_g1)  at (0, 9.2) {\textbf{GELU}};
+\node[rbbox]  (rb_c2)  at (0, 8.3) {\textbf{Conv}\;$3{\times}3$,\;pad\;1};
+\node[rbnorm] (rb_gn2) at (0, 7.4) {\textbf{GroupNorm}\;($G{=}8$)};
+\node[addnode](rb_add) at (0, 6.4) {$+$};
+\node[rbact]  (rb_g2)  at (0, 5.5) {\textbf{GELU}};
+
+% ResBlock group box
+\begin{scope}[on background layer]
+  \node[groupbox, inner sep=7pt,
+        fit=(rb_c1)(rb_gn2)(rb_g2),
+        label={[font=\fontsize{8}{9}\selectfont\bfseries,
+                text=blue!65]above:\strut ResBlock}] {};
+\end{scope}
+
+% Residual skip in ResBlock: fin_img.west → left → rb_add.west
+\draw[arrskip]
+  (fin_img.west)
+  -- ++(-1.1,0)
+  -- node[left,font=\fontsize{7}{8}\selectfont,xshift=-1pt]{skip}
+     ++(0,-6.4)
+  -| (rb_add.west);
+
+% ── Intermediate feature map ─────────────────────────────────────────
+\begin{scope}[shift={(-0.4,4.55)}]
+  \fill[blue!15] (0.04,0.04) rectangle (0.84,0.84);
+  \fill[blue!22,draw=blue!50,line width=0.4pt] (0,0) rectangle (0.80,0.80);
+  \draw[blue!40,very thin,step=0.20] (0,0) grid (0.80,0.80);
+\end{scope}
+\node[dimtag] at (0,4.4) {$\mathbf{f}_{\mathrm{res}}$\;($H{\times}W{\times}C$)};
+
+% ── WindowAttnBlock ──────────────────────────────────────────────────
+\node[wanorm] (wa_ln1) at (0, 3.3) {\textbf{LayerNorm}};
+\node[wabox]  (wa_mha) at (0, 2.3)
+  {\textbf{Multi-head Attention}\\
+   {\fontsize{7}{8}\selectfont 4\;heads,\;$8{\times}8$\;windows}};
+\node[wanorm] (wa_ln2) at (0, 1.1) {\textbf{LayerNorm}};
+\node[waffn]  (wa_ffn) at (0, 0.1)
+  {\textbf{FFN}\;(Linear\;$4C$ -- GELU -- Linear\;$C$)};
+\node[addnode](wa_add) at (0,-1.0) {$+$};
+
+% WindowAttnBlock group box
+\begin{scope}[on background layer]
+  \node[groupbox, inner sep=7pt,
+        fit=(wa_ln1)(wa_ffn)(wa_add),
+        label={[font=\fontsize{8}{9}\selectfont\bfseries,
+                text=purple!65]above:\strut WindowAttnBlock}] {};
+\end{scope}
+
+% Outer residual: f_res bypasses WindowAttn to wa_add
+% f_res at y=4.4; wa_add.east at (0.31,-1.0)
+\draw[arrwa]
+  (0,4.2)
+  -- ++(1.8,0)
+  -- node[right,font=\fontsize{7}{8}\selectfont]{outer residual}
+     ++(0,-5.5)
+  -| (wa_add.east);
+
+% ── Output ───────────────────────────────────────────────────────────
+\node[dimtag] at (0,-1.9) {$\mathbf{f}_{\mathrm{out}}$\;($H{\times}W{\times}C$)};
+\node[imgblk] (fout_img) at (0,-3.1)
+  {\includegraphics[width=1.7cm,height=1.7cm,keepaspectratio]%
+    {figures/arch/arch_output_mu.png}};
+\begin{scope}[shift={(-0.85,-4.0)}]
+  \draw[white,line width=0.5pt,step=0.2125] (0,0) grid (1.7,1.7);
+  \draw[white,line width=0.85pt] (0,0) rectangle (1.7,1.7);
+\end{scope}
+\node[dimtag,below=2pt of fout_img] {denoised feature map};
+
+% ── Main flow arrows ─────────────────────────────────────────────────
+\draw[arrmain] (fin_img.south)  -- (rb_c1.north);
+\draw[arrmain] (rb_c1.south)    -- (rb_gn1.north);
+\draw[arrmain] (rb_gn1.south)   -- (rb_g1.north);
+\draw[arrmain] (rb_g1.south)    -- (rb_c2.north);
+\draw[arrmain] (rb_c2.south)    -- (rb_gn2.north);
+\draw[arrmain] (rb_gn2.south)   -- (rb_add.north);
+\draw[arrmain] (rb_add.south)   -- (rb_g2.north);
+\draw[arrmain] (rb_g2.south)    -- ++(0,-0.5);   % to f_res
+\draw[arrmain] (0,4.1)          -- (wa_ln1.north);
+\draw[arrmain] (wa_ln1.south)   -- (wa_mha.north);
+\draw[arrmain] (wa_mha.south)   -- (wa_ln2.north);
+\draw[arrmain] (wa_ln2.south)   -- (wa_ffn.north);
+\draw[arrmain] (wa_ffn.south)   -- (wa_add.north);
+\draw[arrmain] (wa_add.south)   -- (0,-1.7);
+\draw[arrmain] (0,-2.1)         -- (fout_img.north);
+
+% ════════════════════════════════════════════════════════════════════
+% RIGHT ANNOTATION: Window partition visualisation
+% ════════════════════════════════════════════════════════════════════
+\begin{scope}[shift={(3.8, 0.5)}]
+  % Hypothetical feature map (white-ruled, 6×6 cells = 3 bold window boundaries)
+  \fill[blue!10, draw=blue!30, line width=0.5pt] (0,0) rectangle (2.7,2.7);
+  \draw[blue!22, line width=0.3pt, step=0.45] (0,0) grid (2.7,2.7);
+  % 8×8 window boundaries (represented as 3×3 thick grid = 3 windows wide)
+  \draw[purple!55, line width=1.3pt, step=0.9] (0,0) grid (2.7,2.7);
+  \draw[purple!55, line width=1.3pt] (0,0) rectangle (2.7,2.7);
+  % Highlight centre window
+  \fill[purple!20, opacity=0.55] (0.9,0.9) rectangle (1.8,1.8);
+  % Small lung thumb inset in highlighted window
+  \node[imgblk] at (1.35,1.35)
+    {\includegraphics[width=0.86cm,height=0.86cm,keepaspectratio]%
+      {figures/arch/arch_input_noisy.png}};
+  \draw[purple!65,line width=1.0pt] (0.9,0.9) rectangle (1.8,1.8);
+  \node[font=\fontsize{6}{6}\selectfont, purple!65, above=4pt] at (1.35,2.7)
+    {Partition: $H{\times}W{\times}C\;\to\;N{\times}64{\times}C$};
+  \node[font=\fontsize{6}{6}\selectfont, gray!60, below=3pt] at (1.35,0)
+    {each $8{\times}8$ window processed independently};
+\end{scope}
+
+% Dashed connector from wa_mha to window annotation
+\draw[purple!35, dashed, line width=0.5pt] (wa_mha.east) -- (3.8,1.85);
+
+\end{tikzpicture}%
+}
+\caption[HybridBlock (HB) internal structure]{%
+  \textbf{HybridBlock (HB) -- sequential convolutional and windowed self-attention
+  processing.}
+  The input feature map $\mathbf{f}_{\mathrm{in}}$ (illustrated by a white-ruled lung
+  thumbnail) first enters the \textbf{ResBlock}: two $3{\times}3$
+  convolution--GroupNorm--GELU sequences with a residual shortcut produce
+  $\mathbf{f}_{\mathrm{res}}$.
+  This is then processed by the \textbf{WindowAttnBlock}: after LayerNorm, the
+  feature map is partitioned into non-overlapping $8{\times}8$ windows
+  ($H{\times}W{\times}C \to N{\times}64{\times}C$; right panel), within which
+  four-head multi-head self-attention is applied, followed by a second LayerNorm
+  and a two-layer FFN (channel expansion $4{\times}$, GELU).
+  An outer residual adds $\mathbf{f}_{\mathrm{res}}$ before windows are folded back
+  to $H{\times}W{\times}C$, yielding $\mathbf{f}_{\mathrm{out}}$.
+  Two HybridBlocks are stacked at each encoder, decoder, and bottleneck stage.}
+\label{fig:arch:hybridblock}
+\end{figure}

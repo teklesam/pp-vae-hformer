@@ -1,0 +1,128 @@
+% fig_architecture_resblock.tex
+% Figure 2 -- ResBlock (convolutional block) detail  (Hformer Fig-2 style)
+% \input{fig_architecture_resblock} from main.tex
+\begin{figure}[htbp]
+\centering
+\resizebox{0.90\linewidth}{!}{%
+\begin{tikzpicture}[
+  >=Stealth,
+  every node/.style={font=\small},
+  imgblk/.style={inner sep=1pt, outer sep=0pt},
+  opbox/.style={draw=blue!55!black, fill=blue!9, rounded corners=3pt,
+                minimum width=3.4cm, minimum height=0.88cm,
+                align=center, line width=0.7pt},
+  normbox/.style={draw=teal!60!black, fill=teal!8, rounded corners=3pt,
+                  minimum width=3.4cm, minimum height=0.88cm,
+                  align=center, line width=0.7pt},
+  actbox/.style={draw=orange!60!black, fill=orange!8, rounded corners=3pt,
+                 minimum width=3.4cm, minimum height=0.88cm,
+                 align=center, line width=0.7pt},
+  addnode/.style={draw=gray!60, fill=gray!12, circle,
+                  minimum size=0.65cm, align=center, line width=0.7pt,
+                  font=\normalsize},
+  dimtag/.style={font=\fontsize{7}{8}\selectfont, text=gray!65, align=center},
+  arrmain/.style={->, line width=1.0pt, gray!60},
+  arrskip/.style={->, line width=0.9pt, blue!50, dashed},
+]
+
+% ──────────────────────────────────────────────────────────
+% LEFT COLUMN: ResBlock vertical flow  (x = 0)
+% ──────────────────────────────────────────────────────────
+
+% Input label + lung thumbnail + feature grid
+\node[dimtag] at (0,12.0) {$\mathbf{f}_{\mathrm{in}}$\;($H{\times}W{\times}C$)};
+\node[imgblk] (fin_img) at (0,10.8)
+  {\includegraphics[width=1.8cm,height=1.8cm,keepaspectratio]%
+    {figures/arch/arch_input_noisy.png}};
+% white ruling over thumbnail
+\begin{scope}[shift={(-0.9,9.9)}]
+  \draw[white, line width=0.55pt, step=0.225] (0,0) grid (1.8,1.8);
+  \draw[white, line width=0.9pt] (0,0) rectangle (1.8,1.8);
+\end{scope}
+
+% Operations
+\node[opbox]   (conv1) at (0,8.6) {\textbf{Conv}\;$3{\times}3$,\;pad\;1};
+\node[normbox] (gn1)   at (0,7.5) {\textbf{GroupNorm}\;($G{=}8$)};
+\node[actbox]  (gelu1) at (0,6.4) {\textbf{GELU}};
+\node[opbox]   (conv2) at (0,5.3) {\textbf{Conv}\;$3{\times}3$,\;pad\;1};
+\node[normbox] (gn2)   at (0,4.2) {\textbf{GroupNorm}\;($G{=}8$)};
+\node[addnode] (add)   at (0,3.0) {$+$};
+\node[actbox]  (gelu2) at (0,2.0) {\textbf{GELU}};
+
+% Output label + lung thumbnail + feature grid
+\node[dimtag] at (0,1.1) {$\mathbf{f}_{\mathrm{res}}$\;($H{\times}W{\times}C$)};
+\node[imgblk] (fout_img) at (0,-0.1)
+  {\includegraphics[width=1.8cm,height=1.8cm,keepaspectratio]%
+    {figures/arch/arch_output_mu.png}};
+\begin{scope}[shift={(-0.9,-1.0)}]
+  \draw[white, line width=0.55pt, step=0.225] (0,0) grid (1.8,1.8);
+  \draw[white, line width=0.9pt] (0,0) rectangle (1.8,1.8);
+\end{scope}
+
+% ── Vertical flow arrows ────────────────────────────────────
+\draw[arrmain] (fin_img.south) -- (conv1.north);
+\draw[arrmain] (conv1.south)   -- (gn1.north);
+\draw[arrmain] (gn1.south)     -- (gelu1.north);
+\draw[arrmain] (gelu1.south)   -- (conv2.north);
+\draw[arrmain] (conv2.south)   -- (gn2.north);
+\draw[arrmain] (gn2.south)     -- (add.north);
+\draw[arrmain] (add.south)     -- (gelu2.north);
+\draw[arrmain] (gelu2.south)   -- (fout_img.north);
+
+% ── Residual skip connection: fin_img.west → left side → add.west ─
+% fin_img centre at (0,10.8), its west at (-0.9,10.8)
+% add.west at (-0.325, 3.0)  (circle r=0.325)
+\draw[arrskip]
+  (fin_img.west)
+  -- ++(-1.1, 0)                                    % go left to x=-2.0
+  -- node[left, font=\fontsize{7}{8}\selectfont,
+          xshift=-1pt]{residual\;$\mathbf{f}_{\mathrm{in}}$}
+     ++(0, -7.8)                                    % go down to y=3.0
+  -| (add.west);                                    % right into add
+
+% ──────────────────────────────────────────────────────────
+% RIGHT SIDE: 3×3 convolution sliding-window annotation
+% ──────────────────────────────────────────────────────────
+\begin{scope}[shift={(3.2, 5.0)}]
+  % Hypothetical feature map (white-ruled grid, 6×6 cells)
+  \fill[blue!10, draw=blue!30, line width=0.5pt] (0,0) rectangle (2.7,2.7);
+  \draw[blue!25, line width=0.3pt, step=0.45] (0,0) grid (2.7,2.7);
+  % Highlight a 3×3 sliding window centred at cell (2,2)
+  \fill[blue!38, opacity=0.40] (0.45,0.45) rectangle (1.80,1.80);
+  \draw[blue!70, line width=1.4pt]  (0.45,0.45) rectangle (1.80,1.80);
+  % 3×3 kernel illustration (bottom-right inset)
+  \begin{scope}[shift={(1.95,0.0)}]
+    \fill[blue!20, draw=blue!45, line width=0.5pt] (0,0) rectangle (0.75,0.75);
+    \draw[blue!40, line width=0.4pt, step=0.25] (0,0) grid (0.75,0.75);
+    \fill[blue!45, opacity=0.6] (0.25,0.25) rectangle (0.50,0.50);
+    \node[font=\fontsize{5}{5}\selectfont, blue!70, below=1pt] at (0.375,-0.02)
+      {kernel};
+  \end{scope}
+  \node[font=\fontsize{7}{8}\selectfont, blue!70, above=3pt] at (1.35,2.7)
+    {Feature map $H{\times}W{\times}C$};
+  \node[font=\fontsize{7}{8}\selectfont, blue!65, below=2pt] at (1.35,0.0)
+    {$3{\times}3$ sliding window (highlighted)};
+  % Pointer arrow
+  \draw[->, blue!55, line width=0.7pt] (-0.5,1.4) -- (0.45,1.1);
+  \node[font=\fontsize{7}{8}\selectfont, blue!60, left=1pt] at (-0.5,1.4)
+    {receptive field};
+\end{scope}
+
+% Dashed connector from conv1 to annotation panel
+\draw[gray!35, dashed, line width=0.5pt] (conv1.east) -- (3.2, 6.7);
+
+\end{tikzpicture}%
+}
+\caption[ResBlock convolutional component architecture]{%
+  \textbf{ResBlock -- convolutional component of the HybridBlock.}
+  The input feature map $\mathbf{f}_{\mathrm{in}}$ ($H{\times}W{\times}C$, illustrated by
+  a white-ruled lung thumbnail) passes through two sequential $3{\times}3$ convolutions
+  each followed by GroupNorm ($G{=}8$ groups) and GELU activation.
+  A residual shortcut (blue dashed arrow) adds the unchanged input to the second
+  GroupNorm output before a final GELU, producing $\mathbf{f}_{\mathrm{res}}$ at the
+  same spatial resolution and channel count.
+  \textit{Right:} the $3{\times}3$ sliding convolution window (blue highlighted patch)
+  applied to a hypothetical feature map; every output position attends to a local
+  $3{\times}3$ neighbourhood, enabling precise local texture extraction.}
+\label{fig:arch:resblock}
+\end{figure}
