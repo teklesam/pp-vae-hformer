@@ -1,129 +1,94 @@
 % fig_architecture_overview.tex
-% Figure 1 – PP-VAE-Hformer overall architecture (Hformer Fig-1 style)
-% \input{fig_architecture_overview} from main.tex  (no \documentclass)
-\begin{landscape}
-\begin{figure}[p]
+% Figure 1 -- PP-VAE-Hformer full pipeline
+% \input{fig_architecture_overview} from main.tex
+% Uses \begin{sidewaysfigure} (rotating pkg) -- fixes blank landscape page from
+% the pdflscape+figure[p] combination that deferred the float off the rotated page.
+\begin{sidewaysfigure}[p]
 \centering
-\resizebox{0.98\linewidth}{!}{%
+\resizebox{0.90\textheight}{!}{%
 \begin{tikzpicture}[
   >=Stealth,
   every node/.style={font=\small},
-  % ── block styles ───────────────────────────────────────────────────
-  imgblk/.style={inner sep=1pt, outer sep=0pt},
-  stemblk/.style={draw=gray!70, fill=cyan!8, rounded corners=3pt,
-                   minimum width=2.0cm, minimum height=1.2cm,
-                   align=center, line width=0.7pt},
-  encblk/.style={draw=blue!55!black, fill=blue!9, rounded corners=3pt,
-                  minimum width=2.3cm, minimum height=1.3cm,
-                  align=center, line width=0.7pt},
-  botblk/.style={draw=teal!70!black, fill=teal!12, rounded corners=3pt,
-                  minimum width=2.6cm, minimum height=1.3cm,
-                  align=center, line width=1.0pt},
-  vaeblk/.style={draw=purple!60!black, fill=purple!7, rounded corners=3pt,
-                  minimum width=3.4cm, minimum height=1.6cm,
-                  align=center, line width=1.0pt, dashed},
-  decblk/.style={draw=orange!65!black, fill=orange!9, rounded corners=3pt,
-                  minimum width=2.3cm, minimum height=1.3cm,
-                  align=center, line width=0.7pt},
-  headblk/.style={draw=teal!55!black, fill=teal!8, rounded corners=3pt,
-                   minimum width=1.9cm, minimum height=0.95cm,
-                   align=center, line width=0.7pt},
-  mcblk/.style={draw=purple!50!black, fill=purple!6, rounded corners=3pt,
-                 minimum width=2.4cm, minimum height=0.9cm,
-                 align=center, line width=0.8pt, dashed},
-  dimtag/.style={font=\fontsize{7}{8}\selectfont, text=gray!65, align=center},
-  % ── arrow styles ───────────────────────────────────────────────────
-  arrmain/.style={->, line width=1.2pt, gray!55},
-  arrskip/.style={->, line width=1.0pt, blue!55, dashed},
-  arrbyp/.style={->, line width=0.8pt, gray!40, dashed},
-  arrvae/.style={->, line width=0.9pt, purple!55},
+  imgblk/.style={inner sep=0pt, outer sep=0pt},
+  fmblk/.style={inner sep=0pt, outer sep=0pt},
+  stemblk/.style={draw=gray!70, fill=cyan!10, rounded corners=3pt,
+                  minimum width=2.0cm, minimum height=1.2cm,
+                  align=center, line width=0.8pt},
+  encblk/.style={draw=blue!60!black, fill=blue!10, rounded corners=3pt,
+                 minimum width=2.3cm, minimum height=1.3cm,
+                 align=center, line width=0.8pt},
+  botblk/.style={draw=teal!70!black, fill=teal!13, rounded corners=3pt,
+                 minimum width=2.6cm, minimum height=1.3cm,
+                 align=center, line width=1.0pt},
+  vaeblk/.style={draw=purple!65!black, fill=purple!8, rounded corners=3pt,
+                 minimum width=3.4cm, minimum height=1.7cm,
+                 align=center, line width=1.0pt, dashed},
+  decblk/.style={draw=orange!65!black, fill=orange!10, rounded corners=3pt,
+                 minimum width=2.3cm, minimum height=1.3cm,
+                 align=center, line width=0.8pt},
+  headblk/.style={draw=teal!60!black, fill=teal!9, rounded corners=3pt,
+                  minimum width=2.0cm, minimum height=0.95cm,
+                  align=center, line width=0.8pt},
+  mcblk/.style={draw=purple!55!black, fill=purple!7, rounded corners=3pt,
+                minimum width=2.5cm, minimum height=0.9cm,
+                align=center, line width=0.8pt, dashed},
+  dimtag/.style={font=\fontsize{8}{9}\selectfont, text=black!65, align=center},
+  arrmain/.style={->, line width=1.4pt, black!70},
+  arrskip/.style={->, line width=1.2pt, blue!70, dashed},
+  arrbyp/.style={->, line width=0.9pt, gray!60, dashed},
+  arrvae/.style={->, line width=1.0pt, purple!65},
 ]
 
-% ────────────────────────────────────────────────────────────────────
-% INPUT THUMBNAIL
-% ────────────────────────────────────────────────────────────────────
+% ── INPUT ─────────────────────────────────────────────────────────────
 \node[imgblk] (inp) at (0,8.8)
   {\includegraphics[width=1.6cm,height=1.6cm,keepaspectratio]%
     {figures/arch/arch_input_noisy.png}};
-\node[dimtag,below=2pt of inp] {Noisy CXR\\[-1pt]$1{\times}256{\times}256$};
+\node[dimtag, below=3pt of inp] {Noisy CXR\\[-1pt]$1{\times}256{\times}256$};
 
-% 1-ch feature grid at input
-\begin{scope}[shift={(1.1,8.5)}]
-  \fill[gray!25] (0.04,0.04) rectangle (0.84,0.84);
-  \fill[gray!35,draw=gray!60,line width=0.4pt] (0,0) rectangle (0.8,0.8);
-  \draw[gray!50,very thin,step=0.2] (0,0) grid (0.8,0.8);
-\end{scope}
-
-% ────────────────────────────────────────────────────────────────────
-% STEM
-% ────────────────────────────────────────────────────────────────────
+% ── STEM ──────────────────────────────────────────────────────────────
 \node[stemblk] (stem) at (2.7,8.8)
-  {\textbf{Stem}\\{\fontsize{7}{8}\selectfont Conv $3{\times}3$, pad\,1\\$1\!\to\!64\,\mathrm{ch}$}};
+  {\textbf{Stem}\\{\fontsize{7}{8}\selectfont Conv $3{\times}3$\\$1\!\to\!64$\,ch}};
 
-% 64-ch feature map after stem (256²)
-\begin{scope}[shift={(3.85,8.5)}]
-  \fill[blue!15] (0.04,0.04) rectangle (0.84,0.84);
-  \fill[blue!20,draw=blue!45,line width=0.4pt] (0,0) rectangle (0.8,0.8);
-  \draw[blue!35,very thin,step=0.2] (0,0) grid (0.8,0.8);
-  \node[dimtag,above=0pt] at (0.4,0.85) {$64{\times}256^2$};
-\end{scope}
+% feature map after stem (E1 input)
+\node[fmblk] (fm_stem) at (4.4,9.25)
+  {\includegraphics[width=0.50cm,height=0.50cm]{figures/arch/featmap_256.png}};
+\node[dimtag] at (4.4,9.85) {$64{\times}256^2$};
 
-% ────────────────────────────────────────────────────────────────────
-% ENCODER
-% ────────────────────────────────────────────────────────────────────
+% ── ENCODER ───────────────────────────────────────────────────────────
 \node[encblk] (enc1) at (5.2,8.8)
-  {\textbf{E1}\\{\fontsize{7}{8}\selectfont HB${\times}2+$Down}};
-\node[dimtag,above=2pt of enc1] {$64{\times}256^2$};
+  {\textbf{E1}\\{\fontsize{7}{8}\selectfont HB${\times}2$+Down}};
 
-% 128-ch feature map after E1 + downsample (128²)
-\begin{scope}[shift={(6.45,8.5)}]
-  \fill[blue!18] (0.04,0.04) rectangle (0.69,0.69);
-  \fill[blue!24,draw=blue!50,line width=0.4pt] (0,0) rectangle (0.65,0.65);
-  \draw[blue!40,very thin,step=0.1625] (0,0) grid (0.65,0.65);
-  \node[dimtag,above=0pt] at (0.325,0.7) {$128{\times}128^2$};
-\end{scope}
+% feature map after enc1 (diagonal, E1→E2 path)
+\node[fmblk] (fm_e1) at (6.65,7.85)
+  {\includegraphics[width=0.44cm,height=0.44cm]{figures/arch/featmap_128.png}};
+\node[dimtag] at (6.65,8.38) {$128{\times}128^2$};
 
 \node[encblk] (enc2) at (7.4,6.3)
-  {\textbf{E2}\\{\fontsize{7}{8}\selectfont HB${\times}2+$Down}};
-\node[dimtag,above left=1pt and 0pt of enc2] {$128{\times}128^2$};
+  {\textbf{E2}\\{\fontsize{7}{8}\selectfont HB${\times}2$+Down}};
 
-% 256-ch feature map after E2 + downsample (64²)
-\begin{scope}[shift={(8.65,6.05)}]
-  \fill[blue!22] (0.04,0.04) rectangle (0.54,0.54);
-  \fill[blue!28,draw=blue!55,line width=0.4pt] (0,0) rectangle (0.5,0.5);
-  \draw[blue!45,very thin,step=0.125] (0,0) grid (0.5,0.5);
-  \node[dimtag,above=0pt] at (0.25,0.55) {$256{\times}64^2$};
-\end{scope}
+% feature map after enc2
+\node[fmblk] (fm_e2) at (8.65,5.22)
+  {\includegraphics[width=0.37cm,height=0.37cm]{figures/arch/featmap_64.png}};
+\node[dimtag] at (8.65,5.72) {$256{\times}64^2$};
 
 \node[encblk] (enc3) at (9.6,3.8)
-  {\textbf{E3}\\{\fontsize{7}{8}\selectfont HB${\times}2+$Down}};
-\node[dimtag,above left=1pt and 0pt of enc3] {$256{\times}64^2$};
+  {\textbf{E3}\\{\fontsize{7}{8}\selectfont HB${\times}2$+Down}};
 
-% 512-ch feature map after E3 + downsample (32²)
-\begin{scope}[shift={(10.85,3.6)}]
-  \fill[teal!20] (0.04,0.04) rectangle (0.42,0.42);
-  \fill[teal!26,draw=teal!55,line width=0.4pt] (0,0) rectangle (0.38,0.38);
-  \draw[teal!45,very thin,step=0.095] (0,0) grid (0.38,0.38);
-  \node[dimtag,above=0pt] at (0.19,0.43) {$512{\times}32^2$};
-\end{scope}
+% feature map after enc3
+\node[fmblk] (fm_e3) at (10.95,2.65)
+  {\includegraphics[width=0.30cm,height=0.30cm]{figures/arch/featmap_32.png}};
+\node[dimtag] at (10.95,3.08) {$512{\times}32^2$};
 
-% ────────────────────────────────────────────────────────────────────
-% BOTTLENECK
-% ────────────────────────────────────────────────────────────────────
+% ── BOTTLENECK ────────────────────────────────────────────────────────
 \node[botblk] (bot) at (11.9,1.3)
   {\textbf{Bottleneck}\\{\fontsize{7}{8}\selectfont HB${\times}2$}};
-\node[dimtag,below=2pt of bot] {$512{\times}32^2$};
 
-% 512-ch feature map after bottleneck
-\begin{scope}[shift={(13.3,1.1)}]
-  \fill[teal!20] (0.04,0.04) rectangle (0.42,0.42);
-  \fill[teal!26,draw=teal!55,line width=0.4pt] (0,0) rectangle (0.38,0.38);
-  \draw[teal!45,very thin,step=0.095] (0,0) grid (0.38,0.38);
-\end{scope}
+% feature map between bot and vae
+\node[fmblk] (fm_bot) at (13.6,1.75)
+  {\includegraphics[width=0.30cm,height=0.30cm]{figures/arch/featmap_32.png}};
+\node[dimtag] at (13.6,2.18) {$512{\times}32^2$};
 
-% ────────────────────────────────────────────────────────────────────
-% VAE BOTTLENECK
-% ────────────────────────────────────────────────────────────────────
+% ── VAE BOTTLENECK ────────────────────────────────────────────────────
 \node[vaeblk] (vae) at (15.6,1.3)
   {\textbf{VAE Bottleneck}\\
    {\fontsize{7}{8}\selectfont
@@ -132,123 +97,110 @@
      \exp\!\bigl(\tfrac{1}{2}\mathbf{z}_{\log\sigma^2}\bigr)$\\
     $\boldsymbol{\varepsilon}{\sim}\mathcal{N}(\mathbf{0},\mathbf{I})$}};
 
-% ────────────────────────────────────────────────────────────────────
-% DECODER
-% ────────────────────────────────────────────────────────────────────
+% feature map after VAE (at D3 entry)
+\node[fmblk] (fm_vae) at (18.1,2.55)
+  {\includegraphics[width=0.30cm,height=0.30cm]{figures/arch/featmap_d64.png}};
+\node[dimtag] at (18.1,2.98) {$256{\times}64^2$};
+
+% ── DECODER ───────────────────────────────────────────────────────────
 \node[decblk] (dec3) at (18.8,3.8)
   {\textbf{D3}\\{\fontsize{7}{8}\selectfont Up$+s_3+$HB${\times}2$}};
-\node[dimtag,above right=1pt and 0pt of dec3] {$256{\times}64^2$};
 
-% 256-ch feature map after D3
-\begin{scope}[shift={(20.05,3.6)}]
-  \fill[orange!20] (0.04,0.04) rectangle (0.54,0.54);
-  \fill[orange!26,draw=orange!55,line width=0.4pt] (0,0) rectangle (0.5,0.5);
-  \draw[orange!45,very thin,step=0.125] (0,0) grid (0.5,0.5);
-  \node[dimtag,above=0pt] at (0.25,0.55) {$256{\times}64^2$};
-\end{scope}
+% feature map after dec3
+\node[fmblk] (fm_d3) at (20.05,5.22)
+  {\includegraphics[width=0.37cm,height=0.37cm]{figures/arch/featmap_d64.png}};
+\node[dimtag] at (20.05,5.72) {$256{\times}64^2$};
 
 \node[decblk] (dec2) at (21.0,6.3)
   {\textbf{D2}\\{\fontsize{7}{8}\selectfont Up$+s_2+$HB${\times}2$}};
-\node[dimtag,above right=1pt and 0pt of dec2] {$128{\times}128^2$};
 
-% 128-ch feature map after D2
-\begin{scope}[shift={(22.25,6.05)}]
-  \fill[orange!18] (0.04,0.04) rectangle (0.69,0.69);
-  \fill[orange!23,draw=orange!50,line width=0.4pt] (0,0) rectangle (0.65,0.65);
-  \draw[orange!40,very thin,step=0.1625] (0,0) grid (0.65,0.65);
-  \node[dimtag,above=0pt] at (0.325,0.7) {$128{\times}128^2$};
-\end{scope}
+% feature map after dec2
+\node[fmblk] (fm_d2) at (22.25,7.85)
+  {\includegraphics[width=0.44cm,height=0.44cm]{figures/arch/featmap_d128.png}};
+\node[dimtag] at (22.25,8.38) {$128{\times}128^2$};
 
 \node[decblk] (dec1) at (23.2,8.8)
   {\textbf{D1}\\{\fontsize{7}{8}\selectfont Up$+s_1+$HB${\times}2$}};
-\node[dimtag,above=2pt of dec1] {$64{\times}256^2$};
 
-% ────────────────────────────────────────────────────────────────────
-% DUAL HEAD + OUTPUT THUMBNAILS
-% ────────────────────────────────────────────────────────────────────
-\node[headblk] (hmu) at (25.2,9.5)
+% feature map after dec1 (before head)
+\node[fmblk] (fm_d1) at (24.4,9.25)
+  {\includegraphics[width=0.50cm,height=0.50cm]{figures/arch/featmap_d256.png}};
+\node[dimtag] at (24.4,9.85) {$64{\times}256^2$};
+
+% ── DUAL HEAD + OUTPUTS ───────────────────────────────────────────────
+\node[headblk] (hmu) at (25.4,9.5)
   {$\hat{\mu}_y$\\{\fontsize{7}{8}\selectfont Conv $3{\times}3$}};
-\node[headblk,draw=orange!60!black,fill=orange!8] (hsig) at (25.2,8.1)
+\node[headblk,draw=orange!65!black,fill=orange!9] (hsig) at (25.4,8.1)
   {$\log\hat{\sigma}^2_a$\\{\fontsize{7}{8}\selectfont Conv $3{\times}3$}};
-\node[dimtag,above=2pt of hmu] {Dual Head};
+\node[dimtag, above=2pt of hmu] {Dual Head};
 
-\node[imgblk] (outmu) at (27.0,9.5)
+\node[imgblk] (outmu) at (27.2,9.5)
   {\includegraphics[width=1.4cm,height=1.4cm,keepaspectratio]%
     {figures/arch/arch_output_mu.png}};
-\node[dimtag,below=1pt of outmu] {$\hat{\mu}_y$};
+\node[dimtag, below=2pt of outmu] {$\hat{\mu}_y$};
 
-\node[imgblk] (outsig) at (27.0,8.1)
+\node[imgblk] (outsig) at (27.2,8.1)
   {\includegraphics[width=1.4cm,height=1.4cm,keepaspectratio]%
     {figures/arch/arch_output_aleat.png}};
-\node[dimtag,below=1pt of outsig] {$\hat{\sigma}^2_a$};
+\node[dimtag, below=2pt of outsig] {$\hat{\sigma}^2_a$};
 
-% ────────────────────────────────────────────────────────────────────
-% K=20 EPISTEMIC BRANCH
-% ────────────────────────────────────────────────────────────────────
+% ── K=20 EPISTEMIC BRANCH ─────────────────────────────────────────────
 \node[mcblk] (mc) at (15.6,-0.3)
   {{\fontsize{7}{8}\selectfont $K{=}20$ stochastic passes}};
 \node[imgblk] (outepi) at (18.8,-0.3)
   {\includegraphics[width=1.4cm,height=1.4cm,keepaspectratio]%
     {figures/arch/arch_output_epist.png}};
-\node[dimtag,below=1pt of outepi] {$\hat{\sigma}^2_e$\,(epistemic)};
+\node[dimtag, right=3pt of outepi] {$\hat{\sigma}^2_e$ (epistemic)};
 
-% ────────────────────────────────────────────────────────────────────
-% ARROWS – main flow
-% ────────────────────────────────────────────────────────────────────
-\draw[arrmain] (inp.east)          -- (stem.west);
-\draw[arrmain] (stem.east)         -- (enc1.west);
-\draw[arrmain] (enc1.south east)   -- (enc2.north west);
-\draw[arrmain] (enc2.south east)   -- (enc3.north west);
-\draw[arrmain] (enc3.south east)   -- (bot.north west);
-\draw[arrmain] (bot.east)          -- (vae.west);
-\draw[arrmain] (vae.east)          -| (dec3.south);
-\draw[arrmain] (dec3.north east)   -- (dec2.south west);
-\draw[arrmain] (dec2.north east)   -- (dec1.south west);
-\draw[arrmain] (dec1.east) -- ++(0.4,0) |- (hmu.west);
-\draw[arrmain] (dec1.east) -- ++(0.4,0) |- (hsig.west);
-\draw[arrmain] (hmu.east)          -- (outmu.west);
-\draw[arrmain] (hsig.east)         -- (outsig.west);
+% ── ARROWS: main flow ─────────────────────────────────────────────────
+\draw[arrmain] (inp.east)        -- (stem.west);
+\draw[arrmain] (stem.east)       -- (enc1.west);
+\draw[arrmain] (enc1.south east) -- (enc2.north west);
+\draw[arrmain] (enc2.south east) -- (enc3.north west);
+\draw[arrmain] (enc3.south east) -- (bot.north west);
+\draw[arrmain] (bot.east)        -- (vae.west);
+\draw[arrmain] (vae.east)        -| (dec3.south);
+\draw[arrmain] (dec3.north east) -- (dec2.south west);
+\draw[arrmain] (dec2.north east) -- (dec1.south west);
+\draw[arrmain] (dec1.east) -- ++(0.35,0) |- (hmu.west);
+\draw[arrmain] (dec1.east) -- ++(0.35,0) |- (hsig.west);
+\draw[arrmain] (hmu.east)        -- (outmu.west);
+\draw[arrmain] (hsig.east)       -- (outsig.west);
 
 % Arms A-D deterministic bypass (skips VAE)
-\draw[arrbyp] (bot.north) -- ++(0,1.5) -|
-  node[above,pos=0.3,font=\fontsize{6}{7}\selectfont,text=gray!55]
+\draw[arrbyp] (bot.north) -- ++(0,1.3) -|
+  node[above,pos=0.28,font=\fontsize{6}{7}\selectfont,text=gray!65]
     {Arms\,A--D\;(no\,VAE)}
   (dec3.west);
 
-% VAE → epistemic MC branch
+% VAE epistemic branch
 \draw[arrvae] (vae.south) -- (mc.north);
 \draw[arrvae] (mc.east)   -- (outepi.west);
-\node[dimtag,right=2pt of outepi] {Var of $K$ predictions};
 
-% ────────────────────────────────────────────────────────────────────
-% SKIP CONNECTIONS (dashed blue, routed above encoder blocks)
-% enc1.x=5.2, dec1.x=23.2  → dx=18.0, route at y=10.05
-% enc2.x=7.4, dec2.x=21.0  → dx=13.6, route at y=7.4
-% enc3.x=9.6, dec3.x=18.8  → dx=9.2,  route at y=4.85
-% ────────────────────────────────────────────────────────────────────
+% ── SKIP CONNECTIONS (dashed blue, routed above encoder blocks) ────────
 \draw[arrskip]
   (enc1.north) -- ++(0,0.6) --
-  node[above,font=\fontsize{7}{8}\selectfont,black!70]{$s_1$}
+  node[above,font=\fontsize{7}{8}\selectfont,black!75]{$s_1$}
   ++(18.0,0) -- (dec1.north);
 
 \draw[arrskip]
   (enc2.north) -- ++(0,0.45) --
-  node[above,font=\fontsize{7}{8}\selectfont,black!70]{$s_2$}
+  node[above,font=\fontsize{7}{8}\selectfont,black!75]{$s_2$}
   ++(13.6,0) -- (dec2.north);
 
 \draw[arrskip]
-  (enc3.north) -- ++(0,0.4) --
-  node[above,font=\fontsize{7}{8}\selectfont,black!70]{$s_3$}
+  (enc3.north) -- ++(0,0.40) --
+  node[above,font=\fontsize{7}{8}\selectfont,black!75]{$s_3$}
   ++(9.2,0) -- (dec3.north);
 
 \end{tikzpicture}%
 }
 \caption[PP-VAE-Hformer overall architecture]{%
   \textbf{PP-VAE-Hformer encoder--decoder architecture.}
-  A noisy paediatric CXR ($1{\times}256{\times}256$) enters a stem convolution
-  and three encoder stages (\textbf{E1--E3}), each comprising two HybridBlocks
-  (HB${\times}2$) followed by strided downsampling; channel depth expands
-  $64\!\to\!128\!\to\!256\,\text{ch}$ while spatial resolution halves.
+  A noisy paediatric chest radiograph ($1{\times}256{\times}256$) enters a stem
+  convolution and three encoder stages (\textbf{E1--E3}), each comprising two
+  HybridBlocks (HB${\times}2$) followed by strided downsampling; channel depth
+  expands $64\!\to\!128\!\to\!256\,\text{ch}$ while spatial resolution halves.
   The Bottleneck applies two further HybridBlocks at $512{\times}32^2$.
   The probabilistic VAE Bottleneck (dashed border) maps features to a spatial
   latent via the reparameterisation trick; Arms\,A--D bypass this stage
@@ -258,9 +210,8 @@
   A dual $3{\times}3$ convolutional head produces the denoised mean $\hat{\mu}_y$
   and aleatoric log-variance $\log\hat{\sigma}^2_a$ simultaneously.
   Epistemic uncertainty $\hat{\sigma}^2_e$ is estimated from the variance of
-  $K{=}20$ stochastic forward passes through the VAE Bottleneck (purple branch).
-  Coloured grids between blocks represent the feature-map tensor at each
-  spatial scale.}
+  $K{=}20$ stochastic forward passes (purple branch).
+  Blue square icons represent real convolutional feature maps sampled from the
+  encoder and decoder at each spatial scale.}
 \label{fig:arch:overview}
-\end{figure}
-\end{landscape}
+\end{sidewaysfigure}
