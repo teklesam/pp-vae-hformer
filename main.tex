@@ -22,6 +22,7 @@
 \usepackage{amsmath, amssymb, bm}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{lineno}
 \usepackage{threeparttable}
 \usepackage{longtable}
 \usepackage{multirow}
@@ -62,6 +63,7 @@
 \usepackage{booktabs}
 \usepackage{threeparttable}
 \usepackage{amssymb} % for \checkmark
+
 
 \usepackage{tikz}
 \usepackage{amsmath}
@@ -237,6 +239,8 @@ The total word count of this dissertation is approximately 12{,}000 words, which
 \addcontentsline{toc}{chapter}{Abstract}
 
 \textbf{Background.}
+
+\linenumber
 Low-dose paediatric chest radiography reduces carcinogenic radiation burden but produces noise-corrupted images that can conceal diagnostic findings. Existing deep learning denoisers achieve high pixel fidelity yet provide no measure of reconstruction confidence, leaving clinicians without a signal to distinguish reliable from uncertain image regions.
 
 \textbf{Objective.}
@@ -1141,7 +1145,7 @@ These four gaps constitute the experimental mandate for this dissertation. Chapt
 \chapter{Methods}
 \label{chap:methods}
 
-This chapter specifies the complete experimental design of PP-VAE-Hformer. It is written to be self-contained for readers with a machine learning background: every modelling choice is motivated by the clinical and technical gaps identified in Chapters~\ref{chap:intro} and~\ref{chap:lit}, and every equation is accompanied by the physical or statistical interpretation that connects it to those gaps. The chapter covers, in order: the 16-arm ablation design; the Kermany dataset and preprocessing pipeline; the Foi Poisson-Gaussian noise simulation; the hybrid CNN-Transformer architecture and probabilistic bottleneck; the four-term composite loss function; the training protocol; the multi-metric evaluation framework; and the computational environment. Readers primarily interested in results may consult Table~\ref{tab:methods:loss_summary} (loss configurations for all 16 arms) as a reference map and proceed to Chapter~\ref{chap:results}.
+This chapter specifies the complete experimental design of PP-VAE-Hformer. Every modelling choice is motivated by the clinical and technical gaps identified in Chapters~\ref{chap:intro} and~\ref{chap:lit}, and every equation is accompanied by the physical or statistical interpretation that connects it to those gaps. The chapter covers, in order: the 16-arm ablation design; the Kermany dataset and preprocessing pipeline; the Foi Poisson-Gaussian noise simulation; the hybrid CNN-Transformer architecture and probabilistic bottleneck; the four-term composite loss function; the training protocol; the multi-metric evaluation framework; and the computational environment. Readers primarily interested in results may consult Table~\ref{tab:methods:loss_summary} (loss configurations for all 16 arms) as a reference map and proceed to Chapter~\ref{chap:results}.
 
 \section{Study Design Overview}
 \label{sec:methods:overview}
