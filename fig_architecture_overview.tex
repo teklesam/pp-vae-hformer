@@ -1,169 +1,13 @@
-% fig_architecture_overview.tex
-% Styles defined via \tikzset{} (before tikzpicture) to avoid pgfkeys
-% parser interference from lineno/siunitx expl3 internals.
-\tikzset{
-  ovImg/.style  = {inner sep=0pt, outer sep=0pt},
-  ovFm/.style   = {inner sep=0pt, outer sep=0pt},
-  ovStem/.style = {draw=gray!70, fill=cyan!10, rounded corners=3pt,
-                   minimum width=2.2cm, minimum height=0.90cm,
-                   align=center, line width=0.8pt},
-  ovEnc/.style  = {draw=blue!60!black, fill=blue!10, rounded corners=3pt,
-                   minimum width=2.6cm, minimum height=1.3cm,
-                   align=center, line width=0.8pt},
-  ovBot/.style  = {draw=teal!70!black, fill=teal!12, rounded corners=3pt,
-                   minimum width=2.6cm, minimum height=1.3cm,
-                   align=center, line width=1.0pt},
-  ovVae/.style  = {draw=purple!65!black, fill=purple!8, rounded corners=3pt,
-                   minimum width=3.4cm, minimum height=1.5cm,
-                   align=center, line width=1.0pt, dashed},
-  ovDec/.style  = {draw=orange!65!black, fill=orange!10, rounded corners=3pt,
-                   minimum width=2.6cm, minimum height=1.3cm,
-                   align=center, line width=0.8pt},
-  ovHead/.style = {draw=teal!60!black, fill=teal!9, rounded corners=3pt,
-                   minimum width=2.0cm, minimum height=0.90cm,
-                   align=center, line width=0.8pt},
-  ovMc/.style   = {draw=purple!55!black, fill=purple!7, rounded corners=3pt,
-                   minimum width=2.3cm, minimum height=0.80cm,
-                   align=center, line width=0.8pt, dashed},
-  ovDim/.style  = {font=\fontsize{8}{9}\selectfont,
-                   text=black!60, align=center},
-  ovMain/.style = {->, line width=1.4pt, black!70},
-  ovSkip/.style = {->, line width=1.2pt, blue!65, dashed},
-  ovByp/.style  = {->, line width=0.9pt, gray!60, dashed},
-  ovVaeA/.style = {->, line width=1.0pt, purple!65},
-}
+% fig_architecture_overview.tex — wrapper for main.tex
+% \nolinenumbers disables the lineno expl3 hook that corrupts
+% \tikzscope@linewidth at \begin{tikzpicture} start.
+% \includestandalone reads the standalone body inline (no PDF needed).
+\providecommand{\nolinenumbers}{}
+\providecommand{\linenumbers}{}
+\nolinenumbers
 \begin{figure}[htbp]
 \centering
-\resizebox{0.95\textwidth}{!}{%
-\begin{tikzpicture}[>=Stealth, every node/.style={font=\small}]
-
-% ── Input ─────────────────────────────────────────────────────────────
-\node[ovImg] (inp) at (-2.5, 11.0)
-  {\includegraphics[width=1.4cm,height=1.4cm,keepaspectratio]%
-    {figures/arch/arch_input_noisy.png}};
-\node[ovDim] at (-2.5, 12.1)
-  {Noisy CXR\\[-2pt]$1{\times}256{\times}256$};
-
-% ── Encoder (left column, top to bottom) ──────────────────────────────
-\node[ovStem] (stem) at (-2.5, 9.6)
-  {\textbf{Stem}\\
-   {\fontsize{7}{8}\selectfont Conv $3{\times}3$,\;$1\!\to\!64$\,ch}};
-
-\node[ovEnc] (enc1) at (-2.5, 8.1)
-  {\textbf{E1}\\
-   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$64$\,ch,\;$256^2$}};
-
-\node[ovEnc] (enc2) at (-2.5, 6.5)
-  {\textbf{E2}\\
-   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$128$\,ch,\;$128^2$}};
-
-\node[ovEnc] (enc3) at (-2.5, 4.9)
-  {\textbf{E3}\\
-   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$256$\,ch,\;$64^2$}};
-
-\node[ovBot] (bot) at (-2.5, 3.3)
-  {\textbf{Bottleneck}\\
-   {\fontsize{7}{8}\selectfont HB${\times}2$\\$512$\,ch,\;$32^2$}};
-
-% ── VAE branch (centre) ────────────────────────────────────────────────
-\node[ovVae] (vae) at (0, 2.0)
-  {\textbf{VAE Bottleneck}\\
-   {\fontsize{7}{8}\selectfont
-    $\mu_z,\,\sigma_z^2$\;(Conv\,$1{\times}1$)\\[2pt]
-    $z = \mu_z + \varepsilon\!\cdot\!\exp(\tfrac{1}{2}\sigma_z^2)$}};
-
-\node[ovMc] (mc) at (0, 0.5)
-  {{\fontsize{7}{8}\selectfont $K{=}20$ stochastic passes}};
-
-% ── Decoder (right column, bottom to top) ─────────────────────────────
-\node[ovDec] (dec3) at (2.5, 4.9)
-  {\textbf{D3}\\
-   {\fontsize{7}{8}\selectfont Up$+s_3+$HB${\times}2$\\$256$\,ch,\;$64^2$}};
-
-\node[ovDec] (dec2) at (2.5, 6.5)
-  {\textbf{D2}\\
-   {\fontsize{7}{8}\selectfont Up$+s_2+$HB${\times}2$\\$128$\,ch,\;$128^2$}};
-
-\node[ovDec] (dec1) at (2.5, 8.1)
-  {\textbf{D1}\\
-   {\fontsize{7}{8}\selectfont Up$+s_1+$HB${\times}2$\\$64$\,ch,\;$256^2$}};
-
-\node[ovHead] (head) at (2.5, 9.6)
-  {\textbf{Dual Head}\\
-   {\fontsize{7}{8}\selectfont Conv\,$3{\times}3$}};
-
-% ── Output thumbnails ─────────────────────────────────────────────────
-\node[ovImg] (outmu) at (4.5, 10.2)
-  {\includegraphics[width=1.2cm,height=1.2cm,keepaspectratio]%
-    {figures/arch/arch_output_mu.png}};
-\node[ovDim, above=2pt of outmu] {$\hat{\mu}_y$};
-
-\node[ovImg] (outsig) at (4.5, 9.0)
-  {\includegraphics[width=1.2cm,height=1.2cm,keepaspectratio]%
-    {figures/arch/arch_output_aleat.png}};
-\node[ovDim, below=2pt of outsig] {$\hat{\sigma}^2_a$};
-
-\node[ovImg] (outepi) at (2.5, 0.5)
-  {\includegraphics[width=1.1cm,height=1.1cm,keepaspectratio]%
-    {figures/arch/arch_output_epist.png}};
-\node[ovDim, right=3pt of outepi] {$\hat{\sigma}^2_e$};
-
-% ── Skip FM icons (centre column, same y as encoder/decoder) ──────────
-\node[ovFm] (fm_s1) at (0, 8.1)
-  {\includegraphics[width=0.50cm,height=0.50cm]{figures/arch/featmap_256.png}};
-\node[ovDim, above=2pt of fm_s1] {$s_1$\;64\,ch};
-
-\node[ovFm] (fm_s2) at (0, 6.5)
-  {\includegraphics[width=0.43cm,height=0.43cm]{figures/arch/featmap_128.png}};
-\node[ovDim, above=2pt of fm_s2] {$s_2$\;128\,ch};
-
-\node[ovFm] (fm_s3) at (0, 4.9)
-  {\includegraphics[width=0.36cm,height=0.36cm]{figures/arch/featmap_64.png}};
-\node[ovDim, above=2pt of fm_s3] {$s_3$\;256\,ch};
-
-% ── Arrows ────────────────────────────────────────────────────────────
-
-% Encoder downward
-\draw[ovMain] (inp.south)  -- (stem.north);
-\draw[ovMain] (stem.south) -- (enc1.north);
-\draw[ovMain] (enc1.south) -- (enc2.north);
-\draw[ovMain] (enc2.south) -- (enc3.north);
-\draw[ovMain] (enc3.south) -- (bot.north);
-
-% Bot -> VAE -> D3 (main probabilistic path)
-\draw[ovMain] (bot.south) |- (vae.west);
-\draw[ovMain] (vae.east)  -| (dec3.south);
-
-% Arms A-D bypass (no VAE)
-\draw[ovByp] (bot.east) -|
-  node[above, pos=0.22,
-       font=\fontsize{6}{7}\selectfont, text=gray!65]
-    {Arms\,A--D (no\,VAE)}
-  (dec3.south);
-
-% Decoder upward
-\draw[ovMain] (dec3.north) -- (dec2.south);
-\draw[ovMain] (dec2.north) -- (dec1.south);
-\draw[ovMain] (dec1.north) -- (head.south);
-
-% Head -> dual outputs
-\draw[ovMain] (head.east) -- ++(0.3,0) -- ++(0, 0.6) -- (outmu.west);
-\draw[ovMain] (head.east) -- ++(0.3,0) -- ++(0,-0.6) -- (outsig.west);
-
-% VAE epistemic branch
-\draw[ovVaeA] (vae.south) -- (mc.north);
-\draw[ovVaeA] (mc.east)   -- (outepi.west);
-
-% Skip connections through FM icons
-\draw[ovSkip] (enc1.east) -- (fm_s1.west);
-\draw[ovSkip] (fm_s1.east) -- (dec1.west);
-\draw[ovSkip] (enc2.east) -- (fm_s2.west);
-\draw[ovSkip] (fm_s2.east) -- (dec2.west);
-\draw[ovSkip] (enc3.east) -- (fm_s3.west);
-\draw[ovSkip] (fm_s3.east) -- (dec3.west);
-
-\end{tikzpicture}%
-}
+\resizebox{0.80\textwidth}{!}{\includestandalone{fig_architecture_overview_sa}}
 \caption[PP-VAE-Hformer overall architecture]{%
   \textbf{PP-VAE-Hformer encoder--decoder architecture.}
   A noisy chest radiograph ($1{\times}256{\times}256$) enters a stem convolution
@@ -176,10 +20,11 @@
   dashed arrow).
   Three symmetric decoder stages (\textbf{D3--D1}) upsample and concatenate
   encoder skip features $s_1$--$s_3$ (blue dashed arrows; blue square icons show
-  real convolutional feature maps sampled at each spatial scale).
-  A dual $3{\times}3$ head produces the denoised mean $\hat{\mu}_y$ and aleatoric
-  log-variance $\hat{\sigma}^2_a$.
+  real convolutional feature maps at each spatial scale).
+  A dual $3{\times}3$ head produces the denoised mean $\hat{\mu}_y$ and
+  aleatoric log-variance $\hat{\sigma}^2_a$.
   Epistemic uncertainty $\hat{\sigma}^2_e$ is the pixel-wise variance of
   $K{=}20$ stochastic forward passes (purple branch).}
 \label{fig:arch:overview}
 \end{figure}
+\linenumbers
