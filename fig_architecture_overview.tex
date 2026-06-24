@@ -1,173 +1,166 @@
 % fig_architecture_overview.tex
-% Figure: PP-VAE-Hformer full pipeline (portrait 2-column U-Net)
-% Portrait figure[htbp] renders in-place; avoids sidewaysfigure deferral.
-% Left column = encoder (top down). Right = decoder (bottom up).
-% Centre column = skip FM icons + VAE/MC branch.
+% Styles defined via \tikzset{} (before tikzpicture) to avoid pgfkeys
+% parser interference from lineno/siunitx expl3 internals.
+\tikzset{
+  ovImg/.style  = {inner sep=0pt, outer sep=0pt},
+  ovFm/.style   = {inner sep=0pt, outer sep=0pt},
+  ovStem/.style = {draw=gray!70, fill=cyan!10, rounded corners=3pt,
+                   minimum width=2.2cm, minimum height=0.90cm,
+                   align=center, line width=0.8pt},
+  ovEnc/.style  = {draw=blue!60!black, fill=blue!10, rounded corners=3pt,
+                   minimum width=2.6cm, minimum height=1.3cm,
+                   align=center, line width=0.8pt},
+  ovBot/.style  = {draw=teal!70!black, fill=teal!12, rounded corners=3pt,
+                   minimum width=2.6cm, minimum height=1.3cm,
+                   align=center, line width=1.0pt},
+  ovVae/.style  = {draw=purple!65!black, fill=purple!8, rounded corners=3pt,
+                   minimum width=3.4cm, minimum height=1.5cm,
+                   align=center, line width=1.0pt, dashed},
+  ovDec/.style  = {draw=orange!65!black, fill=orange!10, rounded corners=3pt,
+                   minimum width=2.6cm, minimum height=1.3cm,
+                   align=center, line width=0.8pt},
+  ovHead/.style = {draw=teal!60!black, fill=teal!9, rounded corners=3pt,
+                   minimum width=2.0cm, minimum height=0.90cm,
+                   align=center, line width=0.8pt},
+  ovMc/.style   = {draw=purple!55!black, fill=purple!7, rounded corners=3pt,
+                   minimum width=2.3cm, minimum height=0.80cm,
+                   align=center, line width=0.8pt, dashed},
+  ovDim/.style  = {font=\fontsize{8}{9}\selectfont,
+                   text=black!60, align=center},
+  ovMain/.style = {->, line width=1.4pt, black!70},
+  ovSkip/.style = {->, line width=1.2pt, blue!65, dashed},
+  ovByp/.style  = {->, line width=0.9pt, gray!60, dashed},
+  ovVaeA/.style = {->, line width=1.0pt, purple!65},
+}
 \begin{figure}[htbp]
 \centering
 \resizebox{0.95\textwidth}{!}{%
-\begin{tikzpicture}[
-  >=Stealth,
-  every node/.style={font=\small},
-  imgblk/.style={inner sep=0pt, outer sep=0pt},
-  fmblk/.style={inner sep=0pt, outer sep=0pt},
-  stemblk/.style={draw=gray!70, fill=cyan!10, rounded corners=3pt,
-                  minimum width=2.2cm, minimum height=0.90cm,
-                  align=center, line width=0.8pt},
-  encblk/.style={draw=blue!60!black, fill=blue!10, rounded corners=3pt,
-                 minimum width=2.6cm, minimum height=1.3cm,
-                 align=center, line width=0.8pt},
-  botblk/.style={draw=teal!70!black, fill=teal!12, rounded corners=3pt,
-                 minimum width=2.6cm, minimum height=1.3cm,
-                 align=center, line width=1.0pt},
-  vaeblk/.style={draw=purple!65!black, fill=purple!8, rounded corners=3pt,
-                 minimum width=3.4cm, minimum height=1.5cm,
-                 align=center, line width=1.0pt, dashed},
-  decblk/.style={draw=orange!65!black, fill=orange!10, rounded corners=3pt,
-                 minimum width=2.6cm, minimum height=1.3cm,
-                 align=center, line width=0.8pt},
-  headblk/.style={draw=teal!60!black, fill=teal!9, rounded corners=3pt,
-                  minimum width=2.0cm, minimum height=0.90cm,
-                  align=center, line width=0.8pt},
-  mcblk/.style={draw=purple!55!black, fill=purple!7, rounded corners=3pt,
-                minimum width=2.3cm, minimum height=0.80cm,
-                align=center, line width=0.8pt, dashed},
-  dimtag/.style={font=\fontsize{8}{9}\selectfont, text=black!60, align=center},
-  arrmain/.style={->, line width=1.4pt, black!70},
-  arrskip/.style={->, line width=1.2pt, blue!65, dashed},
-  arrbyp/.style={->, line width=0.9pt, gray!60, dashed},
-  arrvae/.style={->, line width=1.0pt, purple!65},
-]
+\begin{tikzpicture}[>=Stealth, every node/.style={font=\small}]
 
-% ════════════════════════════════════════════
-% NODES
-% ════════════════════════════════════════════
-
-% Input thumbnail
-\node[imgblk] (inp) at (-2.5, 11.0)
+% ── Input ─────────────────────────────────────────────────────────────
+\node[ovImg] (inp) at (-2.5, 11.0)
   {\includegraphics[width=1.4cm,height=1.4cm,keepaspectratio]%
     {figures/arch/arch_input_noisy.png}};
-\node[dimtag] at (-2.5, 12.1)
+\node[ovDim] at (-2.5, 12.1)
   {Noisy CXR\\[-2pt]$1{\times}256{\times}256$};
 
-% Encoder (left column)
-\node[stemblk] (stem) at (-2.5, 9.6)
-  {\textbf{Stem}\\{\fontsize{7}{8}\selectfont Conv $3{\times}3$,\;$1\!\to\!64$\,ch}};
+% ── Encoder (left column, top to bottom) ──────────────────────────────
+\node[ovStem] (stem) at (-2.5, 9.6)
+  {\textbf{Stem}\\
+   {\fontsize{7}{8}\selectfont Conv $3{\times}3$,\;$1\!\to\!64$\,ch}};
 
-\node[encblk] (enc1) at (-2.5, 8.1)
-  {\textbf{E1}\\{\fontsize{7}{8}\selectfont
-   HB${\times}2\!+\!$Down\\$64$\,ch,\;$256^2$}};
+\node[ovEnc] (enc1) at (-2.5, 8.1)
+  {\textbf{E1}\\
+   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$64$\,ch,\;$256^2$}};
 
-\node[encblk] (enc2) at (-2.5, 6.5)
-  {\textbf{E2}\\{\fontsize{7}{8}\selectfont
-   HB${\times}2\!+\!$Down\\$128$\,ch,\;$128^2$}};
+\node[ovEnc] (enc2) at (-2.5, 6.5)
+  {\textbf{E2}\\
+   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$128$\,ch,\;$128^2$}};
 
-\node[encblk] (enc3) at (-2.5, 4.9)
-  {\textbf{E3}\\{\fontsize{7}{8}\selectfont
-   HB${\times}2\!+\!$Down\\$256$\,ch,\;$64^2$}};
+\node[ovEnc] (enc3) at (-2.5, 4.9)
+  {\textbf{E3}\\
+   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$256$\,ch,\;$64^2$}};
 
-\node[botblk] (bot) at (-2.5, 3.3)
-  {\textbf{Bottleneck}\\{\fontsize{7}{8}\selectfont
-   HB${\times}2$\\$512$\,ch,\;$32^2$}};
+\node[ovBot] (bot) at (-2.5, 3.3)
+  {\textbf{Bottleneck}\\
+   {\fontsize{7}{8}\selectfont HB${\times}2$\\$512$\,ch,\;$32^2$}};
 
-% VAE + MC (centre bottom)
-\node[vaeblk] (vae) at (0, 2.0)
+% ── VAE branch (centre) ────────────────────────────────────────────────
+\node[ovVae] (vae) at (0, 2.0)
   {\textbf{VAE Bottleneck}\\
    {\fontsize{7}{8}\selectfont
-    $\mathbf{z}_\mu,\mathbf{z}_{\log\sigma^2}$\;(Conv\,$1{\times}1$)\\[1pt]
-    $\mathbf{z}{=}\mathbf{z}_\mu{+}\boldsymbol{\varepsilon}{\odot}
-    \exp\!\bigl(\tfrac{1}{2}\mathbf{z}_{\log\sigma^2}\bigr)$}};
+    $\mu_z,\,\sigma_z^2$\;(Conv\,$1{\times}1$)\\[2pt]
+    $z = \mu_z + \varepsilon\!\cdot\!\exp(\tfrac{1}{2}\sigma_z^2)$}};
 
-\node[mcblk] (mc) at (0, 0.5)
+\node[ovMc] (mc) at (0, 0.5)
   {{\fontsize{7}{8}\selectfont $K{=}20$ stochastic passes}};
 
-% Decoder (right column)
-\node[decblk] (dec3) at (2.5, 4.9)
-  {\textbf{D3}\\{\fontsize{7}{8}\selectfont
-   Up$+s_3+$HB${\times}2$\\$256$\,ch,\;$64^2$}};
+% ── Decoder (right column, bottom to top) ─────────────────────────────
+\node[ovDec] (dec3) at (2.5, 4.9)
+  {\textbf{D3}\\
+   {\fontsize{7}{8}\selectfont Up$+s_3+$HB${\times}2$\\$256$\,ch,\;$64^2$}};
 
-\node[decblk] (dec2) at (2.5, 6.5)
-  {\textbf{D2}\\{\fontsize{7}{8}\selectfont
-   Up$+s_2+$HB${\times}2$\\$128$\,ch,\;$128^2$}};
+\node[ovDec] (dec2) at (2.5, 6.5)
+  {\textbf{D2}\\
+   {\fontsize{7}{8}\selectfont Up$+s_2+$HB${\times}2$\\$128$\,ch,\;$128^2$}};
 
-\node[decblk] (dec1) at (2.5, 8.1)
-  {\textbf{D1}\\{\fontsize{7}{8}\selectfont
-   Up$+s_1+$HB${\times}2$\\$64$\,ch,\;$256^2$}};
+\node[ovDec] (dec1) at (2.5, 8.1)
+  {\textbf{D1}\\
+   {\fontsize{7}{8}\selectfont Up$+s_1+$HB${\times}2$\\$64$\,ch,\;$256^2$}};
 
-\node[headblk] (head) at (2.5, 9.6)
-  {\textbf{Dual Head}\\{\fontsize{7}{8}\selectfont Conv\,$3{\times}3$}};
+\node[ovHead] (head) at (2.5, 9.6)
+  {\textbf{Dual Head}\\
+   {\fontsize{7}{8}\selectfont Conv\,$3{\times}3$}};
 
-% Output thumbnails (right)
-\node[imgblk] (outmu) at (4.5, 10.2)
+% ── Output thumbnails ─────────────────────────────────────────────────
+\node[ovImg] (outmu) at (4.5, 10.2)
   {\includegraphics[width=1.2cm,height=1.2cm,keepaspectratio]%
     {figures/arch/arch_output_mu.png}};
-\node[dimtag, above=2pt of outmu] {$\hat{\mu}_y$};
+\node[ovDim, above=2pt of outmu] {$\hat{\mu}_y$};
 
-\node[imgblk] (outsig) at (4.5, 9.0)
+\node[ovImg] (outsig) at (4.5, 9.0)
   {\includegraphics[width=1.2cm,height=1.2cm,keepaspectratio]%
     {figures/arch/arch_output_aleat.png}};
-\node[dimtag, below=2pt of outsig] {$\hat{\sigma}^2_a$};
+\node[ovDim, below=2pt of outsig] {$\hat{\sigma}^2_a$};
 
-\node[imgblk] (outepi) at (2.5, 0.5)
+\node[ovImg] (outepi) at (2.5, 0.5)
   {\includegraphics[width=1.1cm,height=1.1cm,keepaspectratio]%
     {figures/arch/arch_output_epist.png}};
-\node[dimtag, right=3pt of outepi] {$\hat{\sigma}^2_e$};
+\node[ovDim, right=3pt of outepi] {$\hat{\sigma}^2_e$};
 
-% Skip feature-map icons (centre column, same y as encoder/decoder)
-\node[fmblk] (fm_s1) at (0, 8.1)
+% ── Skip FM icons (centre column, same y as encoder/decoder) ──────────
+\node[ovFm] (fm_s1) at (0, 8.1)
   {\includegraphics[width=0.50cm,height=0.50cm]{figures/arch/featmap_256.png}};
-\node[dimtag, above=2pt of fm_s1] {$s_1$\;64\,ch};
+\node[ovDim, above=2pt of fm_s1] {$s_1$\;64\,ch};
 
-\node[fmblk] (fm_s2) at (0, 6.5)
+\node[ovFm] (fm_s2) at (0, 6.5)
   {\includegraphics[width=0.43cm,height=0.43cm]{figures/arch/featmap_128.png}};
-\node[dimtag, above=2pt of fm_s2] {$s_2$\;128\,ch};
+\node[ovDim, above=2pt of fm_s2] {$s_2$\;128\,ch};
 
-\node[fmblk] (fm_s3) at (0, 4.9)
+\node[ovFm] (fm_s3) at (0, 4.9)
   {\includegraphics[width=0.36cm,height=0.36cm]{figures/arch/featmap_64.png}};
-\node[dimtag, above=2pt of fm_s3] {$s_3$\;256\,ch};
+\node[ovDim, above=2pt of fm_s3] {$s_3$\;256\,ch};
 
-% ════════════════════════════════════════════
-% ARROWS
-% ════════════════════════════════════════════
+% ── Arrows ────────────────────────────────────────────────────────────
 
-% Encoder (downward)
-\draw[arrmain] (inp.south)  -- (stem.north);
-\draw[arrmain] (stem.south) -- (enc1.north);
-\draw[arrmain] (enc1.south) -- (enc2.north);
-\draw[arrmain] (enc2.south) -- (enc3.north);
-\draw[arrmain] (enc3.south) -- (bot.north);
+% Encoder downward
+\draw[ovMain] (inp.south)  -- (stem.north);
+\draw[ovMain] (stem.south) -- (enc1.north);
+\draw[ovMain] (enc1.south) -- (enc2.north);
+\draw[ovMain] (enc2.south) -- (enc3.north);
+\draw[ovMain] (enc3.south) -- (bot.north);
 
-% Bot → VAE → D3
-\draw[arrmain] (bot.south)  |- (vae.west);
-\draw[arrmain] (vae.east)   -| (dec3.south);
+% Bot -> VAE -> D3 (main probabilistic path)
+\draw[ovMain] (bot.south) |- (vae.west);
+\draw[ovMain] (vae.east)  -| (dec3.south);
 
-% Arms A–D bypass (no VAE)
-\draw[arrbyp] (bot.east) -|
+% Arms A-D bypass (no VAE)
+\draw[ovByp] (bot.east) -|
   node[above, pos=0.22,
        font=\fontsize{6}{7}\selectfont, text=gray!65]
     {Arms\,A--D (no\,VAE)}
   (dec3.south);
 
-% Decoder (upward)
-\draw[arrmain] (dec3.north) -- (dec2.south);
-\draw[arrmain] (dec2.north) -- (dec1.south);
-\draw[arrmain] (dec1.north) -- (head.south);
+% Decoder upward
+\draw[ovMain] (dec3.north) -- (dec2.south);
+\draw[ovMain] (dec2.north) -- (dec1.south);
+\draw[ovMain] (dec1.north) -- (head.south);
 
-% Head → outputs
-\draw[arrmain] (head.east) -- ++(0.3,0) -- ++(0, 0.6) -- (outmu.west);
-\draw[arrmain] (head.east) -- ++(0.3,0) -- ++(0,-0.6) -- (outsig.west);
+% Head -> dual outputs
+\draw[ovMain] (head.east) -- ++(0.3,0) -- ++(0, 0.6) -- (outmu.west);
+\draw[ovMain] (head.east) -- ++(0.3,0) -- ++(0,-0.6) -- (outsig.west);
 
 % VAE epistemic branch
-\draw[arrvae] (vae.south) -- (mc.north);
-\draw[arrvae] (mc.east)   -- (outepi.west);
+\draw[ovVaeA] (vae.south) -- (mc.north);
+\draw[ovVaeA] (mc.east)   -- (outepi.west);
 
-% Skip connections (each split through its FM icon)
-\draw[arrskip] (enc1.east) -- (fm_s1.west);
-\draw[arrskip] (fm_s1.east) -- (dec1.west);
-\draw[arrskip] (enc2.east) -- (fm_s2.west);
-\draw[arrskip] (fm_s2.east) -- (dec2.west);
-\draw[arrskip] (enc3.east) -- (fm_s3.west);
-\draw[arrskip] (fm_s3.east) -- (dec3.west);
+% Skip connections through FM icons
+\draw[ovSkip] (enc1.east) -- (fm_s1.west);
+\draw[ovSkip] (fm_s1.east) -- (dec1.west);
+\draw[ovSkip] (enc2.east) -- (fm_s2.west);
+\draw[ovSkip] (fm_s2.east) -- (dec2.west);
+\draw[ovSkip] (enc3.east) -- (fm_s3.west);
+\draw[ovSkip] (fm_s3.east) -- (dec3.west);
 
 \end{tikzpicture}%
 }
