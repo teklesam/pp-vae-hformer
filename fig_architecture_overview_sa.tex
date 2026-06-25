@@ -100,11 +100,10 @@
    {\fontsize{6}{7}\selectfont Conv\,$3{\times}3$}};
 
 % ── Output thumbnails ────────────────────────────────────────────────
-% mu: clean ground truth of the same patient (arch_input_clean.png = same patient as noisy input)
-% aleatoric, epistemic: regenerate from arch_input_noisy.png on CSD3 for same-patient match
+% All three outputs are Arm H inference on the same arch_input_noisy.png patient.
 \node[ovImg] (outmu) at (4.5,10.2)
   {\includegraphics[width=1.1cm,height=1.1cm,keepaspectratio]%
-    {figures/arch/arch_input_clean.png}};
+    {figures/arch/arch_output_mu.png}};
 \node[ovDim, above=2pt of outmu] {$\hat{\mu}_y$};
 
 \node[ovImg] (outsig) at (4.5,9.0)
