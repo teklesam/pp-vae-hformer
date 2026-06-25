@@ -87,8 +87,9 @@
     {Feature map $H{\times}W{\times}C$};
   \node[font=\fontsize{7}{8}\selectfont, white, below=2pt] at (1.35,0.0)
     {$3{\times}3$ sliding window (highlighted)};
-  \draw[->, gray!70, line width=0.8pt] (-0.2,0.9) -- (0.5,1.2);
-  \node[font=\fontsize{7}{8}\selectfont, text=black!75, left=2pt] at (-0.2,0.9)
+  % Arrow ends at scope x=0 = image left boundary; tip not inside image
+  \draw[->, gray!70, line width=0.8pt] (-0.3,0.7) -- (0.0,1.1);
+  \node[font=\fontsize{7}{8}\selectfont, text=black!75, anchor=east] at (-0.3,0.7)
     {receptive field};
 \end{scope}
 

@@ -66,11 +66,12 @@
 \end{scope}
 
 % ResBlock skip connection (left arm)
+% Use perpendicular coord to guarantee horizontal final approach → arrowhead points right
 \draw[hbSkip]
-  (fin_img.west) -- ++(-1.4,0)
+  (fin_img.west) -- ++(-1.4,0) coordinate (skipL)
   -- node[left, font=\fontsize{7}{8}\selectfont, xshift=-2pt]{skip}
-     ++(0,-9.0)
-  -| (rb_add.west);
+     (skipL |- rb_add.west)
+  -- (rb_add.west);
 
 % ── f_res annotation (in the gap between the two group boxes) ──────────
 \node[hbFm] (fm_res) at (2.1,-0.5)
@@ -95,14 +96,15 @@
                 text=purple!65, align=center]right:Window\\[-2pt]AttnBlock}] (waGrp) {};
 \end{scope}
 
-% Outer residual (right arm, left-aligned label avoids the right panel)
+% Outer residual (right arm)
+% Perpendicular coord ensures corner is at wa_add's exact y → arrowhead points left
 \draw[hbWaArr]
-  (fin_img.east) -- ++(3.5,0)
+  (fin_img.east) -- ++(3.5,0) coordinate (outerR)
   -- node[left, align=center,
           font=\fontsize{6}{7}\selectfont, text=purple!70]
        {outer\\[-2pt]residual}
-     ++(0,-18.2)
-  -| (wa_add.east);
+     (outerR |- wa_add.east)
+  -- (wa_add.east);
 
 % f_out label (below wa_add, below the WindowAttnBlock group label)
 \node[hbDim] at (0,-9.0) {$\mathbf{f}_{\mathrm{out}}$\;($H{\times}W{\times}C$)};
