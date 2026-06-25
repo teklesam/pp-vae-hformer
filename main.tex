@@ -1812,10 +1812,47 @@ All experiments used CSD3 NVIDIA A100 80\,GB GPUs (one per arm, SLURM \texttt{am
     \midrule
     Proposed arm wall time   & $\approx$9--10\,h (200 epochs, batch 16) \\
     CNN baseline wall time   & $\approx$14\,h (200 epochs, batch 16) \\
-    SwinIR wall time         & $\approx$35\,h (150 epochs, batch 4) \\
-    Total compute            & $\approx$250 A100 GPU-hours \\
+    SwinIR wall time         & $\approx$35\,h (200 epochs, batch 4) \\
+    NAFNet wall time         & $\approx$8\,h (200 epochs, batch 16; $\approx$144\,s/epoch) \\
+    SCUNet wall time         & $\approx$45\,h (200 epochs, batch 8; $\approx$813\,s/epoch; AMP disabled) \\
+    Total compute            & $\approx$375 A100 GPU-hours \\
     \bottomrule
   \end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption[Trainable parameters, training time, and inference latency per model]{%
+  Trainable parameter counts, wall-clock training time (200 epochs on one NVIDIA A100 80\,GB),
+  and single-image inference latency at $256{\times}256$ pixels (200-pass mean on A100,
+  batch size 1). PP-VAE-Hformer inference uses a deterministic forward pass
+  ($\mathbf{z}=\boldsymbol{\mu}_z$, no MC sampling). $\dagger$SwinIR was trained with
+  batch size 4 due to memory constraints.}
+\label{tab:methods:model_complexity}
+\begin{tabular}{lrrrl}
+\toprule
+\textbf{Model} & \textbf{Parameters} & \textbf{Train time (h)} & \textbf{Inference (ms)} & \textbf{Notes} \\
+\midrule
+\multicolumn{5}{l}{\textit{PP-VAE-Hformer (proposed)}} \\
+Arm A (L2) -- all arms share architecture & 1,649,729 & $\approx$9--10 & --- & VAE + dual head \\
+\midrule
+\multicolumn{5}{l}{\textit{Retrained KAIR baselines}} \\
+DnCNN \cite{zhang_beyond_2017}  & 668,224  & $\approx$14 & --- & residual CNN \\
+IRCNN \cite{zhang_learning_2017}& 187,584  & $\approx$14 & --- & modular PnP \\
+FFDNet \cite{zhang_ffdnet_2018} & 486,080  & $\approx$14 & --- & $\sigma$-conditioned CNN \\
+DRUNet \cite{zhang_drunet_2021} & 32,640,513 & $\approx$14 & --- & U-Net, $\sigma$-cond. \\
+SwinIR \cite{liang_swinir_2021}$^\dagger$ & 11,490,945 & $\approx$35 & --- & Swin Transformer \\
+\midrule
+\multicolumn{5}{l}{\textit{Extended SOTA baselines}} \\
+NAFNet \cite{chen_nafnet_2022}  & 115,980,609 & $\approx$8 & --- & simple gate, AMP \\
+SCUNet \cite{zhang_scunet_2023} & 57,043,457  & $\approx$45 & --- & Swin-Conv hybrid, no AMP \\
+\bottomrule
+\multicolumn{5}{p{0.94\linewidth}}{\footnotesize
+  Inference latency (ms/image) measured on A100 with 200 forward passes after 20 warmup
+  passes; will be populated from benchmarking results.
+  Parameter counts verified from loaded model state dicts at training time.} \\
+\end{tabular}
 \end{table}
 
 With the experimental apparatus fully specified, Chapter~\ref{chap:results} presents the outcomes: reconstruction performance across all 19 arms, five retrained KAIR baselines, and two extended SOTA baselines (NAFNet, SCUNet), latent space geometry, uncertainty calibration, and subgroup behaviour across Normal, Bacterial Pneumonia, and Viral Pneumonia cases.
@@ -2264,6 +2301,66 @@ The three sites were selected to stress-test complementary reconstruction proper
   DnCNN recovers the broad signal but lacks the texture fidelity of the Hformer-based arms.
   Arm~R's FFL component produces the sharpest vessel margins and clearest consolidation edges of any model shown.}
 \label{fig:results:roi:classical:learned}
+\end{figure}
+
+% ── Extended SOTA ROI comparison ──────────────────────────────────────────────
+\subsection{Extended SOTA Qualitative Comparison: NAFNet and SCUNet}
+\label{sec:results:recon:sota:roi}
+
+Figures~\ref{fig:results:roi:sota:normal}--\ref{fig:results:roi:sota:costoph} present
+nine-column ROI comparisons that include NAFNet \cite{chen_nafnet_2022} and
+SCUNet \cite{zhang_scunet_2023} alongside PP-VAE-Hformer (Arm~A), DnCNN, IRCNN,
+DRUNet, and SwinIR at mid noise ($\eta=200$).
+Each panel shows a full $256{\times}256$ field (top row, with red ROI bounding box and
+per-image PSNR annotation) and a zoomed crop at the ROI site (bottom row, red border).
+
+At the right mid-lung vascular site (Figure~\ref{fig:results:roi:sota:normal}), SCUNet
+achieves the highest PSNR in this panel by a narrow margin, but all three models
+(Arm~A, NAFNet, SCUNet) recover the primary vessel margins with comparable fidelity;
+SwinIR produces the most uniform background but shows slight smoothing of the thinnest
+vessels. At the alveolar consolidation site (Figure~\ref{fig:results:roi:sota:pneumonia}),
+NAFNet and SCUNet both preserve consolidation boundaries clearly, consistent with their
+superior PSNR. At the costophrenic angle (Figure~\ref{fig:results:roi:sota:costoph}),
+the pleural boundary rendering is sharp for all learned models and blunted for BM3D
+(not shown here; see Figure~\ref{fig:results:roi:classical:learned}).
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=\linewidth]{figures/evaluation_v2/nafnet_scunet_roi/roi_sota_normal_vascular}
+\caption[SOTA ROI comparison -- Normal, right mid-lung vascular margins]{%
+  Nine-model ROI comparison at the right mid-lung vascular margin (Normal case,
+  $\eta=200$). \textit{Top row:} full $256{\times}256$ field with red ROI box
+  and per-image PSNR. \textit{Bottom row:} $75{\times}75$ crop at native resolution.
+  \textit{Columns:} Noisy $|$ Reference $|$ PP-VAE-Hformer (Arm~A) $|$ DnCNN $|$
+  IRCNN $|$ DRUNet $|$ SwinIR $|$ NAFNet $|$ SCUNet.
+  SCUNet achieves the highest PSNR overall; PP-VAE-Hformer matches or exceeds
+  DnCNN and SwinIR while also providing calibrated uncertainty output (not shown here
+  for deterministic comparison clarity).}
+\label{fig:results:roi:sota:normal}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=\linewidth]{figures/evaluation_v2/nafnet_scunet_roi/roi_sota_pneumonia_consolidation}
+\caption[SOTA ROI comparison -- Bacterial Pneumonia, alveolar consolidation]{%
+  Nine-model ROI comparison at the alveolar consolidation boundary (Bacterial Pneumonia
+  case, $\eta=200$). Top and bottom row layout as in Figure~\ref{fig:results:roi:sota:normal}.
+  NAFNet and SCUNet recover consolidation margins with the highest pixel fidelity;
+  PP-VAE-Hformer (Arm~A) is within $0.23$~dB and preserves the diagnostically critical
+  consolidation boundary. DRUNet's $\sigma$-conditioned architecture performs competitively.}
+\label{fig:results:roi:sota:pneumonia}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=\linewidth]{figures/evaluation_v2/nafnet_scunet_roi/roi_sota_normal_costophrenic}
+\caption[SOTA ROI comparison -- Normal, right costophrenic angle]{%
+  Nine-model ROI comparison at the right costophrenic angle / pleural boundary (Normal
+  case, $\eta=200$). The pleural line is a sharp, high-frequency edge; performance
+  at this site distinguishes models that preserve high-frequency content (Arm~A via
+  Hformer attention; NAFNet via simple gating; SCUNet via SC-hybrid) from those that
+  over-smooth (SwinIR; IRCNN).}
+\label{fig:results:roi:sota:costoph}
 \end{figure}
 
 \subsection{Performance as a Function of Degradation Severity}
