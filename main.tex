@@ -2693,9 +2693,10 @@ Figures~\ref{fig:results:ablation:psnr} and~\ref{fig:results:ablation:ssim} summ
 %
 \bottomrule
 \multicolumn{8}{p{0.97\linewidth}}{\footnotesize
-  PSNR and SSIM: higher is better. All 21 models evaluated on the same 624-image held-out test set.
+  PSNR and SSIM: higher is better. All 23 models evaluated on the same 624-image held-out test set.
   Rank ordering is stable across noise levels (Spearman $r_s > 0.98$).
-  BM3D results are not included here as it was evaluated at mid noise only.} \\
+  BM3D results are not included here as it was evaluated at mid noise only.
+  Bold denotes the best value per column (SCUNet leads at all three noise levels).} \\
 \endlastfoot
 %
 \multicolumn{8}{l}{\textit{L2 / L1 deterministic arms}} \\
@@ -2726,6 +2727,10 @@ IRCNN  & \cite{zhang_learning_2017}& $34.920 \pm 0.991$ & $0.9213$ & $32.659 \pm
 FFDNet & \cite{zhang_ffdnet_2018}  & $34.640 \pm 0.988$ & $0.9190$ & $32.625 \pm 0.977$ & $0.8907$ & $30.735 \pm 0.969$ & $0.8602$ \\
 DRUNet & \cite{zhang_drunet_2021}  & $34.177 \pm 1.089$ & $0.8896$ & $32.583 \pm 1.097$ & $0.8655$ & $31.273 \pm 0.994$ & $0.8405$ \\
 SwinIR & \cite{liang_swinir_2021}  & $33.264 \pm 0.882$ & $0.8953$ & $31.183 \pm 0.885$ & $0.8525$ & $29.007 \pm 0.894$ & $0.7882$ \\
+\midrule
+\multicolumn{8}{l}{\textit{Extended SOTA baselines (retrained; Section~\ref{sec:methods:baselines})}} \\
+NAFNet & \cite{chen_nafnet_2022}  & $36.329 \pm 1.074$ & $0.9425$ & $34.388 \pm 1.084$ & $0.9235$ & $32.699 \pm 1.072$ & $0.9040$ \\
+SCUNet & \cite{zhang_scunet_2023} & $\mathbf{36.704 \pm 1.080}$ & $\mathbf{0.9465}$ & $\mathbf{34.726 \pm 1.076}$ & $\mathbf{0.9284}$ & $\mathbf{33.036 \pm 1.061}$ & $\mathbf{0.9102}$ \\
 %
 \end{longtable}
 \end{landscape}
@@ -2819,6 +2824,10 @@ Retrained
   & G — PP-VAE free bits               & $31.772\pm0.788$ & $32.909\pm0.913$ & $+1.137$ \\
   & H — PP-VAE cyc+fb (best VAE)       & $32.038\pm0.822$ & $33.196\pm0.950$ & $+1.158$ \\
   & P — PP-VAE best (full)             & $31.030\pm0.754$ & $32.050\pm0.863$ & $+1.020$ \\
+\midrule
+\multirow{2}{*}{\parbox{2.2cm}{Extended\\SOTA}}
+  & NAFNet \cite{chen_nafnet_2022}     & $33.781\pm0.916$ & $34.753\pm1.009$ & $+0.972$ \\
+  & SCUNet \cite{zhang_scunet_2023}    & $\mathbf{34.148\pm0.931}$ & $\mathbf{35.073\pm1.005}$ & $+0.925$ \\
 %
 \end{longtable}
 \end{landscape}
@@ -2921,9 +2930,14 @@ FFDNet \cite{zhang_ffdnet_2018}               & $31.47\pm0.79$ & $32.58\pm0.93$ 
 IRCNN \cite{zhang_learning_2017}              & $31.51\pm0.80$ & $32.61\pm0.93$ & $32.48\pm0.87$ & $+1.10$ & $+0.97$ \\
 DRUNet \cite{zhang_plug_2021}                 & $31.63\pm0.74$ & $32.73\pm1.21$ & $32.08\pm0.81$ & $+1.10$ & $+0.45$ \\
 SwinIR \cite{liang_swinir_2021}               & $30.09\pm0.81$ & $31.11\pm0.74$ & $31.02\pm0.86$ & $+1.02$ & $+0.94$ \\
+\midrule
+\multicolumn{6}{l}{\textit{Extended SOTA baselines — Bacterial/Viral breakdown not available$^\S$}} \\
+NAFNet \cite{chen_nafnet_2022}                & $33.78\pm0.92$ & --- & --- & --- & --- \\
+SCUNet \cite{zhang_scunet_2023}               & $\mathbf{34.15\pm0.93}$ & --- & --- & --- & --- \\
 \bottomrule
 \end{tabular}%
 }
+\multicolumn{1}{p{\linewidth}}{\footnotesize $^\S$NAFNet and SCUNet evaluation scripts recorded class labels as \texttt{Normal}/\texttt{Pneumonia} only; the bacterial/viral split was not preserved at evaluation time.}
 \end{table}
 
 % ============================================================
@@ -2976,6 +2990,10 @@ FFDNet \cite{zhang_ffdnet_2018}         & $0.9025 \pm 0.0105$          & $0.3226
 IRCNN \cite{zhang_learning_2017}        & $0.9027 \pm 0.0105$          & $0.3168 \pm 0.0337$ \\
 DRUNet \cite{zhang_plug_2021}           & $0.9212 \pm 0.0090$          & $0.2354 \pm 0.0269$ \\
 SwinIR \cite{liang_swinir_2021}         & $0.8905 \pm 0.0115$          & $0.4148 \pm 0.0323$ \\
+\midrule
+\multicolumn{3}{l}{\textit{Extended SOTA baselines}} \\
+NAFNet \cite{chen_nafnet_2022}          & ---\textsuperscript{$\ddagger$} & ---\textsuperscript{$\ddagger$} \\
+SCUNet \cite{zhang_scunet_2023}         & ---\textsuperscript{$\ddagger$} & ---\textsuperscript{$\ddagger$} \\
 \bottomrule
 \end{tabular}
 \end{table}
