@@ -1,19 +1,12 @@
-% fig_architecture_hybridblock.tex — wrapper for main.tex
-% \nolinenumbers disables the lineno expl3 hook that corrupts
-% \tikzscope@linewidth at \begin{tikzpicture} start.
-% \includestandalone reads the standalone body inline (no PDF needed).
-\providecommand{\nolinenumbers}{}
-\providecommand{\linenumbers}{}
-\nolinenumbers
 \begin{figure}[htbp]
 \centering
-\resizebox{0.60\textwidth}{!}{\includestandalone{fig_architecture_hybridblock_sa}}
+\resizebox{0.62\textwidth}{!}{\includestandalone{fig_architecture_hybridblock_sa}}
 \caption[HybridBlock (HB) internal structure]{%
   \textbf{HybridBlock (HB) -- sequential convolutional and windowed
   self-attention.}
   $\mathbf{f}_{\mathrm{in}}$ first enters the \textbf{ResBlock}: two
   $3{\times}3$ Conv--GroupNorm--GELU sequences with a residual shortcut produce
-  intermediate feature map $\mathbf{f}_{\mathrm{res}}$ (blue square icon).
+  intermediate feature map $\mathbf{f}_{\mathrm{res}}$.
   The \textbf{WindowAttnBlock} applies LayerNorm, partitions the map into
   non-overlapping $8{\times}8$ windows ($N{\times}64{\times}C$; right inset),
   runs four-head self-attention within each window, passes the result through a
@@ -23,4 +16,3 @@
   Two HybridBlocks are stacked at every encoder, decoder, and bottleneck stage.}
 \label{fig:arch:hybridblock}
 \end{figure}
-\linenumbers

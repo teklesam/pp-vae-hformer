@@ -1,13 +1,6 @@
-% fig_architecture_overview.tex — wrapper for main.tex
-% \nolinenumbers disables the lineno expl3 hook that corrupts
-% \tikzscope@linewidth at \begin{tikzpicture} start.
-% \includestandalone reads the standalone body inline (no PDF needed).
-\providecommand{\nolinenumbers}{}
-\providecommand{\linenumbers}{}
-\nolinenumbers
 \begin{figure}[htbp]
 \centering
-\resizebox{0.80\textwidth}{!}{\includestandalone{fig_architecture_overview_sa}}
+\resizebox{0.82\textwidth}{!}{\includestandalone{fig_architecture_overview_sa}}
 \caption[PP-VAE-Hformer overall architecture]{%
   \textbf{PP-VAE-Hformer encoder--decoder architecture.}
   A noisy chest radiograph ($1{\times}256{\times}256$) enters a stem convolution
@@ -27,4 +20,3 @@
   $K{=}20$ stochastic forward passes (purple branch).}
 \label{fig:arch:overview}
 \end{figure}
-\linenumbers

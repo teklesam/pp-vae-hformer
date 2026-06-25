@@ -13,29 +13,31 @@
 \tikzset{
   hbImg/.style   = {inner sep=0pt, outer sep=0pt},
   hbFm/.style    = {inner sep=0pt, outer sep=0pt},
+  % Box height reduced to 0.55 cm; nodes spaced 1.0 cm apart
+  % → 0.45 cm visible arrow gap between edges
   hbBox/.style   = {draw=blue!60!black, fill=blue!10, rounded corners=3pt,
-                    minimum width=3.0cm, minimum height=0.75cm,
+                    minimum width=2.8cm, minimum height=0.55cm,
                     align=center, line width=0.8pt},
   hbNorm/.style  = {draw=teal!65!black, fill=teal!9, rounded corners=3pt,
-                    minimum width=3.0cm, minimum height=0.75cm,
+                    minimum width=2.8cm, minimum height=0.55cm,
                     align=center, line width=0.8pt},
   hbAct/.style   = {draw=orange!65!black, fill=orange!9, rounded corners=3pt,
-                    minimum width=3.0cm, minimum height=0.75cm,
+                    minimum width=2.8cm, minimum height=0.55cm,
                     align=center, line width=0.8pt},
   hbWaBox/.style = {draw=purple!60!black, fill=purple!9, rounded corners=3pt,
-                    minimum width=3.0cm, minimum height=0.75cm,
+                    minimum width=2.8cm, minimum height=0.62cm,
                     align=center, line width=0.8pt},
   hbWaFfn/.style = {draw=orange!60!black, fill=orange!10, rounded corners=3pt,
-                    minimum width=3.0cm, minimum height=0.75cm,
+                    minimum width=2.8cm, minimum height=0.55cm,
                     align=center, line width=0.8pt},
   hbAdd/.style   = {draw=gray!65, fill=gray!13, circle,
-                    minimum size=0.55cm, align=center, line width=0.8pt,
+                    minimum size=0.50cm, align=center, line width=0.8pt,
                     font=\normalsize},
   hbGrp/.style   = {draw=gray!50, fill=gray!4, rounded corners=5pt,
                     dashed, line width=1.0pt},
   hbDim/.style   = {font=\fontsize{7}{8}\selectfont,
                     text=black!60, align=center},
-  hbMain/.style  = {->, line width=1.5pt, black!70},
+  hbMain/.style  = {->, line width=1.4pt, black!70},
   hbSkip/.style  = {->, line width=1.2pt, blue!70, dashed},
   hbWaArr/.style = {->, line width=1.1pt, purple!65, dashed},
 }
@@ -43,74 +45,71 @@
 \begin{tikzpicture}[>=Stealth, every node/.style={font=\small}]
 
 % ── Input ─────────────────────────────────────────────────────────────
-\node[hbDim] at (0,10.5) {$\mathbf{f}_{\mathrm{in}}$\;($H{\times}W{\times}C$)};
-\node[hbImg] (fin_img) at (0,9.6)
+\node[hbDim] at (0,11.5) {$\mathbf{f}_{\mathrm{in}}$\;($H{\times}W{\times}C$)};
+\node[hbImg] (fin_img) at (0,10.5)
   {\includegraphics[width=1.2cm,height=1.2cm,keepaspectratio]%
     {figures/arch/arch_input_noisy.png}};
 
-% ── ResBlock ──────────────────────────────────────────────────────────
-\node[hbBox]  (rb_c1)  at (0,8.2)  {\textbf{Conv}\;$3{\times}3$,\;pad\;1};
-\node[hbNorm] (rb_gn1) at (0,7.45) {\textbf{GroupNorm}\;($G{=}8$)};
-\node[hbAct]  (rb_g1)  at (0,6.7)  {\textbf{GELU}};
-\node[hbBox]  (rb_c2)  at (0,5.95) {\textbf{Conv}\;$3{\times}3$,\;pad\;1};
-\node[hbNorm] (rb_gn2) at (0,5.2)  {\textbf{GroupNorm}\;($G{=}8$)};
-\node[hbAdd]  (rb_add) at (0,4.4)  {$+$};
-\node[hbAct]  (rb_g2)  at (0,3.65) {\textbf{GELU}};
+% ── ResBlock (nodes spaced 1.0 cm, height 0.55 cm → 0.45 cm arrow gap) ─
+\node[hbBox]  (rb_c1)  at (0,8.6)  {\textbf{Conv}\;$3{\times}3$,\;pad\;1};
+\node[hbNorm] (rb_gn1) at (0,7.6)  {\textbf{GroupNorm}\;($G{=}8$)};
+\node[hbAct]  (rb_g1)  at (0,6.6)  {\textbf{GELU}};
+\node[hbBox]  (rb_c2)  at (0,5.6)  {\textbf{Conv}\;$3{\times}3$,\;pad\;1};
+\node[hbNorm] (rb_gn2) at (0,4.6)  {\textbf{GroupNorm}\;($G{=}8$)};
+\node[hbAdd]  (rb_add) at (0,3.5)  {$+$};
+\node[hbAct]  (rb_g2)  at (0,2.5)  {\textbf{GELU}};
 
 \begin{scope}[on background layer]
-  \node[hbGrp, inner sep=6pt,
-        fit=(rb_c1)(rb_gn1)(rb_gn2)(rb_add)(rb_g2),
+  \node[hbGrp, inner sep=7pt,
+        fit=(rb_c1)(rb_gn1)(rb_g1)(rb_c2)(rb_gn2)(rb_add)(rb_g2),
         label={[font=\fontsize{8}{9}\selectfont\bfseries,
                 text=blue!70]above:\strut ResBlock}] {};
 \end{scope}
 
-% ResBlock skip connection
+% ResBlock skip connection (left arm)
 \draw[hbSkip]
   (fin_img.west) -- ++(-1.4,0)
   -- node[left, font=\fontsize{7}{8}\selectfont, xshift=-2pt]{skip}
-     ++(0,-5.2)
+     ++(0,-8.25)
   -| (rb_add.west);
 
-% ── f_res feature map ─────────────────────────────────────────────────
-\node[hbFm] (fm_res) at (-0.7,3.0)
-  {\includegraphics[width=0.72cm,height=0.72cm]{figures/arch/featmap_256.png}};
-\node[hbDim, right=4pt of fm_res]
-  {$\mathbf{f}_{\mathrm{res}}$\;($H{\times}W{\times}C$)};
+% ── f_res feature map annotation ──────────────────────────────────────
+\node[hbFm] (fm_res) at (-0.9,1.8)
+  {\includegraphics[width=0.65cm,height=0.65cm]{figures/arch/featmap_256.png}};
+\node[hbDim, right=3pt of fm_res]
+  {$\mathbf{f}_{\mathrm{res}}$};
 
 % ── WindowAttnBlock ───────────────────────────────────────────────────
-\node[hbNorm]  (wa_ln1) at (0,2.1)
-  {\textbf{LayerNorm}};
-\node[hbWaBox] (wa_mha) at (0,1.2)
+\node[hbNorm]  (wa_ln1) at (0,1.1)  {\textbf{LayerNorm}};
+\node[hbWaBox] (wa_mha) at (0,0.1)
   {\textbf{Multi-head Attention}\\
-   {\fontsize{7}{8}\selectfont 4\;heads,\;$8{\times}8$\;windows}};
-\node[hbNorm]  (wa_ln2) at (0,0.2)
-  {\textbf{LayerNorm}};
-\node[hbWaFfn] (wa_ffn) at (0,-0.7)
-  {\textbf{FFN}\;{\fontsize{7}{8}\selectfont (Lin.\;$4C$--GELU--Lin.\;$C$)}};
-\node[hbAdd]   (wa_add) at (0,-1.7) {$+$};
+   {\fontsize{6}{7}\selectfont 4\;heads,\;$8{\times}8$\;windows}};
+\node[hbNorm]  (wa_ln2) at (0,-0.9) {\textbf{LayerNorm}};
+\node[hbWaFfn] (wa_ffn) at (0,-1.9)
+  {\textbf{FFN}\;{\fontsize{6}{7}\selectfont ($4C$--GELU--$C$)}};
+\node[hbAdd]   (wa_add) at (0,-3.0) {$+$};
 
 \begin{scope}[on background layer]
-  \node[hbGrp, inner sep=6pt,
+  \node[hbGrp, inner sep=7pt,
         fit=(wa_ln1)(wa_mha)(wa_ln2)(wa_ffn)(wa_add),
         label={[font=\fontsize{8}{9}\selectfont\bfseries,
                 text=purple!65]below:\strut WindowAttnBlock}] {};
 \end{scope}
 
-% Outer residual (right arm) -- align=center allows \\ in LR context
+% Outer residual (right arm); align=center allows \\ in the label
 \draw[hbWaArr]
-  (0,3.0) -- ++(1.8,0)
+  (fin_img.east) -- ++(3.0, 0)
   -- node[left, align=center,
           font=\fontsize{6}{7}\selectfont, text=purple!70]
-       {outer\\residual}
-     ++(0,-4.7)
+       {outer\\[-2pt]residual}
+     ++(0,-13.5)
   -| (wa_add.east);
 
 % f_out label
-\node[hbDim] at (0,-2.5)
-  {$\mathbf{f}_{\mathrm{out}}$\;($H{\times}W{\times}C$)};
+\node[hbDim] at (0,-3.8) {$\mathbf{f}_{\mathrm{out}}$\;($H{\times}W{\times}C$)};
 
-% ── Right panel: 8x8 window annotation ───────────────────────────────
-\begin{scope}[shift={(2.6,-0.7)}]
+% ── Right panel: 8×8 window annotation ───────────────────────────────
+\begin{scope}[shift={(3.8,-1.0)}]
   \node[hbFm] at (1.1,1.1)
     {\includegraphics[width=2.2cm,height=2.2cm]{figures/arch/featmap_256.png}};
   \draw[white, line width=0.3pt, opacity=0.6, step=0.367] (0,0) grid (2.2,2.2);
@@ -126,7 +125,8 @@
   \node[font=\fontsize{6}{7}\selectfont, below=2pt] at (1.1,0)
     {$H{\times}W{\times}C\!\to\!N{\times}64{\times}C$};
 \end{scope}
-\draw[purple!40, dashed, line width=0.5pt] (wa_mha.east) -- (2.6,0.5);
+\draw[purple!40, dashed, line width=0.6pt]
+  (wa_mha.east) -- (3.8, 0.1);
 
 % ── Main flow arrows ──────────────────────────────────────────────────
 \draw[hbMain] (fin_img.south) -- (rb_c1.north);
@@ -141,7 +141,7 @@
 \draw[hbMain] (wa_mha.south)  -- (wa_ln2.north);
 \draw[hbMain] (wa_ln2.south)  -- (wa_ffn.north);
 \draw[hbMain] (wa_ffn.south)  -- (wa_add.north);
-\draw[hbMain] (wa_add.south)  -- (0,-2.3);
+\draw[hbMain] (wa_add.south)  -- (0,-3.6);
 
 \end{tikzpicture}
 

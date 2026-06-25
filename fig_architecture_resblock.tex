@@ -1,6 +1,5 @@
 % fig_architecture_resblock.tex
-% Figure 2 -- ResBlock (convolutional block) detail
-% \input{fig_architecture_resblock} from main.tex
+% Figure 3.3 -- ResBlock detail
 \begin{figure}[htbp]
 \centering
 \resizebox{0.88\linewidth}{!}{%
@@ -9,17 +8,19 @@
   every node/.style={font=\small},
   imgblk/.style={inner sep=0pt, outer sep=0pt},
   fmblk/.style={inner sep=0pt, outer sep=0pt},
+  % Box heights reduced from 0.88 cm to 0.60 cm.
+  % Node spacing 1.1 cm → visible arrow gap = 0.50 cm.
   opbox/.style={draw=blue!60!black, fill=blue!10, rounded corners=3pt,
-                minimum width=3.4cm, minimum height=0.88cm,
+                minimum width=3.2cm, minimum height=0.60cm,
                 align=center, line width=0.8pt},
   normbox/.style={draw=teal!65!black, fill=teal!9, rounded corners=3pt,
-                  minimum width=3.4cm, minimum height=0.88cm,
+                  minimum width=3.2cm, minimum height=0.60cm,
                   align=center, line width=0.8pt},
   actbox/.style={draw=orange!65!black, fill=orange!9, rounded corners=3pt,
-                 minimum width=3.4cm, minimum height=0.88cm,
+                 minimum width=3.2cm, minimum height=0.60cm,
                  align=center, line width=0.8pt},
   addnode/.style={draw=gray!65, fill=gray!13, circle,
-                  minimum size=0.65cm, align=center, line width=0.8pt,
+                  minimum size=0.55cm, align=center, line width=0.8pt,
                   font=\normalsize},
   dimtag/.style={font=\fontsize{7}{8}\selectfont, text=black!60, align=center},
   arrmain/.style={->, line width=1.5pt, black!70},
@@ -42,7 +43,6 @@
 \node[actbox]  (gelu2) at (0,2.0)  {\textbf{GELU}};
 
 \node[dimtag] at (0,1.1) {$\mathbf{f}_{\mathrm{res}}$\;($H{\times}W{\times}C$)};
-% Same sample image for output (shows identity-preserving residual)
 \node[imgblk] (fout_img) at (0,-0.1)
   {\includegraphics[width=1.8cm,height=1.8cm,keepaspectratio]%
     {figures/arch/arch_input_noisy.png}};
@@ -70,16 +70,12 @@
 
 % ── RIGHT PANEL: real feature map with 3×3 window annotation ─────────
 \begin{scope}[shift={(3.2, 5.0)}]
-  % Real feature map image (square blue, from actual CXR activations)
   \node[fmblk] at (1.35,1.35)
     {\includegraphics[width=2.7cm,height=2.7cm]{figures/arch/featmap_256.png}};
-  % Cell grid overlay (6×6 cells)
   \draw[white, line width=0.3pt, opacity=0.7, step=0.45] (0,0) grid (2.7,2.7);
-  % 3×3 window highlight
   \fill[blue!50, opacity=0.28] (0.45,0.45) rectangle (1.80,1.80);
   \draw[white, line width=2.2pt] (0.45,0.45) rectangle (1.80,1.80);
   \draw[cyan!90!white, line width=1.5pt] (0.45,0.45) rectangle (1.80,1.80);
-  % Kernel inset (bottom-right)
   \begin{scope}[shift={(1.95,0.0)}]
     \fill[blue!35] (0,0) rectangle (0.75,0.75);
     \draw[white, line width=0.5pt, step=0.25] (0,0) grid (0.75,0.75);
@@ -87,18 +83,15 @@
     \node[font=\fontsize{5}{5}\selectfont, white, below=1pt] at (0.375,-0.01)
       {kernel};
   \end{scope}
-  % Labels (white on blue background)
   \node[font=\fontsize{7}{8}\selectfont, white, above=3pt] at (1.35,2.7)
     {Feature map $H{\times}W{\times}C$};
   \node[font=\fontsize{7}{8}\selectfont, white, below=2pt] at (1.35,0.0)
     {$3{\times}3$ sliding window (highlighted)};
-  % Pointer arrow
   \draw[->, white, line width=0.8pt] (-0.5,1.4) -- (0.45,1.1);
   \node[font=\fontsize{7}{8}\selectfont, white, left=2pt] at (-0.5,1.4)
     {receptive field};
 \end{scope}
 
-% Dashed connector from conv1 to annotation panel
 \draw[gray!50, dashed, line width=0.6pt] (conv1.east) -- (3.2, 6.7);
 
 \end{tikzpicture}%
