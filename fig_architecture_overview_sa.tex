@@ -42,6 +42,9 @@
   ovVaeA/.style = {->, line width=1.0pt, purple!65},
 }
 
+% NOTE: \\ must appear at the TOP LEVEL of node content, never inside {}.
+% Newer LaTeX leaves \tikzscope@linewidth undefined if \\ is nested in {}.
+
 \begin{tikzpicture}[>=Stealth, every node/.style={font=\small}]
 
 % ── Input ─────────────────────────────────────────────────────────────
@@ -52,32 +55,36 @@
   {Noisy CXR\\[-2pt]$1{\times}256{\times}256$};
 
 % ── Encoder (left column) ─────────────────────────────────────────────
+% \\ at top level only; inner {font} groups contain no \\
 \node[ovStem] (stem) at (-2.5,9.6)
   {\textbf{Stem}\\
    {\fontsize{7}{8}\selectfont Conv $3{\times}3$,\;$1\!\to\!64$\,ch}};
 
 \node[ovEnc] (enc1) at (-2.5,8.1)
   {\textbf{E1}\\
-   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$64$\,ch,\;$256^2$}};
+   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down}\\
+   {\fontsize{7}{8}\selectfont $64$\,ch,\;$256^2$}};
 
 \node[ovEnc] (enc2) at (-2.5,6.5)
   {\textbf{E2}\\
-   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$128$\,ch,\;$128^2$}};
+   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down}\\
+   {\fontsize{7}{8}\selectfont $128$\,ch,\;$128^2$}};
 
 \node[ovEnc] (enc3) at (-2.5,4.9)
   {\textbf{E3}\\
-   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down\\$256$\,ch,\;$64^2$}};
+   {\fontsize{7}{8}\selectfont HB${\times}2\!+\!$Down}\\
+   {\fontsize{7}{8}\selectfont $256$\,ch,\;$64^2$}};
 
 \node[ovBot] (bot) at (-2.5,3.3)
   {\textbf{Bottleneck}\\
-   {\fontsize{7}{8}\selectfont HB${\times}2$\\$512$\,ch,\;$32^2$}};
+   {\fontsize{7}{8}\selectfont HB${\times}2$}\\
+   {\fontsize{7}{8}\selectfont $512$\,ch,\;$32^2$}};
 
 % ── VAE branch ────────────────────────────────────────────────────────
 \node[ovVae] (vae) at (0,2.0)
   {\textbf{VAE Bottleneck}\\
-   {\fontsize{7}{8}\selectfont
-    $\mu_z,\,\sigma_z^2$\;(Conv\,$1{\times}1$)\\[2pt]
-    $z = \mu_z + \varepsilon\!\cdot\!\exp(\tfrac{1}{2}\sigma_z^2)$}};
+   {\fontsize{7}{8}\selectfont $\mu_z,\,\sigma_z^2$\;(Conv\,$1{\times}1$)}\\[2pt]
+   {\fontsize{7}{8}\selectfont $z = \mu_z + \varepsilon\!\cdot\!\exp(\tfrac{1}{2}\sigma_z^2)$}};
 
 \node[ovMc] (mc) at (0,0.5)
   {{\fontsize{7}{8}\selectfont $K{=}20$ stochastic passes}};
@@ -85,15 +92,18 @@
 % ── Decoder (right column) ────────────────────────────────────────────
 \node[ovDec] (dec3) at (2.5,4.9)
   {\textbf{D3}\\
-   {\fontsize{7}{8}\selectfont Up$+s_3+$HB${\times}2$\\$256$\,ch,\;$64^2$}};
+   {\fontsize{7}{8}\selectfont Up$+s_3+$HB${\times}2$}\\
+   {\fontsize{7}{8}\selectfont $256$\,ch,\;$64^2$}};
 
 \node[ovDec] (dec2) at (2.5,6.5)
   {\textbf{D2}\\
-   {\fontsize{7}{8}\selectfont Up$+s_2+$HB${\times}2$\\$128$\,ch,\;$128^2$}};
+   {\fontsize{7}{8}\selectfont Up$+s_2+$HB${\times}2$}\\
+   {\fontsize{7}{8}\selectfont $128$\,ch,\;$128^2$}};
 
 \node[ovDec] (dec1) at (2.5,8.1)
   {\textbf{D1}\\
-   {\fontsize{7}{8}\selectfont Up$+s_1+$HB${\times}2$\\$64$\,ch,\;$256^2$}};
+   {\fontsize{7}{8}\selectfont Up$+s_1+$HB${\times}2$}\\
+   {\fontsize{7}{8}\selectfont $64$\,ch,\;$256^2$}};
 
 \node[ovHead] (head) at (2.5,9.6)
   {\textbf{Dual Head}\\
