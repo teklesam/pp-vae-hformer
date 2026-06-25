@@ -99,20 +99,22 @@
   {\textbf{Dual Head}\\
    {\fontsize{6}{7}\selectfont Conv\,$3{\times}3$}};
 
-% ── Output thumbnails (same patient as input) ─────────────────────────
+% ── Output thumbnails ────────────────────────────────────────────────
+% mu: clean ground truth of the same patient (arch_input_clean.png = same patient as noisy input)
+% aleatoric, epistemic: regenerate from arch_input_noisy.png on CSD3 for same-patient match
 \node[ovImg] (outmu) at (4.5,10.2)
   {\includegraphics[width=1.1cm,height=1.1cm,keepaspectratio]%
-    {figures/arch/arch_input_noisy.png}};
+    {figures/arch/arch_input_clean.png}};
 \node[ovDim, above=2pt of outmu] {$\hat{\mu}_y$};
 
 \node[ovImg] (outsig) at (4.5,9.0)
   {\includegraphics[width=1.1cm,height=1.1cm,keepaspectratio]%
-    {figures/arch/arch_input_noisy.png}};
+    {figures/arch/arch_output_aleat.png}};
 \node[ovDim, below=2pt of outsig] {$\hat{\sigma}^2_a$};
 
 \node[ovImg] (outepi) at (2.5,0.6)
   {\includegraphics[width=1.0cm,height=1.0cm,keepaspectratio]%
-    {figures/arch/arch_input_noisy.png}};
+    {figures/arch/arch_output_epist.png}};
 \node[ovDim, right=3pt of outepi] {$\hat{\sigma}^2_e$};
 
 % ── Skip FM icons ─────────────────────────────────────────────────────
