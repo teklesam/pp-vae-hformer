@@ -151,9 +151,10 @@
 \draw[ovMain] (dec2.north) -- (dec1.south);
 \draw[ovMain] (dec1.north) -- (head.south);
 
-% head → outputs (two branches)
-\draw[ovMain] (head.east) -- ++(0.3,0) -- ++(0, 0.6) -- (outmu.west);
-\draw[ovMain] (head.east) -- ++(0.3,0) -- ++(0,-0.6) -- (outsig.west);
+% head → outputs (fork: shared stem drawn once, then two branches)
+\coordinate (headBr) at ($(head.east)+(0.45,0)$);
+\draw[ovMain] (head.east) -- (headBr) -- ++(0, 0.6) -- (outmu.west);
+\draw[ovMain] (headBr)    --            ++(0,-0.6) -- (outsig.west);
 
 % VAE → MC → epistemic output
 \draw[ovVaeA] (vae.south) -- (mc.north);

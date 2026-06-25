@@ -69,7 +69,7 @@
   -| (add.west);
 
 % ── RIGHT PANEL: real feature map with 3×3 window annotation ─────────
-\begin{scope}[shift={(3.2, 5.0)}]
+\begin{scope}[shift={(3.5, 5.0)}]
   \node[fmblk] at (1.35,1.35)
     {\includegraphics[width=2.7cm,height=2.7cm]{figures/arch/featmap_256.png}};
   \draw[white, line width=0.3pt, opacity=0.7, step=0.45] (0,0) grid (2.7,2.7);
@@ -87,12 +87,12 @@
     {Feature map $H{\times}W{\times}C$};
   \node[font=\fontsize{7}{8}\selectfont, white, below=2pt] at (1.35,0.0)
     {$3{\times}3$ sliding window (highlighted)};
-  \draw[->, white, line width=0.8pt] (-0.5,1.4) -- (0.45,1.1);
-  \node[font=\fontsize{7}{8}\selectfont, white, left=2pt] at (-0.5,1.4)
+  \draw[->, gray!70, line width=0.8pt] (-0.2,0.9) -- (0.5,1.2);
+  \node[font=\fontsize{7}{8}\selectfont, text=black!75, left=2pt] at (-0.2,0.9)
     {receptive field};
 \end{scope}
 
-\draw[gray!50, dashed, line width=0.6pt] (conv1.east) -- (3.2, 6.7);
+\draw[gray!50, dashed, line width=0.6pt] (conv1.east) -- (3.5, 6.7);
 
 \end{tikzpicture}%
 }
