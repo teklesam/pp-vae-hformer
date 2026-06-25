@@ -100,14 +100,15 @@
    {\fontsize{6}{7}\selectfont Conv\,$3{\times}3$}};
 
 % ── Output thumbnails ────────────────────────────────────────────────
-% All three outputs are Arm H inference on the same arch_input_noisy.png patient.
-\node[ovImg] (outmu) at (4.5,10.2)
-  {\includegraphics[width=1.1cm,height=1.1cm,keepaspectratio]%
+% Centered at x=4.7 (0.9cm wide → west=4.25), so the arrow from headBr(x=3.8)
+% goes up/down then turns RIGHT to arrive at each image from outside.
+\node[ovImg] (outmu) at (4.7,10.2)
+  {\includegraphics[width=0.9cm,height=0.9cm,keepaspectratio]%
     {figures/arch/arch_output_mu.png}};
 \node[ovDim, above=2pt of outmu] {$\hat{\mu}_y$};
 
-\node[ovImg] (outsig) at (4.5,9.0)
-  {\includegraphics[width=1.1cm,height=1.1cm,keepaspectratio]%
+\node[ovImg] (outsig) at (4.7,9.0)
+  {\includegraphics[width=0.9cm,height=0.9cm,keepaspectratio]%
     {figures/arch/arch_output_aleat.png}};
 \node[ovDim, below=2pt of outsig] {$\hat{\sigma}^2_a$};
 
@@ -151,8 +152,8 @@
 \draw[ovMain] (dec2.north) -- (dec1.south);
 \draw[ovMain] (dec1.north) -- (head.south);
 
-% head → outputs (fork: shared stem drawn once, then two branches)
-\coordinate (headBr) at ($(head.east)+(0.45,0)$);
+% head → outputs: fork at headBr, then right-turn into each image
+\coordinate (headBr) at ($(head.east)+(0.3,0)$);
 \draw[ovMain] (head.east) -- (headBr) -- ++(0, 0.6) -- (outmu.west);
 \draw[ovMain] (headBr)    --            ++(0,-0.6) -- (outsig.west);
 
