@@ -1834,24 +1834,25 @@ All experiments used CSD3 NVIDIA A100 80\,GB GPUs (one per arm, SLURM \texttt{am
 \toprule
 \textbf{Model} & \textbf{Parameters} & \textbf{Train time (h)} & \textbf{Inference (ms)} & \textbf{Notes} \\
 \midrule
-\multicolumn{5}{l}{\textit{PP-VAE-Hformer (proposed)}} \\
-Arm A (L2) -- all arms share architecture & 1,649,729 & $\approx$9--10 & --- & VAE + dual head \\
+\multicolumn{5}{l}{\textit{PP-VAE-Hformer (proposed — all 19 arms share architecture)}} \\
+PP-VAE-Hformer & 24,943,618 & $\approx$9--10 & \textit{pending} & VAE bottleneck + dual head \\
 \midrule
 \multicolumn{5}{l}{\textit{Retrained KAIR baselines}} \\
-DnCNN \cite{zhang_beyond_2017}  & 668,224  & $\approx$14 & --- & residual CNN \\
-IRCNN \cite{zhang_learning_2017}& 187,584  & $\approx$14 & --- & modular PnP \\
-FFDNet \cite{zhang_ffdnet_2018} & 486,080  & $\approx$14 & --- & $\sigma$-conditioned CNN \\
-DRUNet \cite{zhang_drunet_2021} & 32,640,513 & $\approx$14 & --- & U-Net, $\sigma$-cond. \\
-SwinIR \cite{liang_swinir_2021}$^\dagger$ & 11,490,945 & $\approx$35 & --- & Swin Transformer \\
+DnCNN \cite{zhang_beyond_2017}  & 557,057    & $\approx$14 & \textit{pending} & 17-layer residual CNN \\
+IRCNN \cite{zhang_learning_2017}& 185,857    & $\approx$14 & \textit{pending} & 5-layer modular PnP \\
+FFDNet \cite{zhang_ffdnet_2018} & 486,980    & $\approx$14 & \textit{pending} & $\sigma$-conditioned CNN \\
+DRUNet \cite{zhang_drunet_2021} & 32,651,329 & $\approx$14 & \textit{pending} & deep U-Net, $\sigma$-cond.\ \\
+SwinIR \cite{liang_swinir_2021}$^\dagger$ & 11,497,681 & $\approx$35 & \textit{pending} & Swin Transformer \\
 \midrule
 \multicolumn{5}{l}{\textit{Extended SOTA baselines}} \\
-NAFNet \cite{chen_nafnet_2022}  & 115,980,609 & $\approx$8 & --- & simple gate, AMP \\
-SCUNet \cite{zhang_scunet_2023} & 57,043,457  & $\approx$45 & --- & Swin-Conv hybrid, no AMP \\
+NAFNet \cite{chen_nafnet_2022}  & 115,980,609 & $\approx$8  & \textit{pending} & simple gate, AMP enabled \\
+SCUNet \cite{zhang_scunet_2023} & 57,043,457  & $\approx$45 & \textit{pending} & SC-hybrid, AMP disabled \\
 \bottomrule
 \multicolumn{5}{p{0.94\linewidth}}{\footnotesize
-  Inference latency (ms/image) measured on A100 with 200 forward passes after 20 warmup
-  passes; will be populated from benchmarking results.
-  Parameter counts verified from loaded model state dicts at training time.} \\
+  Parameter counts verified from model state dicts loaded on NVIDIA A100 (CSD3).
+  Inference latency (\textit{pending}) will be populated from benchmarking results
+  (200 forward passes, 20 warmup, batch size 1, $256{\times}256$ input, A100 80\,GB).
+  $^\dagger$SwinIR trained with batch size 4; all others batch size 16 (SCUNet: 8).} \\
 \end{tabular}
 \end{table}
 
