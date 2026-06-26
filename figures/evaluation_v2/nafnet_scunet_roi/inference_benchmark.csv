@@ -1,0 +1,9 @@
+model,ms_per_image
+PP-VAE-Hformer,28.05
+DnCNN,4.08
+IRCNN,0.87
+FFDNet,1.67
+DRUNet,7.81
+SwinIR,715.97
+NAFNet,20.05
+SCUNet,60.88

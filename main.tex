@@ -1835,24 +1835,26 @@ All experiments used CSD3 NVIDIA A100 80\,GB GPUs (one per arm, SLURM \texttt{am
 \textbf{Model} & \textbf{Parameters} & \textbf{Train time (h)} & \textbf{Inference (ms)} & \textbf{Notes} \\
 \midrule
 \multicolumn{5}{l}{\textit{PP-VAE-Hformer (proposed — all 19 arms share architecture)}} \\
-PP-VAE-Hformer & 24,943,618 & $\approx$9--10 & \textit{pending} & VAE bottleneck + dual head \\
+PP-VAE-Hformer & 24,943,618 & $\approx$9--10 & 28.1 & VAE bottleneck + dual head \\
 \midrule
 \multicolumn{5}{l}{\textit{Retrained KAIR baselines}} \\
-DnCNN \cite{zhang_beyond_2017}  & 557,057    & $\approx$14 & \textit{pending} & 17-layer residual CNN \\
-IRCNN \cite{zhang_learning_2017}& 185,857    & $\approx$14 & \textit{pending} & 5-layer modular PnP \\
-FFDNet \cite{zhang_ffdnet_2018} & 486,980    & $\approx$14 & \textit{pending} & $\sigma$-conditioned CNN \\
-DRUNet \cite{zhang_drunet_2021} & 32,651,329 & $\approx$14 & \textit{pending} & deep U-Net, $\sigma$-cond.\ \\
-SwinIR \cite{liang_swinir_2021}$^\dagger$ & 11,497,681 & $\approx$35 & \textit{pending} & Swin Transformer \\
+DnCNN \cite{zhang_beyond_2017}$^\ddagger$  & 667,073    & $\approx$14 & 4.1  & 20-layer residual CNN \\
+IRCNN \cite{zhang_learning_2017}& 185,857    & $\approx$14 & 0.9  & 5-layer modular PnP \\
+FFDNet \cite{zhang_ffdnet_2018} & 486,980    & $\approx$14 & 1.7  & $\sigma$-conditioned CNN \\
+DRUNet \cite{zhang_drunet_2021} & 32,651,329 & $\approx$14 & 7.8  & deep U-Net, $\sigma$-cond.\ \\
+SwinIR \cite{liang_swinir_2021}$^\dagger$ & 11,497,681 & $\approx$35 & 716.0 & Swin Transformer \\
 \midrule
 \multicolumn{5}{l}{\textit{Extended SOTA baselines}} \\
-NAFNet \cite{chen_nafnet_2022}  & 115,980,609 & $\approx$8  & \textit{pending} & simple gate, AMP enabled \\
-SCUNet \cite{zhang_scunet_2023} & 57,043,457  & $\approx$45 & \textit{pending} & SC-hybrid, AMP disabled \\
+NAFNet \cite{chen_nafnet_2022}  & 115,980,609 & $\approx$8  & 20.1  & simple gate, AMP enabled \\
+SCUNet \cite{zhang_scunet_2023} & 57,043,457  & $\approx$45 & 60.9  & SC-hybrid, AMP disabled \\
 \bottomrule
 \multicolumn{5}{p{0.94\linewidth}}{\footnotesize
-  Parameter counts verified from model state dicts loaded on NVIDIA A100 (CSD3).
-  Inference latency (\textit{pending}) will be populated from benchmarking results
-  (200 forward passes, 20 warmup, batch size 1, $256{\times}256$ input, A100 80\,GB).
-  $^\dagger$SwinIR trained with batch size 4; all others batch size 16 (SCUNet: 8).} \\
+  Parameter counts and inference latency verified by loading each model on NVIDIA A100 (CSD3);
+  latency is the mean of 200 forward passes (20 warmup), batch size 1, $256{\times}256$ input.
+  PP-VAE-Hformer uses a deterministic pass ($\mathbf{z}=\boldsymbol{\mu}_z$, no MC sampling).
+  $^\dagger$SwinIR trained with batch size 4; all others batch size 16 (SCUNet: 8).
+  $^\ddagger$DnCNN retrained with depth 20 (667,073 params) rather than the standard KAIR depth-17
+  configuration (557,057 params), as depth 20 yielded lower validation loss on this dataset.} \\
 \end{tabular}
 \end{table}
 
