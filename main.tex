@@ -421,12 +421,18 @@ This frequency-domain perspective is central to understanding why every existing
 
 The Contrast-to-Noise Ratio (CNR) quantifies the clinical impact of noise: the Rose criterion requires a CNR of at least 5.0 for reliable lesion detection \cite{rose_sensitivity_1948}. As dose falls, CNR drops below this threshold for low-contrast findings such as early pneumonic consolidation or a fine pleural line, increasing false-negative and false-positive rates \cite{bhadra_hallucinations_2021}. Post-acquisition computational denoising can recover diagnostic quality without additional radiation exposure.
 
+\textbf{Why uncertainty quantification is a clinical requirement, not an optional extra.} Even a high-quality denoised image carries a clinical limitation: if the model outputs only a single clean-looking reconstruction with no indication of how confident it is, the clinician has no way to know whether a given region of the image has been faithfully restored from the original data or whether the model has filled in detail it guessed from training images of typical anatomy. This distinction matters most in the lung regions with the lowest signal-to-noise ratio — precisely the dark pleural angles and retrocardiac spaces where pathology is easiest to miss. Huang et al.\ \cite{huang_review_2024} identify the absence of calibrated uncertainty as the single largest barrier to clinical adoption of AI image analysis models: clinicians cannot assess when to trust a model's output without some measure of that output's reliability. Gillmann et al.\ \cite{gillmann_uncertainty_2021} demonstrate that spatially resolved per-pixel confidence maps — indicating which specific regions of the reconstructed image are most trustworthy — are more clinically actionable than a single scalar confidence score for the whole image. This dissertation therefore requires its denoising model to produce not only a denoised image but also a pixel-level uncertainty map alongside it.
+
 % ============================================================
 \section{Existing Approaches and Their Limitations}
 \label{sec:intro:existing}
 % ============================================================
 
-Denoising methods fall into four families, each with a characteristic failure mode in medical imaging \cite{willemink_preparing_2020}. Classical filters (BM3D, NLM, TV) lack semantic intelligence and over-smooth fine pathology. Discriminative CNNs and hybrid Transformer architectures \cite{zhang_beyond_2017, zhang_drunet_2021, liang_swinir_2021, zhang_hformer_2023} learn efficiently but rely on pixel-wise losses that blur fine structural detail and provide no uncertainty output. Generative adversarial methods \cite{goodfellow_generative_2014} synthesise sharp textures but hallucinate anatomically plausible yet clinically false structures. Diffusion models \cite{ho_denoising_2020} achieve high perceptual quality but erase pathology under prior dominance and require hundreds of inference steps.
+The history of image denoising can be traced through three successive generations, each building on the limitations of what came before. Classical statistical filters (BM3D, NLM, Total Variation) require no training data but impose hand-crafted priors that over-smooth fine pathology. The deep learning era opened with discriminative CNNs (DnCNN, DRUNet) and later hybrid Transformer architectures (SwinIR, Hformer, NAFNet, SCUNet), which learn directly from data but have relied throughout on pixel-wise losses that blur fine structural detail and produce no uncertainty output. Generative approaches (GANs, Diffusion models) synthesise visually sharp results but introduce hallucination risks that are clinically dangerous. Each generation resolves the failures of the previous one while introducing new limitations of its own.
+
+A key milestone within the CNN generation is \emph{residual learning} \cite{he_deep_2016}: rather than training a network to directly output a clean image, DnCNN \cite{zhang_beyond_2017} trains a network to predict the \emph{noise} itself and subtract it from the input. Formally, if $z$ is the noisy input and $y$ is the clean target, the network learns a mapping $\mathcal{F}(z)$ such that $\hat{y} = z - \mathcal{F}(z)$. This residual formulation is equivalent to inserting an identity skip connection from input to output, so that the network only needs to learn what to \emph{remove} rather than what a clean image looks like. Residual learning remains the structural principle in every descendant architecture, including Hformer and PP-VAE-Hformer.
+
+A common misconception is to treat the Variational Autoencoder (VAE) as a competing denoising method separate from CNNs or Transformers. It is not. The VAE is a \emph{probabilistic bottleneck} that can be inserted into any existing encoder-decoder architecture. PP-VAE-Hformer uses it precisely this way: the Hformer encoder-decoder backbone performs the denoising computation, while the VAE bottleneck adds the ability to quantify how uncertain the network is. The two components are complementary, not competing. The subsections below examine each historical generation in detail.
 
 A unique constraint of paediatric CXR denoising is that true paired (noisy, clean) training data cannot ethically be acquired: no ethics committee would sanction supra-diagnostic re-irradiation of a child for a training set. The Kermany collection \cite{kermany_identifying_2018}, acquired at clinical doses, therefore serves as the clean reference, with noise added computationally via the Foi Poisson-Gaussian model \cite{foi_practical_2008}.
 
@@ -468,11 +474,21 @@ noise matrix into a structured image guided by complex latent representations
 Diffusion models (DDPMs \cite{ho_denoising_2020}) achieve the highest perceptual quality of any generative approach but have two critical clinical barriers: (i) iterative inference requires 100--1,000 sequential forward passes, precluding real-time deployment; and (ii) when trained on datasets dominated by healthy anatomy, the strong diffusion prior ``hallucinates health'': pathological input images are forcibly denoised back towards normal anatomy, actively erasing disease features \cite{kazerouni_diffusion_2023, pfaff_no-new-denoiser_2024}. 
 
 % ─────────────────────────────────────────────────────
-\subsection{Deep Learning: Variational Autoencoders}
-\label{sec:intro:existing:vae}
+\subsection{From Building Blocks to PP-VAE-Hformer: How the Proposed Framework Synthesises All Prior Contributions}
+\label{sec:intro:existing:synthesis}
 % ─────────────────────────────────────────────────────
 
-The Variational Autoencoder (VAE) \cite{kingma_auto-encoding_2014} offers a probabilistic alternative.\footnote{A \emph{Variational Autoencoder} (VAE) \cite{kingma_auto-encoding_2014} consists of two jointly trained neural networks. The \emph{encoder} $q_\phi(z|x)$ compresses an input image $x$ into a compact \emph{latent code} $z$, but rather than outputting a single point it outputs a distribution: a mean vector $\mu_\phi(x)$ and a variance vector $\sigma^2_\phi(x)$. A sample $z = \mu_\phi(x) + \sigma_\phi(x) \odot \epsilon$ (where $\epsilon \sim \mathcal{N}(0,I)$) is drawn via the \emph{reparameterisation trick}, which allows gradients to flow through the stochastic sampling step. The \emph{decoder} $p_\theta(x|z)$ reconstructs the image from this sample. The \emph{latent space} is the lower-dimensional vector space in which all $z$ values reside; geometrically similar images map to nearby latent codes, giving the space smooth interpolation properties \cite{kingma_auto-encoding_2014}.} The encoder maps input $x$ to a posterior $q_\phi(z|x)$\footnote{The \emph{posterior} $q_\phi(z|x)$ is the distribution over latent codes $z$ given the observed input $x$. The encoder parameterises it as a Gaussian $\mathcal{N}(\mu_\phi(x),\,\sigma^2_\phi(x)I)$. The \emph{latent space} is the continuous lower-dimensional manifold in which these codes reside; the prior $p(z) = \mathcal{N}(0,I)$ encourages codes to be regularly arranged, so that random draws from the prior decode into plausible images.} in a latent space, enabling pixel-wise aleatoric and epistemic uncertainty maps\footnote{\emph{Aleatoric uncertainty} is irreducible: it reflects genuine randomness in the data itself, here the quantum shot noise of the X-ray photon flux, which no amount of additional training data or model capacity can eliminate. \emph{Epistemic uncertainty} is reducible: it reflects the model's own ignorance in regions where the training data provide little constraint, and in principle decreases as the model sees more data or is better regularised. The two types are measured differently: aleatoric uncertainty is captured by a learned per-pixel variance head $\hat{\sigma}^2_a$ on the decoder; epistemic uncertainty is estimated by running the stochastic encoder-decoder $K=20$ times and measuring the pixel-wise variance across reconstructions \cite{kendall_what_2017}.} via repeated sampling. However, the standard ELBO\footnote{The \emph{Evidence Lower BOund} (ELBO) is the VAE training objective. It lower-bounds the marginal log-likelihood $\log p(x)$ of the data and decomposes as $\mathrm{ELBO} = \mathbb{E}_{q_\phi(z|x)}[\log p_\theta(x|z)] - D_{\mathrm{KL}}(q_\phi(z|x)\,\|\,p(z))$. The first term rewards faithful reconstruction; the second, the KL divergence, penalises the encoder for producing a posterior that deviates from the unit Gaussian prior $p(z) = \mathcal{N}(0,I)$. When the decoder uses a fixed-variance isotropic Gaussian likelihood, maximising the reconstruction term is mathematically equivalent to minimising unweighted pixel-wise MSE, which is why standard VAEs blur high-frequency detail \cite{bredell_explicitly_2023}.}'s factorised Gaussian likelihood reduces to unweighted MSE, producing blur, and the KL penalty can force the posterior to collapse to the prior,\footnote{\emph{Posterior collapse} is a pathological failure mode in which the KL penalty overwhelms the reconstruction signal during training, causing the encoder's posterior $q_\phi(z|x)$ to converge to the prior $\mathcal{N}(0,I)$ regardless of what the input image looks like. Once collapsed, the latent code $z$ carries no image-specific information: the decoder ignores it entirely and outputs the same average image for every patient. Epistemic uncertainty maps become a spatially flat field, losing all diagnostic structure. Posterior collapse is most likely when the KL weight is large early in training, before a useful reconstruction signal is established \cite{lucas_dont_2019}.} causing the model to output a generic average image regardless of patient anatomy \cite{bredell_explicitly_2023, zhao_loss_2017, lucas_dont_2019}.
+Each prior generation contributes a distinct capability that the next generation builds upon. Critically, PP-VAE-Hformer is not a sixth competing family — it is a deliberate synthesis of the best contribution from every prior approach, assembled to address the specific clinical constraints of paediatric CXR denoising.
+
+\textbf{From classical methods}: the insight that images have structured statistical regularity (self-similar patches, smooth regions) is encoded not in a hand-crafted filter but in the learned features of the Hformer encoder.
+
+\textbf{From residual CNNs}: the residual learning principle \cite{he_deep_2016} — train the network to predict and subtract noise rather than directly output a clean image — is preserved at every convolutional layer of the HybridBlock's ResBlocks. Skip connections from encoder to decoder additionally allow fine local detail to bypass the bottleneck compression entirely, preventing information loss.
+
+\textbf{From Transformer architectures}: multi-head windowed self-attention \cite{liu_swin_2021} gives each spatial region the ability to gather context from its neighbours, recovering anatomical structures that span regions larger than a fixed convolution kernel. The Hformer backbone \cite{zhang_hformer_2023} alternates CNN and attention processing in each HybridBlock, combining the local precision of convolutions with the global context of attention.
+
+\textbf{From generative models}: the insight that uncertainty is clinically meaningful — that a model should not produce a single confident output when the input data is ambiguous — is formalised by inserting a Variational Autoencoder (VAE) bottleneck \cite{kingma_auto-encoding_2014} into the Hformer.\footnote{A \emph{Variational Autoencoder} (VAE) \cite{kingma_auto-encoding_2014} is a probabilistic extension of a conventional autoencoder. Rather than compressing the input to a single fixed vector, the encoder outputs a probability distribution — a mean and a variance — over a lower-dimensional \emph{latent space}. The network then \emph{samples} from this distribution to produce a latent code, which the decoder uses to reconstruct the image. Because each forward pass draws a different sample, running the model multiple times on the same input produces slightly different outputs. The spread of those outputs across many runs directly measures how uncertain the model is. The \emph{reparameterisation trick} \cite{kingma_auto-encoding_2014} makes this stochastic sampling differentiable, so the network can be trained end-to-end with standard gradient descent.} The VAE enables two types of uncertainty to be measured simultaneously: \emph{aleatoric uncertainty}\footnote{\emph{Aleatoric uncertainty} is irreducible: it reflects genuine randomness in the data itself --- here the quantum shot noise of the X-ray photon flux --- which no amount of additional training data or model capacity can eliminate. It is captured by a learned per-pixel variance head $\hat{\sigma}^2_a$ on the decoder output.} (irreducible noise inherent in the X-ray acquisition) and \emph{epistemic uncertainty}\footnote{\emph{Epistemic uncertainty} is reducible: it reflects the model's own ignorance about under-constrained regions, and in principle decreases with more data. It is estimated by running the VAE stochastic forward pass $K=20$ times and measuring the pixel-wise variance across the resulting reconstructions \cite{kendall_what_2017}.} (reducible model uncertainty about under-constrained regions), following the Kendall and Gal \cite{kendall_what_2017} decomposition. Neither pure CNNs, Transformers, nor standard deterministic architectures can produce these outputs. Standard VAEs used alone for denoising produce blurred outputs because their training objective (the ELBO\footnote{The \emph{Evidence Lower BOund} (ELBO) is the VAE training objective. It decomposes as: $\mathrm{ELBO} = \mathbb{E}_{q_\phi(z|x)}[\log p_\theta(x|z)] - D_{\mathrm{KL}}(q_\phi(z|x)\,\|\,p(z))$. The first term rewards faithful reconstruction; the second, the KL divergence, penalises the encoder for producing a posterior that deviates from the standard Gaussian prior. When the likelihood uses a fixed isotropic Gaussian (as in plain VAEs), this reduces to unweighted MSE, producing the same blur problem as CNN L2 training. PP-VAE-Hformer replaces this with the heteroscedastic NLL, SSIM, and FFL terms, eliminating the standard blur pathway.}) collapses to unweighted MSE. PP-VAE-Hformer resolves this by replacing the ELBO's pixel-wise MSE with a composite loss (heteroscedastic NLL, MS-SSIM, Focal Frequency Loss) that specifically targets high-frequency pathological detail, while carefully scheduling the KL divergence weight to prevent posterior collapse.\footnote{\emph{Posterior collapse} occurs when the KL penalty overwhelms the reconstruction signal early in training, causing the encoder's posterior to converge to the prior regardless of the input image. Once collapsed, the latent code carries no patient-specific information and the model outputs the same generic image for every patient. PP-VAE-Hformer prevents this via cyclic KL annealing \cite{fu_cyclical_2019} and a free-bits lower bound on the KL term.}
+
+The result is an architecture that uses CNNs for local texture precision, Transformers for global anatomical context, residual connections for information preservation, and a VAE bottleneck for uncertainty quantification — with a loss function designed around the specific physics of low-dose paediatric radiograph noise rather than the natural image statistics of existing benchmarks.
 
 Table~\ref{tab:intro:comparison} provides a comparative synthesis of these five methodological
 families across the dimensions most relevant to paediatric clinical deployment and Figure~\ref{fig:architecture_evolution} depicts on the evolution of the different variants for denoising task of medical images.
@@ -597,24 +613,14 @@ families across the dimensions most relevant to paediatric clinical deployment a
     & Yes$^\dagger$ & No \\
     \midrule
     
-    Standard VAEs
-      \cite{kingma_auto-encoding_2014, bredell_explicitly_2023}
-    & Convolutional VAE
-    & Natural / general & AWGN (Gaussian likelihood)
-    & MSE (ELBO)
-    & Probabilistic; native UQ via sampling; stable training; no adversarial instability.
-    & Blur error from factorised Gaussian likelihood \cite{bredell_explicitly_2023}; spectral bias compounds blurring at high frequencies; posterior collapse risk \cite{lucas_dont_2019}.
-    & Yes & No \\
-    \midrule
-    
     \textbf{PP-VAE-Hformer (proposed)}
       \cite{kermany_identifying_2018, kendall_what_2017, jiang_focal_2021, zhang_hformer_2023}
     & \textbf{Hformer + VAE bottleneck}
     & \textbf{Paed. CXR}
     & \textbf{Poisson-Gaussian \cite{foi_practical_2008}}
     & \textbf{NLL + MS-SSIM + FFL + KL}
-    & Dual uncertainty output ($\hat{\sigma}^2_a$, $\hat{\sigma}^2_e$); frequency-aware training; noise-physics-grounded loss; paediatric domain; efficient 1.65M backbone.
-    & \textbf{Addresses all limitations above.} Results pending full training.
+    & Synthesises all prior contributions: CNN residual learning, Transformer global context, and VAE probabilistic bottleneck for UQ. Frequency-aware composite loss; dual uncertainty output ($\hat{\sigma}^2_a$, $\hat{\sigma}^2_e$); noise-physics-grounded loss; paediatric domain.
+    & The VAE component alone (without the composite loss and KL schedule) would blur outputs \cite{bredell_explicitly_2023}; cyclic KL annealing and heteroscedastic NLL jointly prevent this.
     & \textbf{Yes} & \textbf{Yes} \\
   \end{xltabular}
 
@@ -758,9 +764,7 @@ The existing literature reveals four interrelated gaps that this dissertation ad
 \textbf{Gap 3: Absence of calibrated pixel-level uncertainty.} Deterministic denoisers produce a single point-estimate reconstruction with no confidence signal, leaving clinicians unable to distinguish image regions where the network is reliably recovering the true signal from those where it is extrapolating under high noise or distributional mismatch. Huang et al.\ \cite{huang_review_2024} identify this as the primary barrier to clinical adoption of medical image analysis models: without uncertainty estimates, clinicians cannot assess when to trust model outputs. Kabir et al.\ \cite{kabir_neural_2018} survey neural network prediction-interval methods and show that heteroscedastic mean-variance estimation (the NLL loss) is the most principled single-pass approach, yet it has not been applied to paediatric CXR denoising. Gillmann et al.\ \cite{gillmann_uncertainty_2021} further demonstrate that spatially resolved per-pixel uncertainty maps — rather than scalar confidence scores — are the most actionable form for radiologists examining specific anatomical regions. VAE-based uncertainty estimation, which naturally separates epistemic (model) and aleatoric (data) components following the Kendall \& Gal \cite{kendall_what_2017} decomposition, has not been evaluated for paediatric CXR denoising with calibration metrics that establish clinical trustworthiness.
 
 \textbf{Gap 4: No explicit frequency-domain regularisation.} The spectral bias of gradient descent \cite{rahaman_spectral_2019, xu_frequency_2020} systematically suppresses high-frequency diagnostic content (vessel margins, consolidation boundaries) in all existing denoisers. No paediatric CXR framework applies a Focal Frequency Loss \cite{jiang_focal_2021} to correct this directly \cite{durall_watch_2020}.
-Table~\ref{tab:intro:gaps} synthesises these identified gaps, their evidence base, clinical
-consequences, and the proposed framework's solutions. The primary literature underpinning
-each gap is reviewed in depth in Chapter~\ref{chap:lit}.
+The proposed framework, PP-VAE-Hformer, directly addresses each of these gaps. In brief, it inserts a Variational Autoencoder probabilistic bottleneck into an Hformer encoder-decoder backbone and trains it with a four-term composite loss combining heteroscedastic negative log-likelihood, structural similarity, focal frequency regularisation, and a KL divergence term. This design is introduced conceptually in Section~\ref{sec:intro:contributions} and specified in full mathematical detail in Chapter~\ref{chap:methods}. Table~\ref{tab:intro:gaps} summarises the gap-to-solution mapping; the primary literature underpinning each gap is reviewed in depth in Chapter~\ref{chap:lit}.
 
 \begin{table}[htbp]
   \centering
@@ -947,7 +951,7 @@ DnCNN \cite{zhang_beyond_2017} established residual learning for blind Gaussian 
 \label{sec:lit:architectures:transformer}
 % ─────────────────────────────────────────────────────────
 
-SwinIR \cite{liang_swinir_2021} applied Swin Transformer windowed self-attention to image restoration, achieving 29.50\,dB on BSD68 at $\sigma=25$. Hformer \cite{zhang_hformer_2023}, with only 1.65M parameters, alternates convolutional residual blocks with lightweight Transformer attention and serves as the backbone for PP-VAE-Hformer. Xu et al.\ \cite{xuLowdoseComputedTomography2025} proposed a related hybrid (StoBlock+RDN+attention) for LDCT, demonstrating broad applicability of local-dense plus global-context processing, but with no uncertainty output. NAFNet \cite{chen_nafnet_2022} achieved 29.52\,dB on BSD68 by replacing non-linearities with simple gating, showing architectural simplicity can match complexity. SCUNet \cite{zhang_scunet_2023}, the current ceiling at 29.55\,dB, combines Swin Transformer and convolutional branches in each block and includes Poisson noise in its training synthesis. Table~\ref{tab:lit:architectures} summarises benchmark results across all methods.
+The idea of combining an autoencoder (encoder-decoder) structure with both CNN and Transformer components in a single medical image processing architecture was pioneered by Chen et al.\ \cite{chen_transunet_2021} in TransUNet, which replaced the U-Net encoder's convolutional layers with a Transformer, using the U-Net's skip connections to preserve spatial detail. This established the template that subsequent image restoration architectures would follow. SwinIR \cite{liang_swinir_2021} applied Swin Transformer windowed self-attention to image restoration, achieving 29.50\,dB on BSD68 at $\sigma=25$. Hformer \cite{zhang_hformer_2023}, with only 1.65M parameters, alternates convolutional residual blocks with lightweight Transformer attention and serves as the backbone for PP-VAE-Hformer. Xu et al.\ \cite{xuLowdoseComputedTomography2025} proposed a related hybrid (StoBlock+RDN+attention) for LDCT, demonstrating broad applicability of local-dense plus global-context processing, but with no uncertainty output. NAFNet \cite{chen_nafnet_2022} achieved 29.52\,dB on BSD68 by replacing non-linearities with simple gating, showing architectural simplicity can match complexity. SCUNet \cite{zhang_scunet_2023}, the current ceiling at 29.55\,dB, combines Swin Transformer and convolutional branches in each block and includes Poisson noise in its training synthesis. Table~\ref{tab:lit:architectures} summarises benchmark results across all methods.
 
 \begin{table}[H]
   \centering
@@ -1200,7 +1204,9 @@ Four sequential phases were executed: (1) dataset preparation and noise simulati
 
 The dataset used in this study is the Kermany paediatric chest radiograph collection (described in Section~\ref{sec:lit:kermany}): 5,856 anterior-posterior chest radiographs from children aged one to five years, acquired under routine clinical conditions \cite{kermany_identifying_2018}. The following describes the preprocessing applied in this study.
 
-Images were resized to $256\times256$ via bilinear interpolation,\footnote{Bilinear interpolation computes each output pixel as the weighted average of the four nearest neighbours in the source image, with weights proportional to proximity in both the horizontal and vertical directions. It avoids the blocking artefacts of nearest-neighbour resampling and the ringing introduced by higher-order bicubic kernels, while preserving the overall intensity structure required for correct Poisson-Gaussian noise simulation at the target resolution.} converted to single-channel float tensors, and normalised to $[0,1]$. No augmentation was applied, as it would alter the intensity statistics required by the Poisson-Gaussian noise model. The 624-image official test partition was held out throughout training. Of the remaining 5,232, 785 images (15\%, seed 42) formed the validation set and 4,447 the training set. Class labels were unused: the denoising task is self-supervised.
+Images were resized to $256\times256$ via bilinear interpolation,\footnote{Bilinear interpolation computes each output pixel as the weighted average of the four nearest neighbours in the source image, with weights proportional to proximity in both the horizontal and vertical directions. It avoids the blocking artefacts of nearest-neighbour resampling and the ringing introduced by higher-order bicubic kernels, while preserving the overall intensity structure required for correct Poisson-Gaussian noise simulation at the target resolution.} converted to single-channel float tensors, and normalised to $[0,1]$. No augmentation was applied, as it would alter the intensity statistics required by the Poisson-Gaussian noise model. The 624-image official test partition was held out throughout training. Of the remaining 5,232 images, 785 (15\%, seed 42) formed the validation set and 4,447 the training set. Class labels were unused: the denoising task is self-supervised.
+
+\paragraph{Prevention of data leakage.} \emph{Data leakage}\footnote{\emph{Data leakage} occurs when information from the evaluation set is used, directly or indirectly, to make decisions during training. If a model is allowed to see test-set images during training, or if hyperparameters are optimised by repeatedly checking test-set performance, the model's apparent performance on the test set will be artificially inflated and will not reflect how the model performs on genuinely unseen patients. Preventing leakage is therefore a fundamental requirement of trustworthy machine learning evaluation in medical settings.} is prevented at three levels. First, the 624-image official test partition was partitioned before any model code was written and was never accessed during training, hyperparameter selection, or architecture design. Its results are reported once at the end of each experiment. Second, the 785-image validation set was used exclusively for checkpoint selection (selecting the training epoch with the best validation PSNR); it played no role in loss function design, learning rate choice, or any other decision that could cause optimistic bias. Third, Poisson-Gaussian noise was generated on-the-fly at each training iteration using a freshly drawn random seed, so no model ever sees the same noisy image twice and no noisy realisation from the test or validation set can be memorised. The random seed for the train/validation split (seed 42) is fixed and reported for full reproducibility, allowing independent groups to reconstruct the identical partition.
 
 \begin{table}[htbp]
 \centering
@@ -1360,9 +1366,65 @@ The ResBlock applies two $3 \times 3$ convolutions with GroupNorm\footnote{Group
 \input{fig_architecture_resblock}
 
 \paragraph{WindowAttnBlock.}
-The WindowAttnBlock applies multi-head self-attention\footnote{Self-attention \cite{vaswani_attention_2017} computes, for each position in a feature map, a weighted sum of all other positions' values, where the weights (attention scores) measure pairwise similarity between a query vector at the current position and key vectors at all other positions. This allows the network to capture long-range dependencies regardless of spatial distance, something that fixed-kernel convolutions cannot do. In image processing, full global self-attention over a $32\times32$ feature map requires computing $(32\times32)^2 = 1,048,576$ pairwise scores. Window-restricted attention (as in the Swin Transformer \cite{liu_swin_2021}) limits each query to attend only within a small non-overlapping local window, reducing the per-window score count to $(8\times8)^2 = 4,096$ at a fraction of the global attention cost.} within non-overlapping $8\times8$ windows \cite{liu_swin_2021}, reducing the $4.3\times10^9$ pairwise scores of global attention to 4,096 per window while retaining sufficient context for the network to understand what an anatomical region should look like given its neighbours. The block uses pre-layer normalisation and a two-layer feedforward network with GELU activation. Two HybridBlocks are stacked at each stage.
+The WindowAttnBlock applies multi-head self-attention within non-overlapping $8\times8$ local windows \cite{liu_swin_2021, zhang_hformer_2023}. Understanding the computation requires first understanding what attention does.
+
+\textit{Standard self-attention.} Attention \cite{vaswani_attention_2017} transforms an input sequence of feature vectors into a context-aware output sequence. Each input position $i$ is represented by three derived vectors: a \emph{query} $\mathbf{q}_i$, a \emph{key} $\mathbf{k}_i$, and a \emph{value} $\mathbf{v}_i$, each obtained by a learned linear projection of the input feature vector at that position. The output at position $i$ is a weighted sum of all value vectors, where the weight given to position $j$'s value depends on how similar position $i$'s query is to position $j$'s key:
+\begin{equation}
+\label{eq:methods:attention}
+\mathrm{Attention}(\mathbf{Q},\mathbf{K},\mathbf{V}) = \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}}\right)\mathbf{V}
+\end{equation}
+where $\mathbf{Q}$, $\mathbf{K}$, $\mathbf{V}$ are matrices stacking the query, key, and value vectors of all positions, and $d_k$ is the dimension of each key vector (the $\sqrt{d_k}$ scaling stabilises gradients for large $d_k$). The \emph{softmax} function converts raw similarity scores into non-negative weights that sum to 1 across all positions.\footnote{The \emph{softmax} function maps a vector of real numbers $\mathbf{s} = (s_1, \ldots, s_n)$ to a probability distribution: $\mathrm{softmax}(s_i) = e^{s_i} / \sum_j e^{s_j}$. Larger similarities receive exponentially more weight; this means attention is dominated by the most similar positions rather than being a simple average.} In \emph{multi-head} attention \cite{vaswani_attention_2017}, this computation is performed $h$ times in parallel with different projection matrices, and the $h$ outputs are concatenated and re-projected, allowing the model to simultaneously attend to different aspects of context (e.g.\ one head might attend to sharp edges, another to smooth regions).
+
+\textit{Key computational trick: windowed vs.\ global attention.} Applied to a $32\times32$ feature map with $d_k = 64$, global attention requires computing the $\mathbf{Q}\mathbf{K}^\top$ product for all $(32\times32)^2 = 1{,}048{,}576$ pairs — computationally prohibitive at scale. Hformer (following the Swin Transformer \cite{liu_swin_2021}) restricts each query to attend only within a non-overlapping $8\times8$ local window. Within each window, only $(8\times8)^2 = 4{,}096$ attention pairs are computed. The $32\times32$ feature map contains $(32/8)^2 = 16$ such windows, for a total of $16 \times 4{,}096 = 65{,}536$ pairs — a $16\times$ reduction in computation at the bottleneck stage. Crucially, each feature vector is a high-dimensional channel-space representation extracted by prior convolutions, not a raw pixel value: attention is therefore comparing \emph{learned feature descriptors} of local regions, not pixel intensities directly. This gives windowed attention the ability to match anatomical texture across spatial neighbours based on what the convolutions have learned to detect, at a fraction of global attention's cost.
+
+The block uses pre-layer normalisation\footnote{Placing the layer normalisation \emph{before} each sub-layer (attention, feedforward) rather than after it, as in the original Transformer, is referred to as \emph{pre-norm}. Pre-norm prevents gradient vanishing in deep stacks by ensuring the normalisation operates on the residual stream before the projection, and has become standard in modern deep learning \cite{xiong_layer_2020}.} and a two-layer feedforward network with GELU activation. Two HybridBlocks are stacked at each encoder and decoder stage.
 
 \input{fig_architecture_hybridblock}
+
+\subsection{Hyperparameter Specification and Justification}
+\label{sec:methods:architecture:hyperparams}
+
+Table~\ref{tab:methods:hyperparams} lists all architectural hyperparameters. The following explains the rationale for each key choice.
+
+\begin{table}[htbp]
+\centering
+\caption{Architectural hyperparameters of PP-VAE-Hformer with justification.}
+\label{tab:methods:hyperparams}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} & \textbf{Rationale} \\
+\midrule
+Base feature channels & 64 & Standard for 256$\times$256 image restoration (\cite{zhang_hformer_2023, liang_swinir_2021}) \\
+Encoder channel progression & 64$\to$128$\to$256$\to$512 & Doubles per stage; matches U-Net convention \\
+Number of encoder/decoder stages & 3 & 8$\times$ spatial compression; more stages would \\
+ & & reduce the bottleneck below $32\times32$ \\
+HybridBlocks per stage & 2 & Pilot: 1 block undertrained; 3 exceeded GPU memory \\
+ResBlock kernel size & $3\times3$ & Standard for image restoration; larger kernels \\
+ & & gave no improvement at extra compute cost \\
+ResBlock stride / padding & 1 / 1 & Preserves spatial resolution within block \\
+Downsampling conv & $3\times3$, stride 2 & Strided conv preferred over pooling \\
+ & & (preserves learned feature information) \\
+Upsampling (decoder) & Transposed conv $2\times2$, stride 2 & Learned upsampling preferred over bilinear \\
+ & & (avoids fixed interpolation artefacts) \\
+Attention window size & $8\times8$ & Following Swin Transformer \cite{liu_swin_2021}; \\
+ & & smaller windows reduce context, larger exceed GPU cache \\
+Attention heads & 8 & Standard for $d_k=64$ models; each head attends \\
+ & & with $d_k/h = 8$-dimensional key vectors \\
+VAE projection kernel & $1\times1$ & Bottleneck projection; no spatial mixing needed \\
+KL log-variance clamp & $[-10,\,4]$ & Prevents variance overflow at initialisation \\
+MC sampling passes ($K$) & 20 & Pilot: $K{=}100$ changed epistemic maps by $<1\%$; \\
+ & & 20 balances stability and inference cost \\
+Output head kernels & $3\times3$, stride 1 & Two parallel heads; same architecture as stem \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Why three downsampling stages?} The 8$\times$ spatial compression (256 to 32 pixels) was chosen so the bottleneck feature map is large enough to retain spatial structure (a 16$\times$16 or 8$\times$8 bottleneck discards too much spatial detail for reconstruction at 256$\times$256), while being small enough that global context can be captured within the $8\times8$ attention windows covering the entire 32$\times$32 map in 16 windows.
+
+\textbf{Why 2 HybridBlocks per stage?} Pilot experiments with 1 block per stage produced underfitting (validation PSNR 0.4~dB below 2-block configuration); 3 blocks exceeded the SLURM A100 memory limit for batch size 16. Two blocks also exactly matches the Hformer paper's default configuration \cite{zhang_hformer_2023}, enabling direct architectural comparison.
+
+\textbf{Why $3\times3$ convolutions throughout?} The $3\times3$ kernel has become standard in image restoration architectures because it captures the minimal local neighbourhood required for edge detection and texture characterisation, while larger kernels ($5\times5$, $7\times7$) add parameters and computation without consistent PSNR benefit at this image scale \cite{zhang_beyond_2017, zhang_drunet_2021}.
 
 \subsection{Bottleneck and VAE Probabilistic Bottleneck}
 \label{sec:methods:architecture:bottleneck}
@@ -1438,6 +1500,48 @@ radiograph \cite{lovrenski_esr_2025}.
 % ============================================================
 \section{Loss Functions}
 \label{sec:methods:loss}
+
+\paragraph{How a loss function is computed — conceptual overview.}
+A loss function measures, numerically, \emph{how wrong} the model's output is at each training step, so that the training algorithm knows in which direction to nudge the model's parameters. Figure~\ref{fig:methods:loss_diagram} illustrates the general principle: the model receives a noisy input image and produces a predicted clean image; the loss function then compares this prediction to the true clean reference image (which is available during training because noise was added computationally) and computes a single scalar error value. The training algorithm adjusts all of the model's many millions of numerical parameters by tiny amounts in the direction that would reduce this error value. After tens of thousands of such update steps, the model learns to produce predictions that are systematically close to the true clean image.
+
+The specific mathematical form of the loss function defines what ``close'' means: MSE punishes large pixel-value deviations; SSIM additionally punishes loss of spatial structure; NLL learns to predict not just the clean image value but also how uncertain it is about that value at each pixel.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=4pt, minimum width=2.8cm, minimum height=1.1cm,
+              align=center, fill=white, font=\small},
+  sbox/.style={draw, rounded corners=4pt, minimum width=2.0cm, minimum height=1.1cm,
+              align=center, fill=blue!6, font=\small},
+  lbox/.style={draw, rounded corners=4pt, minimum width=2.4cm, minimum height=1.1cm,
+              align=center, fill=orange!10, font=\small},
+  arr/.style={->, thick, >=Stealth},
+  >=Stealth
+]
+
+\node[box] (noisy) at (0,0) {Noisy input\\$\tilde{x}$};
+\node[sbox] (model) at (3.5,0) {Model\\(millions of\\parameters)};
+\node[box] (pred) at (7.0,0) {Predicted\\clean image\\$\hat{\mu}_y$};
+\node[box] (ref) at (7.0,-2.5) {True clean\\reference\\$y$};
+\node[lbox] (loss) at (11.0,-1.2) {Loss value\\$\mathcal{L}(\hat{\mu}_y, y)$\\(single number)};
+\node[box] (update) at (7.0,-4.5) {Gradient update\\(adjust all\\parameters)};
+
+\draw[arr] (noisy) -- (model);
+\draw[arr] (model) -- (pred);
+\draw[arr] (pred) -- (loss);
+\draw[arr] (ref) -- (loss);
+\draw[arr] (loss) -- node[right, font=\footnotesize] {backpropagation} (update);
+\draw[arr, dashed, gray] (update) to[out=180, in=270] node[below left, font=\footnotesize, gray] {next step} (model.south);
+
+\node[font=\footnotesize, text=gray] at (9.3, 0.3) {compare};
+\draw[arr, gray, dashed] (pred.east) to[out=0, in=90] (loss.north);
+\draw[arr, gray, dashed] (ref.east) to[out=0, in=270] (loss.south);
+
+\end{tikzpicture}
+\caption[Loss computation diagram]{How a loss function is used in training. The model maps a noisy input to a predicted clean image; the loss function compares this to the true clean reference (available because noise was added computationally) and produces a scalar error value. Backpropagation\protect\footnotemark\ uses this error to adjust the model's parameters. The specific mathematical definition of the loss determines what aspects of image quality are penalised.}
+\label{fig:methods:loss_diagram}
+\end{figure}
+\footnotetext{\emph{Backpropagation} (short for backward propagation of errors) is the algorithm that computes, for every parameter in the network, the partial derivative of the loss with respect to that parameter. This derivative tells us in which direction each parameter should be adjusted to reduce the loss. The chain rule of calculus allows this computation to proceed layer by layer from the output back to the input. Backpropagation makes training deep networks with millions of parameters computationally feasible \cite{lecun_efficient_2002}.}
 
 \subsection{Arm A: Mean Squared Error}
 \label{sec:methods:loss:mse}
@@ -3081,7 +3185,7 @@ NLL-trained arms produce physically meaningful aleatoric maps: uncertainty conce
 
 Fair comparisons use the same Kermany corpus and Poisson-Gaussian noise model. BM3D with oracle $\sigma$ achieves $30.716$~dB, trailing every learned arm by $\geq 1.9$~dB, confirming that signal-dependent heteroscedastic noise falls outside AWGN assumptions. DnCNN retrained achieves $32.798$~dB; NLL arms B and D exceed this by $+0.66$~dB and $+0.64$~dB respectively ($d\approx0.65$) while simultaneously providing calibrated per-pixel uncertainty maps. Arm~A ($34.618$~dB) exceeds DnCNN by $+1.82$~dB attributable to Hformer's attention-based long-range modelling. The extended SOTA baselines (Section~\ref{sec:methods:baselines}) further contextualise these results: NAFNet \cite{chen_nafnet_2022} achieves $34.388$~dB, competitive with but below Arm~A; SCUNet \cite{zhang_scunet_2023} achieves $34.726$~dB, $+0.11$~dB above Arm~A, representing the ceiling of current discriminative SOTA when retrained on domain-matched data. Crucially, neither NAFNet nor SCUNet provides calibrated uncertainty output, and their training scripts exhibited a metric-normalisation error that precluded direct LPIPS and FSIM comparison. DDPM ($13.52$~dB) is an honest negative finding: 200 epochs is insufficient for Palette-style diffusion to converge; the trajectory was still monotonically rising at epoch~200, demonstrating that discriminative architectures are far more budget-efficient.
 
-Contextually (Table~\ref{tab:disc:lit}), Arm~A exceeds RED-CNN on clinical CT ($33.11$~dB \cite{chen_low_2017}). The closest architectural prior is Xu et al.\ \cite{xuLowdoseComputedTomography2025} (RDN+Transformer for LDCT), which is fully deterministic and produces no uncertainty output. PP-VAE-Hformer uniquely combines hybrid attention reconstruction with calibrated per-pixel epistemic and aleatoric uncertainty maps across all VAE arms.
+Contextually (Table~\ref{tab:disc:lit}), Arm~A exceeds RED-CNN on clinical CT ($33.11$~dB \cite{chen_low_2017}). The closest architectural prior is Xu et al.\ \cite{xuLowdoseComputedTomography2025} (RDN+Transformer for LDCT), which is fully deterministic and produces no uncertainty output. To the authors' knowledge, PP-VAE-Hformer is the first architecture to combine hybrid attention reconstruction with calibrated per-pixel epistemic and aleatoric uncertainty maps on paediatric CXR; however, the rapidly evolving literature means this claim should be interpreted as reflecting the state of knowledge at the time of writing rather than as an exhaustive survey of unpublished concurrent work.
 
 \begin{landscape}
 \singlespacing
@@ -3137,12 +3241,12 @@ BM3D (oracle $\sigma$)$^\dagger$              & \citeyear{dabov_image_2007}  & 3
 \section{Theoretical Significance}
 \label{sec:disc:theory}
 
-\textbf{Loss engineering vs architecture scaling.} The three CNN baselines cluster within $0.076$~dB despite a decade of progressive innovation. Switching the loss alone from DnCNN to NLL (Arm~B) adds $+0.658$~dB without architecture change, consistent with Zhao et al.\ \cite{zhao_loss_2017}: loss function design is the underexploited lever. The composite objective can be interpreted as a constrained ELBO where each term encodes a distinct domain prior (Gaussian noise physics, latent smoothness, structural coherence, spectral completeness); the ablation validates each prior by showing that removing it degrades performance along the dimension it encodes. The NLL+SSIM+FFL objective is architecture-agnostic and transferable to any heteroscedastic encoder-decoder.
+\textbf{Loss engineering vs architecture scaling.} The three CNN baselines cluster within $0.076$~dB on the Kermany test set despite representing a decade of progressive architectural innovation. On this dataset and noise model, switching the loss alone from DnCNN to NLL (Arm~B) adds $+0.658$~dB without architecture change, consistent with Zhao et al.\ \cite{zhao_loss_2017}: this suggests loss function design may be an underexploited lever in this domain, though the effect size should be interpreted cautiously given the single-dataset evaluation. The composite objective can be interpreted as a constrained ELBO where each term encodes a distinct domain prior (Gaussian noise physics, latent smoothness, structural coherence, spectral completeness); the ablation validates each prior by showing that removing it degrades performance along the dimension it encodes. The NLL+SSIM+FFL objective is architecture-agnostic and transferable to any heteroscedastic encoder-decoder.
 
 \section{Clinical Relevance}
 \label{sec:disc:clinical}
 
-\textbf{Dose reduction.} At high noise ($\eta=300$, $\approx 3\times$ reduced dose), Arm~A maintains $32.9$~dB, matching IRCNN at mid noise, suggesting $\approx1.5\times$ dose reduction is achievable without quality sacrifice. VAE arms~F/H maintain $\geq 30.7$~dB while retaining calibrated uncertainty maps. Pneumonia cases are reconstructed $\approx 1.0$~dB better than Normal cases -- the population most frequently scanned at low dose benefits most.
+\textbf{Dose reduction.} At high noise ($\eta=300$, $\approx 3\times$ reduced dose), Arm~A maintains $32.9$~dB, matching IRCNN at mid noise. This is consistent with the possibility that $\approx1.5\times$ dose reduction may be achievable on this dataset without quality sacrifice by this specific metric, though translating this into a clinical dose reduction claim would require prospective human observer studies with confirmed diagnostic accuracy outcomes, which are outside the scope of this work. VAE arms~F/H maintain $\geq 30.7$~dB while retaining calibrated uncertainty maps. Pneumonia cases are reconstructed $\approx 1.0$~dB better than Normal cases -- the population most frequently scanned at low dose benefits most.
 
 \textbf{Uncertainty workflow.} A simple three-tier decision rule operates on $\hat{\sigma}_a$: below $\tau_1$ accept; between $\tau_1$ and $\tau_2$ flag for second reader; above $\tau_2$ request repeat acquisition. Threshold calibration requires a reader study with confirmed diagnostic outcomes. Arm~D (NLL+SSIM+FFL, no VAE) is the most deployment-friendly configuration at $<50$~ms inference per image.
 
