@@ -1839,6 +1839,14 @@ The comparison set (DnCNN, IRCNN, FFDNet, DRUNet, SwinIR, NAFNet, SCUNet) is cho
 \section{Evaluation Metrics}
 \label{sec:methods:evaluation}
 
+Image quality metrics can be divided into two broad categories based on whether they require a clean reference image to compute a score, following the taxonomy of Luo et al.\ \cite{luo_eedn_2022}:
+
+\begin{description}
+  \item[Full-Reference (FR) metrics] compare the denoised output $\hat{\mu}_y$ directly against a paired clean ground-truth image $y$. They measure the fidelity of the reconstruction with respect to an ideal target. All FR metrics require the existence of a clean reference, making them applicable in a controlled experimental setting (such as this study, where paired noisy/clean images are generated synthetically from the Kermany dataset) but not in routine clinical deployment where no clean reference exists. FR metrics used in this study: PSNR, SSIM, MS-SSIM, FSIM, LPIPS, Edge Preservation Index (EPI), and Noise Power Spectrum (NPS) of the residual.
+
+  \item[No-Reference (NR) metrics] assess image quality from the denoised output alone, without requiring a paired ground-truth image. They evaluate properties such as local contrast, texture fidelity, and signal-to-noise ratio within anatomically defined regions of the image itself. NR metrics are particularly relevant for clinical deployment, where only the noisy input and denoised output are available. The Contrast-to-Noise Ratio (CNR) is the NR metric used in this study: it quantifies the contrast between a clinically relevant signal region and a surrounding background region entirely from the denoised image, without pixel-wise comparison to a clean reference.
+\end{description}
+
 Metrics were computed on the 624-image held-out test set at each noise preset. Reported values are means over the test set with 95\% bootstrap confidence intervals (1,000 resamples).\footnote{\emph{Bootstrap resampling} \cite{efron_bootstrap_1979} estimates the sampling distribution of a statistic -- here, the mean PSNR across the 624 test images -- by repeatedly drawing samples of size $n=624$ with replacement from the observed test set and computing the statistic on each resample. The 2.5th and 97.5th percentiles of the resulting 1,000 bootstrap statistics form the 95\% confidence interval without assuming a parametric form for the underlying distribution. This is preferable to the normal approximation when the test set is small or the metric distribution is skewed.}
 
 \subsection{Reconstruction Metrics}
