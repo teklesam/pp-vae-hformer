@@ -212,6 +212,49 @@ def expected_calibration_error(
     return results
 
 
+# ── Fixed-ROI CNR for 256×256 CXR ─────────────────────────────────────────────
+
+def _cxr_roi_masks(H: int = 256, W: int = 256) -> tuple[torch.Tensor, torch.Tensor]:
+    """
+    Return fixed anatomically-motivated ROI masks for 256×256 CXR images.
+
+    Signal ROI : central lung region (rows 60–180, cols 60–200)
+                 — aerated parenchyma, maximally relevant for pneumonia diagnosis.
+    Background  : four corner patches (32×32 each)
+                 — outside the ribcage, dominated by detector read-out noise.
+
+    These positions are approximate for frontal paediatric CXR at 256×256.
+    They are held constant across all arms so CNR comparisons are consistent.
+    """
+    roi  = torch.zeros(H, W, dtype=torch.bool)
+    bg   = torch.zeros(H, W, dtype=torch.bool)
+    roi[60:180, 60:200] = True
+    for r0, c0 in [(0, 0), (0, W - 32), (H - 32, 0), (H - 32, W - 32)]:
+        bg[r0:r0 + 32, c0:c0 + 32] = True
+    return roi, bg
+
+
+def cnr_fixed_roi(image: torch.Tensor) -> float:
+    """
+    No-reference CNR using fixed anatomical ROI masks for 256×256 CXR.
+
+    CNR = |mean(lung ROI) − mean(corner background)| / std(corner background)
+
+    This variant requires only the denoised image — no clean reference needed.
+    It quantifies how well the denoiser preserves lung-to-background contrast,
+    using the same ROIs for every image so results are directly comparable.
+
+    Parameters
+    ----------
+    image : (B, 1, H, W) denoised image, values in [0, 1]
+    """
+    H, W = image.shape[-2], image.shape[-1]
+    roi_mask, bg_mask = _cxr_roi_masks(H, W)
+    roi_mask = roi_mask.to(image.device)
+    bg_mask  = bg_mask.to(image.device)
+    return contrast_to_noise_ratio(image, roi_mask, bg_mask)
+
+
 # ── Aggregate eval ─────────────────────────────────────────────────────────────
 
 def compute_all_metrics(
@@ -219,20 +262,35 @@ def compute_all_metrics(
     target: torch.Tensor,
     log_sig2a: torch.Tensor | None = None,
     include_perceptual: bool = True,
+    include_clinical: bool = True,
 ) -> dict[str, float]:
     """
-    Compute the full referenced metric set for one batch.
-    Perceptual metrics (FSIM, LPIPS) require piq/lpips; gracefully skipped.
+    Compute the full metric set for one batch.
+
+    Full-reference (FR) metrics — require clean target:
+        psnr, ssim, ms_ssim, fsim, lpips, epi
+    No-reference (NR) clinical metrics — denoised image only:
+        cnr  (fixed anatomical ROI, 256×256 CXR)
+    Calibration metrics — require log_sig2a:
+        coverage_*, ece, sharpness
     """
     metrics: dict[str, float] = {}
+
+    # Full-reference reconstruction
     metrics["psnr"] = psnr(pred, target)
     metrics["ssim"] = ssim(pred, target)
 
     if include_perceptual:
         metrics["ms_ssim"] = ms_ssim(pred, target)
-        metrics["fsim"] = fsim(pred, target)
-        metrics["lpips"] = lpips(pred, target)
+        metrics["fsim"]    = fsim(pred, target)
+        metrics["lpips"]   = lpips(pred, target)
+        metrics["epi"]     = edge_preservation_index(pred, target)
 
+    # No-reference clinical metric
+    if include_clinical:
+        metrics["cnr"] = cnr_fixed_roi(pred)
+
+    # Calibration (arms with uncertainty head only)
     if log_sig2a is not None:
         sigma = torch.exp(0.5 * log_sig2a.clamp(-10, 10))
         cal = expected_calibration_error(target, pred, sigma)
