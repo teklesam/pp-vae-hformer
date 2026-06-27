@@ -986,9 +986,6 @@ The idea of combining an autoencoder (encoder-decoder) structure with both CNN a
     NAFNet         & 2022 & Conv no-act.  & MAE         & 31.99 & $\approx$29.52 & --- \\
     SCUNet\textsuperscript{\dag} & 2023 & SC-hybrid & \textbf{L2} & \textbf{31.99} & \textbf{29.55} & \textbf{26.67} \\
     Hformer        & 2023 & CNN+attn      & \textbf{L2} & --- & --- & --- \\
-    \midrule
-    \multicolumn{7}{l}{\textit{Tier 6, Proposed (paediatric CXR domain)}} \\
-    PP-VAE-Hformer (this work) & 2025 & CNN+attn+VAE & NLL+SSIM+FFL+KL & $36.58^\dagger$ & $34.62^\dagger$ & $32.90^\dagger$ \\
     \bottomrule
   \end{tabular}
 
@@ -997,12 +994,10 @@ The idea of combining an autoencoder (encoder-decoder) structure with both CNN a
   Performance gains come primarily from architectural innovation; the field has relied on
   L2 or Charbonnier loss throughout. Sources: all numbers from Liang et al.\ (2021, Table~5)
   unless noted. \textsuperscript{\dag}SCUNet numbers from Zhang et al.\ (2023, Table~1).
-  $\dagger$PP-VAE-Hformer (Arm~A, best PSNR arm) evaluated on Kermany paediatric CXR
-  with Poisson-Gaussian noise at $\sigma_{\mathrm{eff}}\approx15/25/50$; \textbf{not directly
-  comparable to BSDS500 results above} due to domain, image size ($256{\times}256$), and
-  noise model differences. PSNR of best perceptual arm (J: $36.28/34.32/32.59$~dB) or
-  best uncertainty arm (D: $35.56/33.44/31.53$~dB) may be more relevant for clinical
-  deployment.}
+  Hformer did not report BSD68 results in the original publication.
+  Results for PP-VAE-Hformer are reported separately in Chapter~\ref{chap:results} and are
+  not included here because they were obtained on a different domain (Kermany paediatric CXR,
+  Poisson-Gaussian noise) and are not directly comparable to the AWGN BSD68 benchmark above.}
 \end{table}
 % ─────────────────────────────────────────────────────────
 \subsection{Why Architecture Alone Cannot Bridge the Gap}
