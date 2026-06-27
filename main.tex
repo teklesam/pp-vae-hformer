@@ -942,7 +942,7 @@ Classical methods (BM3D \cite{dabov_image_2007}, NLM \cite{buades_non-local_2005
 \label{sec:lit:architectures:cnn}
 % ─────────────────────────────────────────────────────────
 
-DnCNN \cite{zhang_beyond_2017} established residual learning for blind Gaussian denoising, achieving 29.23\,dB on BSD68 at $\sigma=25$. RED-CNN \cite{chen_low-dose_2017} adapted the U-Net architecture to low-dose CT, preserving fine structures via skip connections. DRUNet \cite{zhang_drunet_2021} (32.7M parameters, noise-conditioned) set the CNN ceiling at 29.48\,dB. All CNN denoisers share the fundamental limitation that MSE training drives regression to the conditional mean of all plausible clean images, producing spatial blurring that destroys the sharp margins of consolidating pneumonia \cite{zhao_loss_2017}.
+DnCNN \cite{zhang_beyond_2017} established residual learning for blind Gaussian denoising, achieving 29.23\,dB on BSD68 at $\sigma=25$. RED-CNN \cite{chen_low-dose_2017} adapted the U-Net architecture to low-dose CT, preserving fine structures via skip connections. DRUNet \cite{zhang_drunet_2021} (32.7M parameters, noise-conditioned) set the CNN ceiling at 29.48\,dB. All CNN denoisers share the pixel-wise MSE limitation detailed in Section~\ref{sec:lit:losses:pixelwise}: training on squared pixel error destroys the sharp margins of consolidating pneumonia by driving the output toward the average of all plausible clean images.
 
 % ─────────────────────────────────────────────────────────
 \subsection{Transformer and Hybrid Architectures}
@@ -1055,7 +1055,15 @@ The loss function defines what ``better reconstruction'' means, making it the ap
 \label{sec:lit:losses:pixelwise}
 % ─────────────────────────────────────────────────────────
 
-MSE training drives networks to output the conditional mean of all plausible clean images, producing spatial blurring. Zhao et al.\ \cite{zhao_loss_2017} showed that replacing MSE with composite MS-SSIM+L1 loss improves perceptual quality by 0.5--1.0\,dB without architecture changes. The Charbonnier loss \cite{charbonnier_two_1994} adopted by SwinIR shares similar properties but still treats pixels as independent.
+The three pixel-norm losses that appear in this study -- Mean Squared Error (MSE / L2), Mean Absolute Error (MAE / L1), and the Charbonnier norm -- all train the network to produce a reconstruction whose pixel values are numerically close to the clean reference, but they define \emph{closeness} differently, and that difference has measurable consequences for image sharpness.
+
+\textbf{MSE (L2).} MSE penalises errors quadratically: doubling the error quadruples the penalty ($2^2 = 4$). When multiple different clean images are all consistent with a given noisy input, the network minimising MSE outputs their pixel-wise \emph{average} -- the conditional mean. Averaged images are always smoother than any individual realisation, because sharp edges that could plausibly sit a little to the left or right get blended into a smear. This is called \emph{regression to the mean}\footnote{\emph{Regression to the mean} in image denoising means the network outputs the expected (average) value of every pixel across all possible clean images consistent with the noisy input, rather than any single plausible clean image. The result is a mathematically optimal predictor under MSE but one that systematically blurs fine edges, because the average of ``edge-slightly-left'' and ``edge-slightly-right'' is a fuzzy edge \cite{zhao_loss_2017}.} and is a mathematical property of MSE, not a failure of training. \emph{Advantage}: widely studied; fast; numerically stable; directly interpretable. \emph{Disadvantage}: systematically removes high-frequency anatomical detail (fine vessel margins, pleural lines, consolidation boundaries) that are diagnostically critical in paediatric CXR \cite{zhao_loss_2017}.
+
+\textbf{MAE / L1.} MAE penalises errors linearly: doubling the error doubles the penalty ($2 \times 1 = 2$). The network minimising MAE outputs the pixel-wise \emph{median} of plausible clean images rather than the mean. For symmetric noise distributions -- as Poisson-Gaussian noise approximates at moderate photon counts -- the median and mean coincide, so L1 and L2 produce near-identical reconstructions in practice \cite{zhao_loss_2017}. \emph{Advantage}: less sensitive to occasional very large errors; in some imaging regimes produces marginally sharper texture. \emph{Disadvantage}: not differentiable at exactly zero error (a technical inconvenience that requires a subgradient approximation, though this rarely affects results in practice).
+
+\textbf{Charbonnier norm.} The Charbonnier penalty \cite{charbonnier_two_1994} ($\sqrt{\|\hat{x}-x\|^2+\varepsilon^2} - \varepsilon$, where $\varepsilon$ is a small positive constant) smoothly interpolates between L2 behaviour for small errors and L1 behaviour for large errors. It is differentiable everywhere, avoiding the kink of pure L1, while retaining robustness to outliers. SwinIR \cite{liang_swinir_2021} adopted Charbonnier as its default pixel norm. \emph{Advantage}: differentiable everywhere; smooth training gradients; often preferred when both stability and edge fidelity matter. \emph{Disadvantage}: introduces one additional hyperparameter ($\varepsilon$); in practice, differences from L1 are negligible under Gaussian-like noise.
+
+\textbf{Key limitation shared by all three.} None of these losses trains the network to quantify how uncertain it is about the reconstruction at any given pixel. They all produce a single ``best guess'' image with no mechanism for flagging regions where the denoised value is unreliable. Zhao et al.\ \cite{zhao_loss_2017} showed that composite MS-SSIM+L1 objectives improve perceptual quality by 0.5--1.0\,dB over pure MSE on natural images, but the structural uncertainty gap is only addressed by the heteroscedastic NLL (Section~\ref{sec:lit:losses:nll}).
 
 % ─────────────────────────────────────────────────────────
 \subsection{Structural Similarity as a Perceptual Objective}
@@ -1131,7 +1139,7 @@ Zhang et al.\ \cite{zhang_comprehensive_2012} compared 11 full-reference quality
 \label{sec:lit:gap}
 % ============================================================
 
-The four gaps identified in Chapter~\ref{chap:intro} are confirmed by the literature reviewed here. The architecture literature has stalled: twelve years of architectural innovation add only 0.32\,dB (28.57 to 29.55\,dB on BSD68), while the loss function has never changed from pixel-wise objectives. No prior work applies a composite loss combining NLL, MS-SSIM, FFL, and KL within a single VAE framework on paediatric CXR. No comparison method produces calibrated uncertainty maps. No study evaluates on paediatric CXR at $256\times256$ with a physically principled Poisson-Gaussian noise model. Table~\ref{tab:lit:gaps} quantifies these gaps across all methods.
+The four gaps identified in Chapter~\ref{chap:intro} are confirmed by the literature reviewed here. As Section~\ref{sec:lit:architectures:plateau} showed, twelve years of architectural innovation added only 0.32\,dB on BSD68, while the loss function has never changed from pixel-wise objectives. No prior work applies a composite loss combining NLL, MS-SSIM, FFL, and KL within a single VAE framework on paediatric CXR. No comparison method produces calibrated uncertainty maps. No study evaluates on paediatric CXR at $256\times256$ with a physically principled Poisson-Gaussian noise model. Table~\ref{tab:lit:gaps} quantifies these gaps across all methods.
 
 These four gaps constitute the experimental mandate for this dissertation. Chapter~\ref{chap:methods} responds to each one directly: the Poisson-Gaussian noise model (Section~\ref{sec:methods:noise}) addresses the physics gap; the composite four-term loss (Section~\ref{sec:methods:loss}) addresses the loss-function gap; calibrated uncertainty quantification via ECE (Section~\ref{sec:methods:evaluation:calibration}) addresses the calibration gap; and the Kermany evaluation framework (Section~\ref{sec:methods:dataset}) addresses the paediatric domain gap. Together, the sixteen ablation arms and five retrained baselines described there form the most systematic loss-function comparison yet reported for probabilistic paediatric chest radiograph denoising.
 
@@ -1549,6 +1557,36 @@ This is the same loss used by DnCNN \cite{zhang_beyond_2017} and Hformer
 \cite{zhang_hformer_2023}. Arm A therefore benchmarks those state-of-the-art denoisers
 under the same training conditions as PP-VAE-Hformer. Because MSE treats every pixel as
 equally uncertain, it provides no training signal for the aleatoric head $\log\hat{\sigma}^2_a$.
+
+\subsection{Arms I, J, and Q: L1 and Charbonnier Pixel-Norm Variants}
+\label{sec:methods:loss:l1charbonnier}
+
+Arms~I, J, and Q extend the pixel-norm family by replacing the squared penalty of MSE with alternative distance measures. These three loss functions are compared with MSE below; readers primarily interested in the headline comparison may refer directly to Section~\ref{sec:results:curriculum:charb} for the quantitative outcome.
+
+\paragraph{Why compare pixel norms?}
+A pixel-norm loss trains the network to produce a denoised image whose individual pixel values are numerically close to the clean reference. The mathematical form of ``close'' is what differs between L2, L1, and Charbonnier. The choice determines two things: (i) what statistical summary of all plausible clean images the network learns to output, and (ii) how harshly large individual pixel errors are treated during training. For readers without a machine learning background: the loss function is like a scoring rule for an exam -- different scoring rules incentivise different answer strategies, even when the correct answer is the same.
+
+\paragraph{L1 / MAE -- Arm I.}
+The L1 (Mean Absolute Error) loss penalises errors \emph{in proportion to their size}: an error of $2$ contributes twice as much as an error of $1$.
+\begin{equation}
+\label{eq:methods:mae}
+\mathcal{L}_{\mathrm{L1}} = \frac{1}{HW}\sum_{i=1}^{HW}\left|\hat{\mu}_y(i) - y(i)\right|
+\end{equation}
+The network minimising L1 is driven toward the pixel-wise \emph{median} of all plausible clean images rather than the mean. Under noise distributions that are approximately symmetric -- as Poisson-Gaussian noise is at moderate photon counts -- the median and mean coincide, so L1 and L2 produce near-identical reconstructions in practice \cite{zhao_loss_2017}. \textbf{Advantages over MSE}: (i) slightly more robust to a small number of extreme pixel outliers; (ii) in some imaging regimes produces marginally sharper textures because outlier pixels do not dominate the gradient. \textbf{Disadvantages}: the absolute-value function has a non-differentiable kink at zero error, requiring a subgradient approximation; in practice this causes no instability at standard learning rates but must be handled carefully for very small learning rates late in training.
+
+\paragraph{L1+SSIM+FFL composite -- Arm J.}
+Arm J combines L1 with the SSIM and FFL structural terms defined in Sections~\ref{sec:methods:loss:ssim} and~\ref{sec:methods:loss:ffl}, replacing the NLL-headed composite of Arm~D with an L1-headed one. This tests whether the perceptual and frequency-domain benefits of SSIM+FFL are preserved when the base pixel norm is L1 rather than NLL. Because L1 does not supervise the aleatoric variance head, Arm~J is a fully deterministic arm with no uncertainty output.
+
+\paragraph{Charbonnier -- Arm Q.}
+The Charbonnier penalty \cite{charbonnier_two_1994} is a smooth approximation to L1:
+\begin{equation}
+\label{eq:methods:charbonnier}
+\mathcal{L}_{\mathrm{Charb}} = \frac{1}{HW}\sum_{i=1}^{HW}\!\left(\sqrt{\left(\hat{\mu}_y(i)-y(i)\right)^2+\varepsilon^2}-\varepsilon\right), \quad \varepsilon = 10^{-3}
+\end{equation}
+For large errors ($|\hat{\mu}_y - y| \gg \varepsilon$), the Charbonnier loss behaves like L1: proportional penalty, robust to outliers. For small errors ($|\hat{\mu}_y - y| \ll \varepsilon$), it approximates L2: quadratic penalty, smooth gradient, stable optimisation. The result is a loss that inherits the edge-robustness of L1 and the differentiability of L2, without the kink at zero that makes pure L1 technically inconvenient. SwinIR \cite{liang_swinir_2021} adopted Charbonnier as its default training objective. \textbf{Advantages}: differentiable everywhere; smooth, well-conditioned training gradients; preferred in architectures with variance heads where gradient discontinuities could couple poorly with other loss terms. \textbf{Disadvantages}: introduces the hyperparameter $\varepsilon$ (fixed at $10^{-3}$ throughout this study, following \citeauthor{charbonnier_two_1994}); under approximately Gaussian noise, performance differences from L1 and L2 are negligible.
+
+\paragraph{Expected equivalence under this noise model.}
+Zhao et al.\ \cite{zhao_loss_2017} showed that composite objectives (SSIM+L1) outperform pure MSE by 0.5--1.0\,dB on natural images. However, the relative ranking of L2, L1, and Charbonnier alone is expected to be statistically indistinguishable for Poisson-Gaussian noise with approximately Gaussian pixel marginals, because the three estimators converge to the same posterior mean/median under this distribution. The ablation results in Section~\ref{sec:results:curriculum:charb} confirm this prediction empirically.
 
 \subsection{Arm B: Heteroscedastic Negative Log-Likelihood}
 \label{sec:methods:loss:nll}
@@ -1977,7 +2015,7 @@ This chapter reports the quantitative and qualitative outcomes of the 16-arm abl
 The Kermany test partition comprises 624 images: 234 Normal, 242 Bacterial Pneumonia, and 148 Viral Pneumonia, reflecting real paediatric clinical epidemiology \cite{kermany_identifying_2018}. Mean pixel intensity is $0.506 \pm 0.058$ across the test set; Pneumonia cases are modestly brighter ($0.518$) than Normal ($0.487$), reflecting consolidation-induced whitening.
 
 \paragraph{Degradation validation.}
-Table~\ref{tab:results:noise_stats} quantifies the three presets. The High preset (noisy-to-clean PSNR $\approx 13.0$~dB before any model inference) represents a clinically extreme dose reduction. Because the Poisson term $ay$ scales with signal, dark anatomical regions have worse SNR despite lower absolute noise, explaining why aleatoric uncertainty maps show elevated uncertainty at pleural angles and retrocardiac spaces. Evaluation was verified as deterministic by confirming identical noisy images for a 20-case subset across different random seed checks.
+Table~\ref{tab:results:noise_stats} quantifies the three presets. The High preset (noisy-to-clean PSNR $\approx 13.0$~dB before any model inference) represents a clinically extreme dose reduction. Because the Poisson term $ay$ scales with signal (Section~\ref{sec:methods:noise:model}), dark anatomical regions such as pleural angles and retrocardiac spaces have the lowest SNR despite carrying the lowest absolute pixel noise -- an asymmetry that the NLL-trained uncertainty maps correctly capture. Evaluation was verified as deterministic by confirming identical noisy images for a 20-case subset across different random seed checks.
 
 \begin{figure}[H]
 \centering
