@@ -1610,23 +1610,42 @@ large should elicit a correspondingly large predicted $\hat{\sigma}^2_a$.
 \subsection{Arm C: Multi-Scale Structural Similarity}
 \label{sec:methods:loss:ssim}
 
-Arm C adds a Multi-Scale Structural Similarity (MS-SSIM) penalty to the NLL loss. SSIM
-\cite{wang_image_2004} measures perceptual image quality by comparing three
-components: luminance (overall brightness), contrast (local intensity range), and structure
-(local spatial pattern). MS-SSIM \cite{wang_multiscale_2003} extends this to five spatial
-scales simultaneously, computing:
+Arm C adds a Multi-Scale Structural Similarity (MS-SSIM) penalty to the NLL loss. At each
+spatial scale, SSIM \cite{wang_image_2004} compares local patches of the prediction
+$\hat{\mu}_y$ and clean reference $y$ along three perceptual axes -- luminance (mean
+intensity), contrast (local variance), and structure (cross-correlation) -- via:
+\begin{equation}
+\label{eq:methods:ssim_loss}
+\mathrm{SSIM}(\mathbf{p},\,\mathbf{q})
+  = \frac{(2\mu_{\mathbf{p}}\,\mu_{\mathbf{q}} + C_1)\,(2\sigma_{\mathbf{p}\mathbf{q}} + C_2)}
+         {(\mu_{\mathbf{p}}^2 + \mu_{\mathbf{q}}^2 + C_1)\,(\sigma_{\mathbf{p}}^2 + \sigma_{\mathbf{q}}^2 + C_2)}
+\end{equation}
+where $\mu_{\mathbf{p}}$, $\mu_{\mathbf{q}}$ are the mean intensities of local patches
+$\mathbf{p}$ (from $\hat{\mu}_y$) and $\mathbf{q}$ (from $y$); $\sigma_{\mathbf{p}}^2$,
+$\sigma_{\mathbf{q}}^2$ are the patch variances; $\sigma_{\mathbf{p}\mathbf{q}}$ is the
+patch cross-covariance; and $C_1 = (0.01)^2$, $C_2 = (0.03)^2$ are numerical stability
+constants for $[0,1]$-normalised images \cite{wang_image_2004}. The value lies in $[0,1]$,
+with 1 indicating a perceptually perfect match.
+
+MS-SSIM \cite{wang_multiscale_2003} extends this across $M = 5$ spatial scales by
+progressively downsampling the image pair by a factor of 2 before each comparison and
+combining the results:
 \begin{equation}
 \label{eq:methods:ssim}
-\mathrm{MS\text{-}SSIM}\!\left(\hat{\mu}_y, y\right)
-  = \prod_{j=1}^{5} \mathrm{SSIM}_j\!\left(\hat{\mu}_y, y\right)^{w_j}
+\mathrm{MS\text{-}SSIM}\!\left(\hat{\mu}_y,\,y\right)
+  = \prod_{j=1}^{5}\mathrm{SSIM}_j\!\left(\hat{\mu}_y,\,y\right)^{w_j}
 \end{equation}
-where $w_j$ are the scale weights from Wang et al.\ \cite{wang_multiscale_2003}. The loss
-term is $\mathcal{L}_{\mathrm{SSIM}} = 1 - \mathrm{MS\text{-}SSIM}$, weighted by
-$\lambda_{\mathrm{SSIM}} = 0.5$ in the composite. Zhao et al.\ \cite{zhao_loss_2017}
-showed on natural images that switching from MSE to an MS-SSIM-based loss improved
-perceptual quality by 0.5--1.0~dB PSNR. The SSIM term provides structural supervision
-that ensures fine anatomical detail -- rib margins, vessel outlines, the pleural line -- is
-preserved in the reconstruction beyond what the pixel-level NLL alone enforces.
+where $\mathrm{SSIM}_j$ is the mean SSIM score (Equation~\ref{eq:methods:ssim_loss})
+computed after $j-1$ downsampling steps; $w_j$ are the empirically determined scale
+weights $[0.0448,\,0.2856,\,0.3001,\,0.2363,\,0.1333]$ from Wang et al.\
+\cite{wang_multiscale_2003}, with higher weight given to mid-range scales; and $j = 1$
+is the original resolution. The loss term is $\mathcal{L}_{\mathrm{SSIM}} = 1 -
+\mathrm{MS\text{-}SSIM}(\hat{\mu}_y, y)$, weighted by $\lambda_{\mathrm{SSIM}} = 0.5$
+in the composite. Zhao et al.\ \cite{zhao_loss_2017} showed on natural images that
+switching from MSE to an MS-SSIM-based loss improved perceptual quality by 0.5--1.0~dB
+PSNR. The SSIM term provides structural supervision that ensures fine anatomical
+detail -- rib margins, vessel outlines, the pleural line -- is preserved in the
+reconstruction beyond what the pixel-level NLL alone enforces.
 
 \subsection{Arm D: Focal Frequency Loss}
 \label{sec:methods:loss:ffl}
@@ -1641,12 +1660,35 @@ concentrate gradient pressure on the frequency components the model currently re
 most poorly:
 \begin{equation}
 \label{eq:methods:ffl}
-\mathcal{L}_{\mathrm{FFL}} = \frac{1}{HW}\sum_{u,v}
-  w(u,v) \cdot \bigl|\mathcal{F}(\hat{\mu}_y)[u,v] - \mathcal{F}(y)[u,v]\bigr|^2
+\mathcal{L}_{\mathrm{FFL}}
+  = \frac{1}{HW}\sum_{u=0}^{H-1}\sum_{v=0}^{W-1}
+    w(u,v)\cdot\bigl|\mathcal{F}(\hat{\mu}_y)[u,v] - \mathcal{F}(y)[u,v]\bigr|^2
 \end{equation}
-where $\mathcal{F}$ denotes the two-dimensional discrete Fourier transform and $w(u,v)$
-is the adaptive spectral weight updated each training step. The FFL term is weighted by
-$\lambda_{\mathrm{FFL}} = 0.1$ in the composite loss.
+where $\mathcal{F}(\cdot)[u,v]$ denotes the complex coefficient at frequency index
+$(u,v)$ of the two-dimensional Discrete Fourier Transform (2D-DFT) of an image;
+$\hat{\mu}_y$ is the predicted reconstruction and $y$ is the clean reference; $H$ and
+$W$ are the spatial height and width of the image ($256$ and $256$ in this study);
+$(u,v)$ are the discrete frequency coordinates spanning the full spectrum from DC
+($(0,0)$, corresponding to the image mean) to the Nyquist frequencies; the magnitude
+$|\mathcal{F}(\hat{\mu}_y)[u,v] - \mathcal{F}(y)[u,v]|$ is the spectral error amplitude
+at frequency $(u,v)$, measuring how far apart the real and imaginary parts of the two
+spectra are at that frequency; and $w(u,v)$ is the adaptive spectral weight, computed
+from the current reconstruction error spectrum at each training step:
+\begin{equation}
+\label{eq:methods:ffl_weight}
+w(u,v) = \bigl|\mathcal{F}(\hat{\mu}_y)[u,v] - \mathcal{F}(y)[u,v]\bigr|^{\gamma},
+\quad \gamma \geq 0
+\end{equation}
+where $\gamma$ is a decay hyperparameter (fixed at $\gamma = 1$ throughout this study,
+following \citeauthor{jiang_focal_2021} \cite{jiang_focal_2021}). This self-guided
+weighting scheme means that frequency components the model currently reconstructs poorly
+-- those with large spectral error -- automatically receive a larger gradient signal at
+the next update step. Because spectral bias causes early training to prioritise low-frequency
+components, the weight matrix $w(u,v)$ concentrates gradient pressure on high-frequency
+components (fine edges, vessel margins, consolidation boundaries) exactly when they are
+most under-recovered. As training progresses and high-frequency errors are corrected, the
+weights redistribute, providing a continuous adaptive curriculum over the frequency
+spectrum. The FFL term is included in the composite loss with weight $\lambda_{\mathrm{FFL}} = 0.1$.
 
 \subsection{Arm E: Full Composite Loss with KL Divergence}
 \label{sec:methods:loss:composite}
@@ -1804,34 +1846,146 @@ Metrics were computed on the 624-image held-out test set at each noise preset. R
 
 \paragraph{PSNR.}
 Peak Signal-to-Noise Ratio (PSNR) is the most commonly reported metric in denoising
-benchmarks \cite{zhang_beyond_2017, liang_swinir_2021}. For images normalised to
-$[0,1]$, it is defined as:
+benchmarks \cite{zhang_beyond_2017, liang_swinir_2021}. For images normalised to $[0,1]$,
+it is defined as:
 \begin{equation}
 \label{eq:methods:psnr}
-\mathrm{PSNR} = 10\log_{10}\!\left(\frac{1^2}{\mathrm{MSE}(\hat{\mu}_y, y)}\right)
+\mathrm{PSNR}(\hat{\mu}_y,\,y)
+  = 10\log_{10}\!\left(\frac{I_{\max}^2}{\mathrm{MSE}(\hat{\mu}_y,\,y)}\right)
 \end{equation}
-Higher PSNR indicates lower pixel-level reconstruction error. It is included primarily for
-comparability with published benchmarks; Zhang et al.\ \cite{zhang_comprehensive_2012}
-found PSNR to rank last among 11 perceptual quality metrics in correlation with human
-judgement, with a Spearman rank correlation of 0.69 against the 0.91 achieved by FSIM.
+where
+\begin{equation}
+\label{eq:methods:mse_eval}
+\mathrm{MSE}(\hat{\mu}_y,\,y)
+  = \frac{1}{HW}\sum_{i=1}^{H}\sum_{j=1}^{W}
+    \bigl(\hat{\mu}_y(i,j) - y(i,j)\bigr)^2
+\end{equation}
+Here, $\hat{\mu}_y$ is the denoised image predicted by the network and $y$ is the
+corresponding clean reference image; $H \times W$ is the image spatial resolution
+($256 \times 256$ in this study); $\hat{\mu}_y(i,j)$ and $y(i,j)$ are the pixel values at
+spatial position $(i,j)$; $I_{\max} = 1$ is the maximum pixel intensity for
+$[0,1]$-normalised images, so the expression reduces to $-10\log_{10}(\mathrm{MSE})$;
+and $\mathrm{MSE}(\hat{\mu}_y, y)$ is the mean squared pixel error across all $H \times W$
+positions. PSNR is measured in decibels (dB): each additional $3$\,dB corresponds to
+halving the MSE, and each additional $10$\,dB corresponds to a tenfold reduction. Higher
+PSNR indicates lower pixel-level error. Despite its widespread use, Zhang et al.\
+\cite{zhang_comprehensive_2012} found PSNR to rank last among 11 full-reference quality
+metrics in Spearman correlation with human judgement ($\rho = 0.69$), compared with $0.91$
+for FSIM; it is therefore reported here primarily for comparability with prior work, while
+FSIM serves as the primary perceptual metric.
 
 \paragraph{SSIM.}
-Structural Similarity Index \cite{wang_image_2004} measures luminance, contrast, and
-structural similarity between $\hat{\mu}_y$ and $y$ jointly, ranging from 0 (no similarity)
-to 1 (identical images). It is more sensitive than PSNR to locally correlated errors such as
-blurring of anatomical boundaries.
+Structural Similarity Index Measure (SSIM) \cite{wang_image_2004} quantifies perceptual
+image fidelity by jointly evaluating three local image properties: luminance (overall
+brightness), contrast (local intensity range), and structure (spatial pattern). Rather than
+measuring pixel-level error, it evaluates whether the two images \emph{look} the same to a
+human observer. For local patches $\mathbf{p}$ and $\mathbf{q}$ extracted from $\hat{\mu}_y$
+and $y$ at the same spatial position, the single-scale SSIM is:
+\begin{equation}
+\label{eq:methods:ssim_single}
+\mathrm{SSIM}(\mathbf{p},\,\mathbf{q})
+  = \frac{(2\mu_{\mathbf{p}}\,\mu_{\mathbf{q}} + C_1)\,(2\sigma_{\mathbf{p}\mathbf{q}} + C_2)}
+         {(\mu_{\mathbf{p}}^2 + \mu_{\mathbf{q}}^2 + C_1)\,(\sigma_{\mathbf{p}}^2 + \sigma_{\mathbf{q}}^2 + C_2)}
+\end{equation}
+where $\mu_{\mathbf{p}}$ and $\mu_{\mathbf{q}}$ are the mean pixel intensities of patches
+$\mathbf{p}$ (from the reconstruction) and $\mathbf{q}$ (from the clean reference);
+$\sigma_{\mathbf{p}}^2$ and $\sigma_{\mathbf{q}}^2$ are the corresponding patch variances,
+capturing local contrast; $\sigma_{\mathbf{p}\mathbf{q}}$ is the cross-covariance between
+$\mathbf{p}$ and $\mathbf{q}$, capturing structural correlation; and $C_1 = (k_1 L)^2$ and
+$C_2 = (k_2 L)^2$ are small numerical stability constants that prevent division by near-zero
+in low-contrast uniform patches, with $k_1 = 0.01$, $k_2 = 0.03$, and $L = 1$ for
+$[0,1]$-normalised images \cite{wang_image_2004}. The numerator jointly rewards luminance
+agreement ($2\mu_{\mathbf{p}}\mu_{\mathbf{q}} + C_1$) and structural correlation
+($2\sigma_{\mathbf{p}\mathbf{q}} + C_2$); the denominator normalises by the combined
+energy of each factor, bounding SSIM to $[0,1]$ where 1 denotes a perfect match and values
+below 1 reflect brightness, contrast, or structural deviation. The overall SSIM score for
+an image pair is the spatial mean of local patch scores. Multi-Scale SSIM
+(MS-SSIM) \cite{wang_multiscale_2003} extends this by repeating the comparison after
+progressively downsampling the image by a factor of 2 at each of $M = 5$ scales, combining
+the results as:
+\begin{equation}
+\label{eq:methods:ms_ssim}
+\mathrm{MS\text{-}SSIM}(\hat{\mu}_y,\,y)
+  = \bigl[l_M(\hat{\mu}_y,\,y)\bigr]^{\alpha_M}
+    \prod_{j=1}^{M}\bigl[cs_j(\hat{\mu}_y,\,y)\bigr]^{\beta_j}
+\end{equation}
+where $l_M$ is the luminance comparison at the coarsest scale $M$; $cs_j$ is the combined
+contrast-structure comparison at scale $j$ (both computed as in Equation~\ref{eq:methods:ssim_single});
+$M = 5$ is the number of scales; and $\alpha_M$, $\beta_j$ are scale-weighting exponents
+empirically determined by Wang et al.\ \cite{wang_multiscale_2003} as
+$[\beta_1, \beta_2, \beta_3, \beta_4, \alpha_5] = [0.0448,\,0.2856,\,0.3001,\,0.2363,\,0.1333]$.
+By combining coarse- and fine-scale comparisons, MS-SSIM penalises both large-structure
+distortions and fine-detail blurring, making it more sensitive than single-scale SSIM or
+PSNR to the localised edge blurring that MSE-trained networks produce at rib margins
+and consolidation boundaries \cite{zhao_loss_2017}. Zhang et al.\ \cite{zhang_comprehensive_2012}
+report a Spearman correlation of $\rho = 0.87$ between SSIM and human judgement across
+seven benchmark datasets.
 
 \subsection{Perceptual Quality Metrics}
 \label{sec:methods:evaluation:perceptual}
 
 \paragraph{FSIM.}
-Feature Similarity Index \cite{zhang_fsim_2011} is the primary perceptual metric, computed from phase congruency\footnote{\emph{Phase congruency} \cite{morrone_feature_1987} measures the degree to which Fourier components of a local image region are all in phase (i.e.\ peak at the same spatial location). When multiple frequency harmonics align in phase, a perceptually significant feature -- an edge, ridge, or textured boundary -- is present. Phase congruency is dimensionless and contrast-invariant, unlike gradient magnitude which scales with local intensity difference. FSIM \cite{zhang_fsim_2011} uses phase congruency as a quality weight: regions of high phase congruency (structurally informative edges) contribute more to the overall similarity score than smooth, low-information areas, making FSIM more sensitive than PSNR or SSIM to the preservation of diagnostically relevant boundaries.} and gradient magnitude maps. Zhang et al.\ \cite{zhang_comprehensive_2012} ranked FSIM first among 11 metrics ($\rho=0.91$ vs.\ human judgement), outperforming PSNR (0.69) and SSIM (0.87). Computed via \texttt{piq}.
+Feature Similarity Index Measure (FSIM) \cite{zhang_fsim_2011} is the primary perceptual
+metric in this study. Unlike PSNR, which treats every pixel equally, FSIM weights spatial
+positions by their perceptual importance using phase congruency,\footnote{\emph{Phase congruency} \cite{morrone_feature_1987} measures the degree to which Fourier components of a local image region are all in phase (i.e.\ peak at the same spatial location). When multiple frequency harmonics align in phase, a perceptually significant feature -- an edge, ridge, or textured boundary -- is present. Phase congruency is dimensionless and contrast-invariant, unlike gradient magnitude which scales with local intensity difference. FSIM \cite{zhang_fsim_2011} uses phase congruency as a quality weight: regions of high phase congruency (structurally informative edges) contribute more to the overall similarity score than smooth, low-information areas, making FSIM more sensitive than PSNR or SSIM to the preservation of diagnostically relevant boundaries.} so that
+edge-rich anatomical structures, whose fidelity matters most to a radiologist, contribute
+disproportionately to the score. It is defined as:
+\begin{equation}
+\label{eq:methods:fsim}
+\mathrm{FSIM}(\hat{\mu}_y,\,y)
+  = \frac{\displaystyle\sum_{\mathbf{x}\,\in\,\Omega}
+          S_L(\mathbf{x})\cdot\mathrm{PC}_m(\mathbf{x})}
+         {\displaystyle\sum_{\mathbf{x}\,\in\,\Omega}
+          \mathrm{PC}_m(\mathbf{x})}
+\end{equation}
+where $\mathbf{x}$ is a pixel location; $\Omega$ is the full image spatial domain;
+$\mathrm{PC}_1(\mathbf{x})$ and $\mathrm{PC}_2(\mathbf{x})$ are the phase congruency
+values at $\mathbf{x}$ for $\hat{\mu}_y$ and $y$ respectively; $\mathrm{PC}_m(\mathbf{x})
+= \max\bigl(\mathrm{PC}_1(\mathbf{x}),\,\mathrm{PC}_2(\mathbf{x})\bigr)$ is used as the
+perceptual quality weight, ensuring that edge-rich regions dominate the numerator over
+flat, low-information areas; and $S_L(\mathbf{x})$ is the local compound similarity measure:
+\begin{equation}
+\label{eq:methods:fsim_sl}
+S_L(\mathbf{x})
+  = S_\mathrm{PC}(\mathbf{x})\cdot S_\mathrm{GM}(\mathbf{x})
+\end{equation}
+where $S_\mathrm{PC}(\mathbf{x}) = \bigl(2\,\mathrm{PC}_1\,\mathrm{PC}_2 + T_1\bigr)/
+\bigl(\mathrm{PC}_1^2 + \mathrm{PC}_2^2 + T_1\bigr)$ is the phase congruency similarity
+at $\mathbf{x}$, comparing the local feature strength in $\hat{\mu}_y$ and $y$;
+$S_\mathrm{GM}(\mathbf{x}) = \bigl(2\,\mathrm{GM}_1\,\mathrm{GM}_2 + T_2\bigr)/
+\bigl(\mathrm{GM}_1^2 + \mathrm{GM}_2^2 + T_2\bigr)$ is the gradient magnitude
+similarity, comparing the sharpness of local intensity transitions; $\mathrm{GM}_1$ and
+$\mathrm{GM}_2$ are the gradient magnitudes of $\hat{\mu}_y$ and $y$ at $\mathbf{x}$;
+and $T_1$, $T_2$ are small positive constants for numerical stability \cite{zhang_fsim_2011}.
+FSIM ranges from 0 to 1, with higher values indicating greater structural and edge fidelity.
+Zhang et al.\ \cite{zhang_comprehensive_2012} ranked FSIM first among 11 full-reference
+metrics in Spearman correlation with human judgement ($\rho = 0.91$), outperforming SSIM
+($0.87$) and PSNR ($0.69$). Computed via the \texttt{piq} Python library.
 
 \paragraph{LPIPS.}
-Learned Perceptual Image Patch Similarity \cite{zhang_unreasonable_2018} uses deep
-features from a pretrained network to measure perceptual similarity. LPIPS is typically
-reported as lower-is-better; here it is presented as $1 - \mathrm{LPIPS}$ (higher-is-better)
-to be consistent with the other metrics.
+Learned Perceptual Image Patch Similarity (LPIPS) \cite{zhang_unreasonable_2018} measures
+perceptual similarity using internal representations learned by a deep convolutional network,
+capturing texture and structural distortions that are visible to a human but invisible to
+pixel-level metrics. It is defined as:
+\begin{equation}
+\label{eq:methods:lpips}
+\mathrm{LPIPS}(\hat{\mu}_y,\,y)
+  = \sum_{\ell}\frac{1}{H_\ell W_\ell}
+    \sum_{h,w}
+    \bigl\|\,\mathbf{w}_\ell
+    \odot\bigl(\hat{\boldsymbol{\phi}}_\ell^{hw} - \boldsymbol{\phi}_\ell^{hw}\bigr)
+    \bigr\|_2^2
+\end{equation}
+where $\ell$ indexes the convolutional layers of a pretrained network (AlexNet in this
+study \cite{zhang_unreasonable_2018}); $H_\ell \times W_\ell$ is the spatial dimension of
+the feature map at layer $\ell$; $\hat{\boldsymbol{\phi}}_\ell^{hw}$ and
+$\boldsymbol{\phi}_\ell^{hw}$ are the channel-normalised feature activation vectors of
+$\hat{\mu}_y$ and $y$ at spatial position $(h,w)$ in layer $\ell$; $\mathbf{w}_\ell$ is a
+vector of learned per-channel linear weights calibrated to align deep feature distances with
+human perceptual similarity ratings; and $\odot$ denotes element-wise multiplication.
+LPIPS is lower-better: smaller values indicate greater perceptual similarity. In this
+dissertation it is reported as $1 - \mathrm{LPIPS}$ (higher-better) to maintain a
+consistent directionality across all metrics. Computed via the \texttt{piq} Python library.
 
 \subsection{Uncertainty Calibration}
 \label{sec:methods:evaluation:calibration}
