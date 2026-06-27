@@ -1316,7 +1316,7 @@ image mean and a per-pixel aleatoric uncertainty map.
 \label{sec:methods:architecture:encoder}
 
 The input is a single-channel greyscale image of size $1 \times 256 \times 256$ pixels. A
-stem convolution ($3 \times 3$, padding 1) maps the single input channel to 64 feature
+stem convolution ($3 \times 3$ filter, padding 1) maps the single input channel to 64 feature
 channels, producing a $64 \times 256 \times 256$ feature map. This initial projection step is
 a standard design choice that transforms raw pixel intensity into a richer feature
 representation before the main encoder begins \cite{zhang_hformer_2023}.
@@ -1369,7 +1369,7 @@ The ResBlock applies two $3 \times 3$ convolutions with GroupNorm\footnote{Group
 \paragraph{WindowAttnBlock.}
 The WindowAttnBlock applies multi-head self-attention within non-overlapping $8\times8$ local windows \cite{liu_swin_2021, zhang_hformer_2023}. Understanding the computation requires first understanding what attention does.
 
-\textit{Standard self-attention.} Attention \cite{vaswani_attention_2017} transforms an input sequence of feature vectors into a context-aware output sequence. Each input position $i$ is represented by three derived vectors: a \emph{query} $\mathbf{q}_i$, a \emph{key} $\mathbf{k}_i$, and a \emph{value} $\mathbf{v}_i$, each obtained by a learned linear projection of the input feature vector at that position. The output at position $i$ is a weighted sum of all value vectors, where the weight given to position $j$'s value depends on how similar position $i$'s query is to position $j$'s key:
+\textit{Standard self-attention.} Attention \cite{vaswani_attention_2017} transforms an input sequence of feature vectors into a context-aware output sequence. Each input position $i$ is represented by three derived vectors: a \emph{query} $\mathbf{Q}_i$, a \emph{key} $\mathbf{K}_i$, and a \emph{value} $\mathbf{V}_i$, each obtained by a learned linear projection of the input feature vector at that position. The output at position $i$ is a weighted sum of all value vectors, where the weight given to position $j$'s value depends on how similar position $i$'s query is to position $j$'s key:
 \begin{equation}
 \label{eq:methods:attention}
 \mathrm{Attention}(\mathbf{Q},\mathbf{K},\mathbf{V}) = \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}}\right)\mathbf{V}
