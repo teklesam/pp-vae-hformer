@@ -1157,6 +1157,9 @@ This chapter specifies the complete experimental design of PP-VAE-Hformer. Every
 
 This study evaluates PP-VAE-Hformer through a controlled ablation experiment.\footnote{An \emph{ablation study} is a controlled experiment in which one component of a complex system is selectively removed or substituted while every other element remains fixed, isolating that component's causal contribution to measured performance. The term originates in neuroscience, where physical lesioning of brain regions established their functional role. In machine learning, ablation is the primary method for establishing which architectural choices and loss terms genuinely explain observed performance differences, rather than correlating with confounders such as parameter count or training compute \cite{meyes_ablation_2019}.} Sixteen arms were defined, each differing only in the loss function\footnote{The \emph{loss function} (also called the objective function or training criterion) is a scalar-valued function that the training algorithm minimises by adjusting the network's parameters. Its gradient at each training step defines the direction in which parameters move. The choice of loss function therefore determines not only what the network is optimised to produce, but also which network components receive a meaningful gradient signal: an MSE loss provides no gradient for an uncertainty head, while the heteroscedastic NLL (Section~\ref{sec:methods:loss:nll}) simultaneously trains both the reconstruction mean and the per-pixel variance \cite{kendall_what_2017}.} or a specific architectural choice (probabilistic vs.\ deterministic latent space, KL schedule, activation function), with all other aspects -- dataset, backbone, optimiser, epochs, evaluation -- held constant. This ensures observed performance differences are attributable to the specific component under test \cite{zhang_beyond_2017, liang_swinir_2021}.
 
+\paragraph{Why 16 arms rather than exhaustive enumeration.}
+The loss function space considered here includes five binary components: NLL (vs.\ MSE/L1), SSIM, FFL, edge supervision, and perceptual loss. Exhaustive enumeration of all $2^5 = 32$ binary combinations, further crossed with three KL schedules, two activation functions, and three pixel-norm variants, would yield over 500 distinct conditions -- each requiring 9--10 A100 GPU-hours, totalling more than 4,500 GPU-hours. This is beyond the available compute budget and would not produce interpretable conclusions (too many degrees of freedom for 624 test images to distinguish). The 16-arm design is therefore hypothesis-driven: each arm tests a specific, scientifically motivated question (does NLL improve calibration? does FFL recover high-frequency content? does cyclic KL prevent posterior collapse?) and is ordered cumulatively so that each arm adds exactly one component to the previous arm, isolating its causal contribution. This design follows Meyes et al.\ \cite{meyes_ablation_2019}: ablation is most informative when structured as a sequential, one-component-at-a-time comparison rather than a grid search.
+
 The 16 arms fall into five groups, summarised in Table~\ref{tab:methods:loss_summary}. Arms~A--E form the core cumulative sequence (Table~\ref{tab:methods:arms}): Arm~A is the MSE baseline, each subsequent arm adds one component (NLL, SSIM, FFL, VAE bottleneck), and Arm~E is the initial PP-VAE-Hformer proposal. Arms~F--H extend the VAE comparison by testing three KL annealing schedules. Arms~I--K investigate L1 versus L2 loss and hybrid NLL+L1 objectives. Arms~L--N add structural regularisation terms (Sobel edge loss, VGG-16 perceptual loss) to the NLL framework. Arms~O--P ablate Parametric Rectified Linear Unit (PReLU) activations, with Arm~P combining the best-performing loss terms and VAE schedule.
 \begin{table}[htbp]
   \centering
@@ -1991,9 +1994,7 @@ $\boldsymbol{\phi}_\ell^{hw}$ are the channel-normalised feature activation vect
 $\hat{\mu}_y$ and $y$ at spatial position $(h,w)$ in layer $\ell$; $\mathbf{w}_\ell$ is a
 vector of learned per-channel linear weights calibrated to align deep feature distances with
 human perceptual similarity ratings; and $\odot$ denotes element-wise multiplication.
-LPIPS is lower-better: smaller values indicate greater perceptual similarity. In this
-dissertation it is reported as $1 - \mathrm{LPIPS}$ (higher-better) to maintain a
-consistent directionality across all metrics. Computed via the \texttt{piq} Python library.
+LPIPS is lower-better: smaller values indicate greater perceptual similarity. It is reported in its natural orientation (lower is better) throughout this dissertation. Two implementations are used: the \texttt{lpips} library \cite{zhang_unreasonable_2018} (main reconstruction table, Table~\ref{tab:results:recon:mid}) and \texttt{piq} v0.8.0 (perceptual metrics table, Table~\ref{tab:results:fsim}); both use the AlexNet backbone but may differ numerically, so cross-table comparisons of LPIPS values should not be made.
 
 \subsection{Uncertainty Calibration}
 \label{sec:methods:evaluation:calibration}
@@ -2017,8 +2018,7 @@ calibrated model has $\mathrm{ECE}_\alpha = 0$ at all levels. Overconfident mode
 ECE above zero at high coverage levels (their intervals are too narrow); underconfident models
 have ECE above zero at low coverage levels.
 
-ECE is reported separately for the aleatoric head (Arms B--E) and for the combined
-aleatoric-plus-epistemic estimate (Arm E only). As discussed in
+ECE is reported for all arms with a heteroscedastic head (Arms B--D, F--N, O, P; i.e.\ all NLL-trained arms) and separately for the combined aleatoric-plus-epistemic estimate (VAE arms E--H, P only). As discussed in
 Section~\ref{sec:lit:uncertainty:workflow}, ECE has direct clinical significance in this framework:
 a miscalibrated uncertainty head cannot reliably identify pixels where the denoised value
 is prior-sampled rather than data-supported, which would make the ultrasound referral
@@ -2066,8 +2066,8 @@ Reconstruction & PSNR (dB) & Yes & All \\
 Reconstruction & SSIM & Yes & All \\
 Perceptual & FSIM (primary) & Yes & All \\
 Perceptual & LPIPS (as $1-$LPIPS) & Yes & All \\
-Calibration & ECE at 50\%, 80\%, 90\%, 95\% & No (lower = better) & B--E \\
-Calibration & Epistemic ECE & No (lower = better) & E only \\
+Calibration & ECE at 50\%, 80\%, 90\%, 95\% & No (lower = better) & All NLL arms \\
+Calibration & Epistemic ECE & No (lower = better) & VAE arms only \\
 Clinical & CNR & Yes & All \\
 Clinical & EPI & Yes & All \\
 Clinical & NPS & --- (curve) & All \\
@@ -2076,10 +2076,53 @@ Clinical & NPS & --- (curve) & All \\
 \begin{tablenotes}
 \footnotesize
 \item Primary metric is FSIM; all others are secondary or supplementary.
-\item Calibration metrics (ECE) apply only to Arms B--E. Epistemic ECE applies only to Arm E.
+\item Calibration metrics (ECE) apply to all NLL-trained arms (those with a heteroscedastic $\hat{\sigma}_a$ head). Epistemic ECE applies to VAE arms (E, F, G, H, P) only.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
+
+% ============================================================
+\section{Statistical Analysis}
+\label{sec:methods:stats}
+
+\subsection{Design and Scope}
+
+All statistical comparisons use per-image metric values across the 624-image held-out test set, evaluated independently at each noise level (low, mid, high). The primary metric is PSNR (dB); SSIM, FSIM, and LPIPS are secondary and analysed separately. The 21-condition comparison (16 PP-VAE arms A--P, plus 5 retrained KAIR baselines: DnCNN, IRCNN, FFDNet, DRUNet, SwinIR) yields $\binom{21}{2} = 210$ pairwise comparisons. Arms Q, R, and S are evaluated separately against their parent arms (A, I, D) using the same procedure. Statistical computations are implemented in Python (SciPy \cite{virtanen_scipy_2020}).
+
+\subsection{Omnibus Test}
+
+Before pairwise comparisons, a one-way ANOVA is performed across all 21 arms for each metric at each noise level. ANOVA tests the null hypothesis that all arm means are equal; rejection ($p < 0.05$) licenses the subsequent pairwise analyses. With $n=624$ images per arm and 21 groups, the ANOVA has very high power and is expected to reject the null in all cases.
+
+\textbf{Why ANOVA rather than Kruskal-Wallis?} Per-image PSNR values are approximately normally distributed (Central Limit Theorem applies readily at $n=624$). Shapiro-Wilk tests on representative arms confirm no significant departure from normality ($p > 0.05$). Parametric ANOVA is therefore appropriate and more powerful than the non-parametric Kruskal-Wallis alternative.
+
+\subsection{Pairwise Comparisons and Multiple Testing Correction}
+
+Pairwise comparison uses independent-samples $t$-tests (Welch's $t$-test, not assuming equal variance) for each of the 210 arm pairs. The family-wise error rate is controlled via Bonferroni correction: each comparison's raw $p$-value is multiplied by the number of comparisons, giving an adjusted threshold of:
+\begin{equation}
+\alpha_{\mathrm{adj}} = \frac{0.05}{210} = 2.38 \times 10^{-4}
+\end{equation}
+Bonferroni is chosen over Benjamini-Hochberg False Discovery Rate (FDR) because the experimental objective is to avoid any false discovery in a clinical context. Bonferroni is conservative but controls the family-wise error rate in the strong sense.
+
+\textbf{Why independent-samples rather than paired $t$-tests?} All arms evaluate the same 624 test images in the same order. A paired $t$-test would be marginally more powerful. However, all arms are trained from different random initialisations and their outputs are not generated in a matched-pair fashion for the statistical test. The independent-samples formulation is the convention in the denoising literature \cite{zhang_beyond_2017, liang_swinir_2021} and is adopted here for comparability. This is acknowledged as a conservative choice.
+
+\textbf{Why $t$-tests rather than Wilcoxon signed-rank tests?} The per-image PSNR distribution is approximately Gaussian at $n=624$ (CLT), making parametric tests appropriate. Wilcoxon tests discard the continuous scale of PSNR differences and are less interpretable in conjunction with Cohen's $d$.
+
+\subsection{Effect Size Reporting}
+
+With $n=624$ test images, virtually every pairwise comparison reaches conventional statistical significance ($p<0.05$) due to the large sample size. The $t$-statistic scales with $\sqrt{n}$ and therefore does not distinguish clinically meaningful gaps from trivially small ones. Cohen's $d$ (pooled effect size) is reported for every pairwise comparison:
+\begin{equation}
+d = \frac{\bar{x}_1 - \bar{x}_2}{s_{\mathrm{pooled}}}, \quad
+s_{\mathrm{pooled}} = \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}}
+\end{equation}
+Interpretation thresholds follow Cohen (1988): $|d| < 0.2$ negligible, $0.2 \leq |d| < 0.5$ small, $0.5 \leq |d| < 0.8$ moderate, $|d| \geq 0.8$ large. Arms with $|d| < 0.2$ and $p_{\mathrm{Bonf}} > \alpha_{\mathrm{adj}}$ are considered functionally equivalent regardless of nominal significance.
+
+\subsection{Subgroup Analysis}
+
+A separate subgroup analysis compares Pneumonia (Bacterial + Viral, $n=390$) versus Normal ($n=234$) performance within each arm using independent-samples $t$-tests (Bonferroni-corrected for 21 arms, $\alpha_{\mathrm{adj}} = 0.05/21 = 2.38 \times 10^{-3}$). This tests whether any arm is systematically biased against pathological images, which would be a clinical safety concern.
+
+\subsection{Confidence Intervals}
+
+Mean metric values are reported as mean~$\pm$~SD over 624 images. For the primary reconstruction table, 95\% bootstrap confidence intervals are additionally computed (1{,}000 resamples with replacement) without assuming a parametric form for the distribution. Bootstrap CIs are preferable to normal-approximation CIs when the distribution may be skewed, as can occur for PSNR on failure arms such as Arm~O (PReLU catastrophic failure) and DDPM.
 
 % ============================================================
 \section{Computational Environment}
@@ -2376,7 +2419,7 @@ SCUNet & \cite{zhang_scunet_2023}  & --- & $\mathbf{34.726 \pm 1.076}$ {[34.63, 
 \subsection{Statistical Comparisons}
 \label{sec:results:recon:stats}
 
-Pairwise $t$-tests with Bonferroni correction over all 210 pairs ($\alpha_{\mathrm{adj}}=2.4\times10^{-4}$) confirm the following. (i) \textbf{L1 vs L2}: Arm~I and Arm~A are indistinguishable ($p_{\mathrm{Bonf}}=0.74$, $d=+0.16$). (ii) \textbf{FFL}: Arms~B and~D are indistinguishable in PSNR ($d=+0.02$, $p=1.000$), but Arm~D achieves lower LPIPS ($0.1582$ vs.\ $0.1595$), consistent with the perception--distortion tradeoff \cite{blau_perception_2018}. Adding SSIM+Edge (Arm~M) causes catastrophic gradient interference ($d=+1.75$, $p\approx 0$). (iii) \textbf{KL schedule}: cyclic KL (Arm~F) outperforms linear warmup (Arm~E) by 1.10~dB ($d=+1.11$, $p\approx 0$); free-bits (Arm~H) is indistinguishable from cyclic alone ($d=-0.03$, $p=1.000$). (iv) \textbf{PP-VAE cost}: the VAE bottleneck imposes no detectable PSNR penalty relative to comparable deterministic arms (E vs.\ M: $d=-0.06$, n.s.; the large E/F gap is attributable to the KL schedule, not the architecture). (v) \textbf{PReLU}: Arm~O collapses catastrophically ($d=+5.58$ vs.\ Arm~A, $p\approx 0$). (vi) \textbf{KAIR cluster}: IRCNN, FFDNet, DRUNet are mutually indistinguishable ($|d|\leq 0.07$, all n.s.) and all outperform SwinIR ($d\approx 1.5$, $p\approx 0$); the three CNN baselines are indistinguishable from VAE arms F--H, confirming that the VAE adds calibrated uncertainty without PSNR sacrifice.
+The statistical methodology is described in Section~\ref{sec:methods:stats}. Pairwise independent-samples $t$-tests with Bonferroni correction over all 210 arm pairs ($\alpha_{\mathrm{adj}}=2.4\times10^{-4}$) confirm the following. (i) \textbf{L1 vs L2}: Arm~I and Arm~A are indistinguishable ($p_{\mathrm{Bonf}}=0.74$, $d=+0.16$). (ii) \textbf{FFL}: Arms~B and~D are indistinguishable in PSNR ($d=+0.02$, $p=1.000$), but Arm~D achieves lower LPIPS ($0.1582$ vs.\ $0.1595$), consistent with the perception--distortion tradeoff \cite{blau_perception_2018}. Adding SSIM+Edge (Arm~M) causes catastrophic gradient interference ($d=+1.75$, $p\approx 0$). (iii) \textbf{KL schedule}: cyclic KL (Arm~F) outperforms linear warmup (Arm~E) by 1.10~dB ($d=+1.11$, $p\approx 0$); free-bits (Arm~H) is indistinguishable from cyclic alone ($d=-0.03$, $p=1.000$). (iv) \textbf{PP-VAE cost}: the VAE bottleneck imposes no detectable PSNR penalty relative to comparable deterministic arms (E vs.\ M: $d=-0.06$, n.s.; the large E/F gap is attributable to the KL schedule, not the architecture). (v) \textbf{PReLU}: Arm~O collapses catastrophically ($d=+5.58$ vs.\ Arm~A, $p\approx 0$). (vi) \textbf{KAIR cluster}: IRCNN, FFDNet, DRUNet are mutually indistinguishable ($|d|\leq 0.07$, all n.s.) and all outperform SwinIR ($d\approx 1.5$, $p\approx 0$); the three CNN baselines are indistinguishable from VAE arms F--H, confirming that the VAE adds calibrated uncertainty without PSNR sacrifice.
 
 \begin{table}[htbp]
 \centering
@@ -2760,61 +2803,22 @@ t-Distributed Stochastic Neighbour Embedding (t-SNE) and Uniform Manifold Approx
 \subsection{t-SNE and UMAP Projections}
 \label{sec:results:latent:viz}
 
-No VAE arm produces strongly separated class clusters (Figures~\ref{fig:results:latent:arm_e}--\ref{fig:results:latent:arm_p}): the KL term explicitly penalises the encoder from reserving distinct latent regions for distinct classes. Within this constraint, KL schedule dominates separation: Arm~E (linear, near-collapse) gives ARI~$=-0.002$; Arm~F (cyclic only) gives ARI~$=0.333$ (best); Arm~G (free-bits) $0.048$; Arm~H (cyc+fb) $0.210$; Arm~P (PReLU) $0.096$, degraded by decoder instability.
+No VAE arm produces strongly separated class clusters: the KL term explicitly penalises the encoder from reserving distinct latent regions for distinct classes. Within this constraint, KL schedule dominates separation: Arm~E (linear, near-collapse) gives ARI~$=-0.002$; Arm~F (cyclic only) gives ARI~$=0.333$ (best); Arm~G (free-bits) $0.048$; Arm~H (cyc+fb) $0.210$; Arm~P (PReLU) $0.096$, degraded by decoder instability. Projections for Arms~E, G, H, and~P are in Appendix~\ref{app:latent:suppfigs}.
 
-\begin{figure}[htbp]
-\centering
-\evalfig{figures/evaluation_v2/latent_space/latent_arm_e_ppvae}
-\caption[Latent space projections -- Arm E (PP-VAE, linear KL)]{%
-  t-SNE (left) and UMAP (right) of Arm~E latent codes ($n=448$; 150/150/148 per class).
-  Points coloured by ground-truth label: Normal (blue), Bacterial (red), Viral (green).
-  ARI~$=-0.002$, Silhouette~$=0.020$. The near-spherical, overlapping distribution is
-  consistent with near-posterior-collapse under the linear KL schedule.}
-\label{fig:results:latent:arm_e}
-\end{figure}
+Figure~\ref{fig:results:latent:arm_f} shows the representative case (Arm~F, ARI~$=0.333$, the highest of all five VAE arms), illustrating the moderate diagnostic structure achievable under a well-tuned cyclical KL schedule.
 
 \begin{figure}[htbp]
 \centering
 \evalfig{figures/evaluation_v2/latent_space/latent_arm_f_kl_cyc}
-\caption[Latent space projections -- Arm F (PP-VAE, cyclical KL)]{%
-  Arm~F latent space (same layout). ARI~$=\mathbf{0.333}$, Silhouette~$=0.113$ ---
-  the highest of all five VAE arms. The cyclical KL schedule periodically releases the
-  posterior constraint, allowing the encoder to retain diagnostically relevant variation.
-  Moderate cluster separation is visible between Normal (blue) and Pneumonia (red/green),
-  though substantial overlap remains, as expected under KL regularisation.}
+\caption[Latent space projections -- Arm F (PP-VAE, cyclical KL, ARI = 0.333)]{%
+  t-SNE (left) and UMAP (right) of Arm~F latent codes ($n=448$; 150/150/148 per class).
+  Points coloured by ground-truth label: Normal (blue), Bacterial (red), Viral (green).
+  ARI~$=0.333$, Silhouette~$=0.113$ — the highest diagnostic structure of all five VAE arms.
+  The cyclical KL schedule periodically releases the posterior constraint, allowing
+  the encoder to retain class-discriminative variation. Moderate cluster separation
+  between Normal and Pneumonia is visible, though substantial overlap remains as expected
+  under KL regularisation. Arms E, G, H, P are shown in Appendix~\ref{app:latent:suppfigs}.}
 \label{fig:results:latent:arm_f}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\evalfig{figures/evaluation_v2/latent_space/latent_arm_g_kl_fb}
-\caption[Latent space projections -- Arm G (PP-VAE, free-bits KL)]{%
-  Arm~G latent space. ARI~$=0.048$, Silhouette~$=0.030$. The free-bits mechanism
-  clips per-channel KL below $\lambda=0.25$ nats, maintaining continuous compression
-  pressure and limiting class-discriminative content in the latent code.}
-\label{fig:results:latent:arm_g}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\evalfig{figures/evaluation_v2/latent_space/latent_arm_h_kl_cyc_fb}
-\caption[Latent space projections -- Arm H (PP-VAE, cyc+fb KL)]{%
-  Arm~H latent space. ARI~$=0.210$, Silhouette~$=0.073$.
-  The cyclical + free-bits schedule produces wider latent dispersion than Arms~E, G, and~P,
-  but the free-bits KL floor partially suppresses the periodic release that drives
-  Arm~F's superior class separation (ARI $0.210$ vs.\ $0.333$).}
-\label{fig:results:latent:arm_h}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\evalfig{figures/evaluation_v2/latent_space/latent_arm_p_best}
-\caption[Latent space projections -- Arm P (PP-VAE full model, PReLU)]{%
-  Arm~P latent space. ARI~$=0.096$, Silhouette~$=0.069$.
-  Partially degraded latent structure despite using the cyclical+free-bits schedule:
-  below Arm~H ($0.210$), suggesting PReLU decoder instability partially disrupts latent
-  organisation alongside reconstruction quality.}
-\label{fig:results:latent:arm_p}
 \end{figure}
 
 \clearpage
@@ -3925,6 +3929,53 @@ The following figures present the Normal-case qualitative reconstruction panels 
 \caption[Qualitative reconstruction (appendix) -- IRCNN baseline, Normal cases]{%
   IRCNN (retrained, $32.659$~dB) on three Normal cases ($\eta=200$). Reconstruction quality is comparable to Arm~D, consistent with the effect size ($d=-0.78$, $p<0.001$) favouring Arm~D.}
 \label{fig:results:qual:ircnn:normal}
+\end{figure}
+
+% ────────────────────────────────────────────────────────────
+\chapter{Supplementary Latent Space Projections}
+\label{app:latent:suppfigs}
+
+The following figures show t-SNE and UMAP projections for VAE arms E, G, H, and P. All use the same layout as Figure~\ref{fig:results:latent:arm_f}: t-SNE on the left, UMAP on the right, with points coloured by ground-truth label (Normal blue, Bacterial red, Viral green), $n=448$ test images. The representative Arm~F figure (ARI~$=0.333$) is in the main text (Section~\ref{sec:results:latent:viz}).
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_e_ppvae}
+\caption[Latent space projections -- Arm E (PP-VAE, linear KL, ARI = $-$0.002)]{%
+  Arm~E latent space. ARI~$=-0.002$, Silhouette~$=0.020$. The near-spherical, overlapping
+  distribution is consistent with near-posterior-collapse under the linear KL schedule:
+  the encoder cannot retain class-discriminative information when the KL penalty forces
+  the posterior to the prior.}
+\label{fig:results:latent:arm_e}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_g_kl_fb}
+\caption[Latent space projections -- Arm G (PP-VAE, free-bits KL, ARI = 0.048)]{%
+  Arm~G latent space. ARI~$=0.048$, Silhouette~$=0.030$. The free-bits mechanism clips
+  per-channel KL below $\lambda=0.25$ nats, maintaining continuous compression pressure
+  and limiting class-discriminative content in the latent code.}
+\label{fig:results:latent:arm_g}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_h_kl_cyc_fb}
+\caption[Latent space projections -- Arm H (PP-VAE, cyc+fb KL, ARI = 0.210)]{%
+  Arm~H latent space. ARI~$=0.210$, Silhouette~$=0.073$. The cyclical+free-bits schedule
+  produces wider latent dispersion than Arms~E and~G but the free-bits floor partially
+  suppresses the periodic KL release that drives Arm~F's superior class separation.}
+\label{fig:results:latent:arm_h}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\evalfig{figures/evaluation_v2/latent_space/latent_arm_p_best}
+\caption[Latent space projections -- Arm P (PP-VAE full model, PReLU, ARI = 0.096)]{%
+  Arm~P latent space. ARI~$=0.096$, Silhouette~$=0.069$. Latent structure is partially
+  degraded despite the cyclical+free-bits schedule, consistent with PReLU decoder
+  instability disrupting both reconstruction quality and latent organisation.}
+\label{fig:results:latent:arm_p}
 \end{figure}
 
 % ────────────────────────────────────────────────────────────
