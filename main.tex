@@ -929,6 +929,27 @@ Lovrenski et al.\ \cite{lovrenski_esr_2025} on behalf of the European Society of
 
 The Kermany et al.\ \cite{kermany_identifying_2018} collection comprises 5,856 anterior-posterior chest radiographs from children aged 1--5 years, labelled as normal or pneumonia (bacterial/viral). The full-resolution collection is used at $256\times256$ pixels rather than the $28\times28$ MedMNIST \cite{yang_medmnist_2023} derivative\footnote{Initial experiments of the dissertation were conducted in the low-resolution domain of this dataset, PneumoniaMNIST; see Appendix section~xxx for more details on the preliminary results.}, because diagnostically relevant high-frequency structures (pleural edges, consolidation margins) are absent at low resolution. Dataset partitioning, preprocessing, and training split are detailed in Section~\ref{sec:methods:dataset}.
 
+Figure~\ref{fig:lit:kermany:cxr} shows representative images from the three classes. Each exhibits radiological features specific to the paediatric age group (1--5 years) that are systematically absent from adult CXR training sets: a prominent anterior mediastinal opacity from the thymus (which involutes by age three to four), a cardiothoracic ratio of up to 55\% (vs.\ the 50\% adult threshold), horizontally oriented ribs reflecting the barrel-chested configuration of young children, and proportionally elevated diaphragm domes \cite{laborie_scoping_2026}. Bacterial pneumonia presents as lobar or segmental consolidation --- a homogeneous airspace opacity that is spatially localised (commonly right lower or right upper lobe in children) and radiographically distinct from the parenchyma \cite{world_health_organisation_classification_2020}. Viral pneumonia presents as bilateral perihilar interstitial infiltrates: diffuse, hazy, reticular opacities symmetrically involving both lung fields without discrete lobe boundaries \cite{kermany_identifying_2018}. These two patterns require different denoising fidelity: consolidated regions require sharp boundary preservation (lobar margins carry diagnostic specificity); interstitial regions require fine texture preservation (fine reticulation carries severity information). A denoiser that over-smooths either pattern changes the diagnosis.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/lit_cxr_comparison}
+\caption[Representative paediatric chest radiographs from the Kermany dataset (Normal, Bacterial, Viral)]{%
+  Representative anterior-posterior chest radiographs from the Kermany 2018 test set
+  \citep{kermany_identifying_2018}, one image per class. Yellow arrows (Normal): key
+  anatomical features specific to paediatric CXR that differ from adult imaging ---
+  prominent thymus shadow (normal, involutes by age~3--4), large cardiac silhouette
+  (cardiothoracic ratio $\leq$55\%), horizontal ribs, and costophrenic angles.
+  Red arrows (Bacterial): lobar consolidation in the right lower zone; homogeneous
+  airspace opacity with a sharp medial border.
+  Blue arrows (Viral): bilateral perihilar interstitial infiltrates; diffuse fine
+  reticular haziness without discrete lobe boundaries.
+  All three classes are represented in the 5,856-image dataset used for training and evaluation.
+  Adult AI models trained on NIH ChestX-ray14 or similar adult datasets are not calibrated
+  for these paediatric anatomical features \citep{laborie_scoping_2026}.}
+\label{fig:lit:kermany:cxr}
+\end{figure}
+
 % ============================================================
 \section{The Evolution of Image Denoising Architectures}
 \label{sec:lit:architectures}
@@ -1227,7 +1248,7 @@ Four sequential phases were executed: (1) dataset preparation and noise simulati
 \subsection{Kermany Paediatric Chest Radiograph Collection}
 \label{sec:methods:dataset:kermany}
 
-The dataset used in this study is the Kermany paediatric chest radiograph collection (described in Section~\ref{sec:lit:kermany}): 5,856 anterior-posterior chest radiographs from children aged one to five years, acquired under routine clinical conditions \cite{kermany_identifying_2018}. The following describes the preprocessing applied in this study.
+The dataset used in this study is the Kermany paediatric chest radiograph collection (described in Section~\ref{sec:lit:kermany}): 5,856 anterior-posterior chest radiographs from children aged one to five years, acquired under routine clinical conditions \cite{kermany_identifying_2018}. Table~\ref{tab:methods:dataset} summarises the final train/validation/test partition. The following describes the preprocessing applied in this study.
 
 Images were resized to $256\times256$ via bilinear interpolation,\footnote{Bilinear interpolation computes each output pixel as the weighted average of the four nearest neighbours in the source image, with weights proportional to proximity in both the horizontal and vertical directions. It avoids the blocking artefacts of nearest-neighbour resampling and the ringing introduced by higher-order bicubic kernels, while preserving the overall intensity structure required for correct Poisson-Gaussian noise simulation at the target resolution.} converted to single-channel float tensors, and normalised to $[0,1]$. No augmentation was applied, as it would alter the intensity statistics required by the Poisson-Gaussian noise model. The 624-image official test partition was held out throughout training. Of the remaining 5,232 images, 785 (15\%, seed 42) formed the validation set and 4,447 the training set. Class labels were unused: the denoising task is self-supervised.
 
@@ -1847,7 +1868,7 @@ Seven established discriminative denoisers form the comparison set, all retraine
   \item \textbf{SCUNet} \cite{zhang_scunet_2023}, Swin-Conv hybrid in which each block interleaves a Swin Transformer branch and a convolutional branch; trained on a Poisson-Gaussian composite noise model; current CNN/Transformer ceiling at 29.55~dB on BSD68 (2023, 57M parameters).
 \end{enumerate}
 
-This set spans the full progression from simple residual CNNs (2017) to the current SOTA ceiling (2023), enabling systematic measurement of whether PP-VAE-Hformer's probabilistic machinery provides a reconstruction advantage over progressively stronger discriminative baselines.
+This set spans the full progression from simple residual CNNs (2017) to the current SOTA ceiling (2023), enabling systematic measurement of whether PP-VAE-Hformer's probabilistic machinery provides a reconstruction advantage over progressively stronger discriminative baselines. Trainable parameter counts, wall-clock training time, and single-image inference latency for all models are reported in Table~\ref{tab:methods:model_complexity}.
 
 \subsection{Why Frontier Generative Models Are Not Appropriate Baselines}
 \label{sec:methods:baselines:exclusion}
@@ -2081,6 +2102,8 @@ supplementary figures.
 \subsection{Summary of Metrics}
 \label{sec:methods:evaluation:summary}
 
+Table~\ref{tab:methods:metrics} provides a concise overview of all evaluation metrics, grouped by category, with the direction of improvement and the arms to which each applies.
+
 \begin{table}[htbp]
 \centering
 \caption{Summary of evaluation metrics by category.}
@@ -2137,7 +2160,7 @@ Bonferroni is chosen over Benjamini-Hochberg False Discovery Rate (FDR) because 
 
 \subsection{Effect Size Reporting}
 
-With $n=624$ test images, virtually every pairwise comparison reaches conventional statistical significance ($p<0.05$) due to the large sample size. The $t$-statistic scales with $\sqrt{n}$ and therefore does not distinguish clinically meaningful gaps from trivially small ones. Cohen's $d$ (pooled effect size) is reported for every pairwise comparison:
+With $n=624$ test images, virtually every pairwise comparison reaches conventional statistical significance ($p<0.05$) due to the large sample size. The $t$-statistic scales with $\sqrt{n}$ and therefore does not distinguish clinically meaningful gaps from trivially small ones. Cohen's $d$\footnote{Cohen's $d$ is a standardised effect size: the difference between two group means divided by their pooled standard deviation, $d = (\bar{x}_1 - \bar{x}_2)/s_{\mathrm{pool}}$. Unlike the raw mean difference (which is in units of dB and depends on image resolution and noise level), $d$ is dimensionless and directly comparable across contexts. Thresholds from Cohen (1988): $|d|<0.2$ negligible, $0.2\leq|d|<0.5$ small, $0.5\leq|d|<0.8$ moderate, $|d|\geq 0.8$ large.} (pooled effect size) is reported for every pairwise comparison:
 \begin{equation}
 d = \frac{\bar{x}_1 - \bar{x}_2}{s_{\mathrm{pooled}}}, \quad
 s_{\mathrm{pooled}} = \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}}
@@ -2245,7 +2268,7 @@ This chapter reports the quantitative and qualitative outcomes of the 16-arm abl
 \section{Dataset Characteristics and Degradation Pipeline Validation}
 \label{sec:results:dataset}
 
-The Kermany test partition comprises 624 images: 234 Normal, 242 Bacterial Pneumonia, and 148 Viral Pneumonia, \cite{kermany_identifying_2018} reflecting the unbalanced distribution of cases from a hospital collected data. Mean pixel intensity is $0.506 \pm 0.058$ across the test set; Pneumonia cases are modestly brighter ($0.518$) than Normal ($0.487$), suggesting consolidation-induced whitening.
+The Kermany test partition comprises 624 images: 234 Normal, 242 Bacterial Pneumonia, and 148 Viral Pneumonia \cite{kermany_identifying_2018}, reflecting the unbalanced distribution of cases from a hospital-collected dataset. Mean pixel intensity is $0.506 \pm 0.058$ across the test set; Pneumonia cases are modestly brighter ($0.518$) than Normal ($0.487$), suggesting consolidation-induced whitening. Figure~\ref{fig:results:dataset:noise_levels} presents representative examples from each class across the three noise presets.
 
 \paragraph{Degradation validation.}
 Table~\ref{tab:results:noise_stats} quantifies the three presets. The High preset (noisy-to-clean PSNR $\approx 13.0$~dB before any model inference) represents a clinically extreme dose reduction. Because the Poisson term $ay$ scales with signal (Section~\ref{sec:methods:noise:model}), dark anatomical regions such as pleural angles and retrocardiac spaces have the lowest SNR despite carrying the lowest absolute pixel noise -- an asymmetry that the NLL-trained uncertainty maps are expected to correctly capture. Evaluation was verified as deterministic by confirming identical noisy images for a 20-case subset across different random seed checks.
@@ -2278,7 +2301,7 @@ High & 0.08 & 0.010 & 0.225 & 13.0 & 2.3 & 13.1 & 12.9 \\
 \section{Training Behaviour}
 \label{sec:results:training}
 
-Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 19 arms, comprising 16 principal ablation arms (A--P), Arms~Q, R, and~S, and the retrained baselines, grouped by loss family. The curves for Arms~R and~S begin from the pretrained Arm~A initialisation and therefore start at a higher PSNR than arms trained from scratch; this is expected loss-substitution fine-tuning behaviour. Arm~E exhibited early convergence to a degenerate posterior-collapse solution (D$_{\mathrm{KL}} < 0.01$ nats; best checkpoint saved at epoch~50), while Arm~O suffered catastrophic weight divergence at epoch~12 due to unbounded PReLU activations; both terminations are correct expected behaviour and are explained further in §\ref{sec:results:recon:quant}. All other arms converged smoothly.
+Figure~\ref{fig:results:training} shows the validation PSNR trajectory for all 19 arms, comprising 16 principal ablation arms (A--P), Arms~Q, R, and~S, and the retrained baselines, grouped by loss family. Table~\ref{tab:results:training} reports the best checkpoint PSNR, SSIM, and epoch for each arm. The curves for Arms~R and~S begin from the pretrained Arm~A initialisation and therefore start at a higher PSNR than arms trained from scratch; this is expected loss-substitution fine-tuning behaviour. Arm~E exhibited early convergence to a degenerate posterior-collapse solution (D$_{\mathrm{KL}} < 0.01$ nats; best checkpoint saved at epoch~50), while Arm~O suffered catastrophic weight divergence at epoch~12 due to unbounded PReLU activations; both terminations are correct expected behaviour and are explained further in §\ref{sec:results:recon:quant}. All other arms converged smoothly.
 
 \begin{figure}[H]
 \centering
@@ -2497,7 +2520,7 @@ E (PP-VAE)   & SwinIR  & $-8.69$ & $2.16\times10^{-15}$ & $-0.49$ & *** \\
 \subsection{Qualitative Reconstruction Examples}
 \label{sec:results:recon:qual}
 
-Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} present qualitative reconstructions for three representative cases from each subgroup (Bacterial Pneumonia, Viral Pneumonia, Normal) at mid noise level ($\eta=200$) for Arm~D (best NLL arm). Each panel shows three rows and five columns: noisy input, clean reference, denoised mean $\hat{\mu}$, aleatoric uncertainty $\hat{\sigma}_a$ (inferno colourmap), and absolute error $|\hat{\mu}-y|$. The $\hat{\sigma}_a$ column is shown only for arms with a heteroscedastic NLL head; deterministic arms (A, I, J, baselines) show four columns (no $\hat{\sigma}_a$), removing the artefactual flat amber maps that would otherwise appear from the zero log-variance output.
+Figures~\ref{fig:results:qual:d:bacterial}, \ref{fig:results:qual:d:viral}, and~\ref{fig:results:qual:d:normal} present qualitative reconstructions for three representative cases from each subgroup (Bacterial Pneumonia, Viral Pneumonia, Normal) at mid noise level ($\eta=200$) for Arm~D (best NLL arm). Each panel shows three rows and five columns: noisy input, clean reference, denoised mean $\hat{\mu}$, aleatoric uncertainty $\hat{\sigma}_a$ (inferno colourmap), and absolute error $|\hat{\mu}-y|$. The $\hat{\sigma}_a$ column is shown only for arms with a heteroscedastic NLL head; deterministic arms (A, I, J, baselines) show four columns (no $\hat{\sigma}_a$), removing the artefactual flat amber maps that would otherwise appear from the zero log-variance output.
 
 \begin{figure}[!htb]
 \centering
@@ -2549,6 +2572,8 @@ Figures~\ref{fig:results:qual:d:bacterial}--\ref{fig:results:qual:d:normal} pres
 
 % Normal-case panel for Arm~A moved to Appendix~\ref{app:qual:normal:suppfigs} for brevity
 % (visually comparable to the Bacterial Pneumonia panel above)
+
+Figures~\ref{fig:results:qual:dncnn:bacterial}, \ref{fig:results:qual:h:bacterial}, \ref{fig:results:qual:h:normal}, \ref{fig:results:qual:i:bacterial}, \ref{fig:results:qual:o:bacterial}, \ref{fig:results:qual:ircnn:bacterial}, and~\ref{fig:results:qual:swinir:bacterial} present qualitative reconstructions for DnCNN, Arm~H (Bacterial and Normal), Arm~I, Arm~O, IRCNN, and SwinIR respectively, following the same panel format as Arm~D above.
 
 \paragraph{Arm E: Posterior collapse and flat epistemic uncertainty.}
 Arm~E (PP-VAE, linear KL warmup; $31.635$~dB) achieved the lowest PSNR of all VAE arms, a $1.10$~dB deficit relative to Arm~F (cyclical KL, $32.734$~dB). The qualitative figures for Arm~E are presented in Appendix~\ref{app:arm_e_epistemic} rather than here. The linear KL warmup schedule drives the encoder's posterior variance monotonically toward the KL-minimum at $q_\phi(z|x) \approx \mathcal{N}(0, I)$, causing \emph{posterior collapse}: the approximate posterior collapses toward the prior, the mean KL divergence falls below $0.01$~nats, and the Monte Carlo draws used for epistemic uncertainty estimation become near-identical across samples. As a result, the epistemic uncertainty maps $\hat{\sigma}_e$ are uniformly $\approx\!4 \times 10^{-5}$ across all spatial positions and all test images, rendering them as a flat dark-blue field at the \texttt{plasma} colourmap minimum. This is the theoretically correct and expected behaviour of a posterior-collapsed VAE. Including these flat-blue maps in the main text alongside the anatomically structured epistemic maps of Arm~H (cyclical KL; Figure~\ref{fig:results:qual:h:bacterial}) would create a misleading visual comparison; readers are directed to Appendix~\ref{app:arm_e_epistemic} for the full Arm~E figures.
@@ -2737,7 +2762,7 @@ the pleural boundary rendering is sharp for all learned models and blunted for B
 \subsection{Performance as a Function of Degradation Severity}
 \label{sec:results:recon:dosecurve}
 
-All models degrade monotonically across noise presets. The mid-noise ranking is largely preserved at low and high noise, with two exceptions: Arm~O (PReLU failure) is last at all levels, and Arms~M and~E show a crossover at high noise. SwinIR trails CNN baselines by $\approx 2$~dB consistently. Arms~A, I, J form a high-fidelity cluster ($>36.4$~dB at low noise); VAE arms cluster $\approx 2$~dB below.
+All models degrade monotonically across noise presets (Figures~\ref{fig:results:dosecurve:psnr}--\ref{fig:results:dosecurve:ssim}). The mid-noise ranking is largely preserved at low and high noise, with two exceptions: Arm~O (PReLU failure) is last at all levels, and Arms~M and~E show a crossover at high noise. SwinIR trails CNN baselines by $\approx 2$~dB consistently. Arms~A, I, J form a high-fidelity cluster ($>36.4$~dB at low noise); VAE arms cluster $\approx 2$~dB below. The SSIM dose curve (Figure~\ref{fig:results:dosecurve:ssim}) is largely consistent with PSNR ranking; Arm~O shows the largest SSIM deficit at high noise, consistent with PReLU-induced structural incoherence.
 
 \begin{figure}[!htb]
 \centering
@@ -2821,12 +2846,12 @@ D  & NLL+SSIM+FFL (scratch) & $33.435 \pm 1.026$ & $0.1582$ & $-1.183$\,dB \\
 \label{fig:results:curriculum:loss}
 \end{figure}
 
-Arm~R achieves the best LPIPS ($0.1226$) and FSIM ($0.9332$) in the entire study at only $-0.073$\,dB PSNR vs.\ Arm~A, outperforming single-stage Arm~J by $+0.226$\,dB PSNR, $+0.0026$ FSIM, and lower LPIPS. Arm~S achieves $34.608$\,dB ($\Delta=-0.010$\,dB vs.\ Arm~A) with calibrated aleatoric uncertainty (mean NLL~$-2.650$, sharpness~$0.0201$), which is $1.17$\,dB better PSNR than single-stage Arm~D at comparable calibration. The key lesson, consistent with Zhao et al.\ \cite{zhao_loss_2017}: the Arm~A pixel-fidelity initialisation sets a quality ceiling that single-stage composite-loss training cannot reach from random weights, because the composite loss landscape is sufficiently complex that gradient descent stalls at inferior local minima; substituting the richer loss from the MSE minimum approaches that ceiling from multiple quality dimensions simultaneously. Visual inspection of representative ROI crops confirms preservation of vessel margins, consolidation boundaries, and pleural edges at parity with Arm~A.
+Figure~\ref{fig:results:curriculum:loss} shows the validation PSNR trajectories and training loss components for Arms~A, R, and~S throughout both stages. Arm~R achieves the best LPIPS ($0.1226$) and FSIM ($0.9332$) in the entire study at only $-0.073$\,dB PSNR vs.\ Arm~A, outperforming single-stage Arm~J by $+0.226$\,dB PSNR, $+0.0026$ FSIM, and lower LPIPS. Arm~S achieves $34.608$\,dB ($\Delta=-0.010$\,dB vs.\ Arm~A) with calibrated aleatoric uncertainty (mean NLL~$-2.650$, sharpness~$0.0201$), which is $1.17$\,dB better PSNR than single-stage Arm~D at comparable calibration. The key lesson, consistent with Zhao et al.\ \cite{zhao_loss_2017}: the Arm~A pixel-fidelity initialisation sets a quality ceiling that single-stage composite-loss training cannot reach from random weights, because the composite loss landscape is sufficiently complex that gradient descent stalls at inferior local minima; substituting the richer loss from the MSE minimum approaches that ceiling from multiple quality dimensions simultaneously. Visual inspection of representative ROI crops confirms preservation of vessel margins, consolidation boundaries, and pleural edges at parity with Arm~A.
 
 \section{Latent Space Analysis}
 \label{sec:results:latent}
 
-t-Distributed Stochastic Neighbour Embedding (t-SNE) and Uniform Manifold Approximation and Projection (UMAP) projections of the five VAE arm latent codes (Adjusted Rand Index (ARI) and Silhouette Score vs.\ ground-truth class labels) assess whether the PP-VAE bottleneck imposes diagnostically meaningful structure. Latent codes are the global-average-pooled posterior mean $\bar{z}\in\mathbb{R}^C$ for $n=448$ test images (150 Normal, 150 Bacterial, 148 Viral).
+t-Distributed Stochastic Neighbour Embedding (t-SNE) and Uniform Manifold Approximation and Projection (UMAP) projections of the five VAE arm latent codes (Adjusted Rand Index (ARI)\footnote{The \emph{Adjusted Rand Index} (ARI) measures the agreement between a predicted clustering and a known ground-truth labelling, corrected for chance. ARI~$=1.0$ means perfect agreement; ARI~$=0.0$ is expected performance of a random assignment; ARI~$<0$ means worse than random. In the latent space analysis here, $k$-means clustering ($k=3$) is applied to the latent codes and its output is compared against the ground-truth diagnostic labels (Normal/Bacterial/Viral). A high ARI indicates that the encoder places diagnostically distinct images in different latent regions, which would imply that the bottleneck has learned semantically meaningful structure.} and Silhouette Score\footnote{The \emph{Silhouette Score} measures how well each point fits its assigned cluster compared to neighbouring clusters: $s = (b-a)/\max(a,b)$, where $a$ is the mean intra-cluster distance and $b$ is the mean nearest-cluster distance. Values near $+1$ indicate tight, well-separated clusters; near $0$ indicates overlapping clusters; near $-1$ indicates misassignment. Here it complements ARI by assessing latent space compactness independently of the ground-truth label matching.} vs.\ ground-truth class labels) assess whether the PP-VAE bottleneck imposes diagnostically meaningful structure. Latent codes are the global-average-pooled posterior mean $\bar{z}\in\mathbb{R}^C$ for $n=448$ test images (150 Normal, 150 Bacterial, 148 Viral).
 
 \subsection{t-SNE and UMAP Projections}
 \label{sec:results:latent:viz}
@@ -2908,7 +2933,7 @@ The latent analysis confirms: (i) no arm produces strongly class-discriminative 
 \subsection{Pixel-Level Uncertainty Maps}
 \label{sec:results:calibration:maps}
 
-NLL-trained arms (B--D, F--H, K--N, O, P) produce $\hat{\sigma}_a(x)=\exp(0.5\,\hat{\ell}_{\sigma^2})$ at each pixel; deterministic arms and baselines produce no uncertainty estimate. Figures~\ref{fig:results:uncertainty:arm_b}--\ref{fig:results:uncertainty:arm_h} show uncertainty maps for Arms~B, D, and~H on Bacterial Pneumonia cases. Three anatomically consistent patterns appear across all arms: highest $\hat{\sigma}_a$ at dark lung parenchyma (high quantum noise), near-zero at bright mediastinal structures, and elevated at consolidation margins (genuinely ambiguous boundary pixels).
+NLL-trained arms (B--D, F--H, K--N, O, P) produce $\hat{\sigma}_a(x)=\exp(0.5\,\hat{\ell}_{\sigma^2})$ at each pixel; deterministic arms and baselines produce no uncertainty estimate. Figures~\ref{fig:results:uncertainty:arm_b}, \ref{fig:results:uncertainty:arm_d}, and~\ref{fig:results:uncertainty:arm_h} show uncertainty maps for Arms~B, D, and~H respectively on Bacterial Pneumonia cases. Three anatomically consistent patterns appear across all arms: highest $\hat{\sigma}_a$ at dark lung parenchyma (high quantum noise), near-zero at bright mediastinal structures, and elevated at consolidation margins (genuinely ambiguous boundary pixels).
 
 \begin{figure}[!htb]
 \centering
@@ -3179,7 +3204,7 @@ Figure~\ref{fig:results:subgroup:all_arms} presents a quantitative summary of th
 \label{fig:results:subgroup:all_arms}
 \end{figure}
 
-Figures~\ref{fig:results:subgroup:normal}--\ref{fig:results:subgroup:viral} present qualitative comparison panels for Normal, Bacterial, and Viral subgroups. Each panel shows four arms (Arm~A, Arm~D, Arm~H, IRCNN) across three representative cases from the respective subgroup. PSNR is annotated per cell. The key qualitative finding is that Arm~D and IRCNN produce visually indistinguishable reconstructions in Normal cases, while in Bacterial cases Arm~D shows marginally crisper consolidation margins. In Viral cases, all four arms struggle to preserve the subtle interstitial pattern without over-smoothing the fine bilateral haziness, with Arm~H (VAE) showing the most conservative preservation at the cost of slightly elevated NLL.
+Figures~\ref{fig:results:subgroup:normal}, \ref{fig:results:subgroup:bacterial}, and~\ref{fig:results:subgroup:viral} present qualitative comparison panels for Normal, Bacterial, and Viral subgroups respectively. Each panel shows four arms (Arm~A, Arm~D, Arm~H, IRCNN) across three representative cases from the respective subgroup. PSNR is annotated per cell. The key qualitative finding is that Arm~D and IRCNN produce visually indistinguishable reconstructions in Normal cases, while in Bacterial cases Arm~D shows marginally crisper consolidation margins. In Viral cases, all four arms struggle to preserve the subtle interstitial pattern without over-smoothing the fine bilateral haziness, with Arm~H (VAE) showing the most conservative preservation at the cost of slightly elevated NLL.
 
 \begin{figure}[!htb]
 \centering
@@ -3937,7 +3962,7 @@ This is the theoretically correct and expected consequence of posterior collapse
 \chapter{Supplementary Normal-Case Qualitative Reconstructions}
 \label{app:qual:normal:suppfigs}
 
-The following figures present the Normal-case qualitative reconstruction panels for Arm~A, DnCNN, and IRCNN. These panels are qualitatively consistent with the corresponding Bacterial Pneumonia panels in Section~\ref{sec:results:recon:qual}; they are moved here for brevity and to maintain narrative focus in the main text.
+The following figures present the Normal-case qualitative reconstruction panels for Arm~A (Figure~\ref{fig:results:qual:a:normal}), DnCNN (Figure~\ref{fig:results:qual:dncnn:normal}), and IRCNN (Figure~\ref{fig:results:qual:ircnn:normal}). These panels are qualitatively consistent with the corresponding Bacterial Pneumonia panels in Section~\ref{sec:results:recon:qual}; they are moved here for brevity and to maintain narrative focus in the main text.
 
 \begin{figure}[!htb]
 \centering
@@ -3967,7 +3992,7 @@ The following figures present the Normal-case qualitative reconstruction panels 
 \chapter{Supplementary Latent Space Projections}
 \label{app:latent:suppfigs}
 
-The following figures show t-SNE and UMAP projections for VAE arms E, G, H, and P. All use the same layout as Figure~\ref{fig:results:latent:arm_f}: t-SNE on the left, UMAP on the right, with points coloured by ground-truth label (Normal blue, Bacterial red, Viral green), $n=448$ test images. The representative Arm~F figure (ARI~$=0.333$) is in the main text (Section~\ref{sec:results:latent:viz}).
+The following figures show t-SNE and UMAP projections for VAE Arms E, G, H, and P: Figure~\ref{fig:results:latent:arm_e} (Arm~E, ARI~$=-0.002$, near-posterior-collapse), Figure~\ref{fig:results:latent:arm_g} (Arm~G, ARI~$=0.048$, free-bits), Figure~\ref{fig:results:latent:arm_h} (Arm~H, ARI~$=0.210$, cyclical+free-bits), and Figure~\ref{fig:results:latent:arm_p} (Arm~P, ARI~$=0.096$, PReLU instability). All use the same layout as Figure~\ref{fig:results:latent:arm_f}: t-SNE on the left, UMAP on the right, with points coloured by ground-truth label (Normal blue, Bacterial red, Viral green), $n=448$ test images. The representative Arm~F figure (ARI~$=0.333$) is in the main text (Section~\ref{sec:results:latent:viz}).
 
 \begin{figure}[!htb]
 \centering
