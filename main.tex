@@ -10,7 +10,8 @@
 
 % ── Packages ────────────────────────────────────────────────
 \usepackage[a4paper, top=2.5cm, bottom=2.5cm,
-            inner=3.2cm, outer=2.5cm]{geometry}
+            inner=3.2cm, outer=2.5cm,
+            headheight=14.5pt]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{libertine}            % Cambridge-style serif
@@ -18,8 +19,10 @@
 \usepackage{setspace}
 \usepackage{textgreek} % for Unicode Greek letters like β
 \doublespacing                    % Cambridge regulations
+\raggedbottom                     % prevent large inter-paragraph gaps in double-spaced text
 
 \usepackage{amsmath, amssymb, bm}
+\usepackage{mathtools}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{threeparttable}
@@ -3267,7 +3270,7 @@ SCUNet \cite{zhang_scunet_2023}               & $\mathbf{34.15\pm0.93}$ & --- & 
 \bottomrule
 \end{tabular}%
 }
-\multicolumn{1}{p{\linewidth}}{\footnotesize $^\S$NAFNet and SCUNet evaluation scripts recorded class labels as \texttt{Normal}/\texttt{Pneumonia} only; the bacterial/viral split was not preserved at evaluation time.}
+\par\smallskip{\footnotesize $^\S$NAFNet and SCUNet evaluation scripts recorded class labels as \texttt{Normal}/\texttt{Pneumonia} only; the bacterial/viral split was not preserved at evaluation time.}
 \end{table}
 
 % ============================================================
