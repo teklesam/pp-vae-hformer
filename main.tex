@@ -1400,7 +1400,7 @@ Output     & Dual Conv $3\times3$, stride 1 & $256 \times 256$ & 1    \\
 \end{tabular}
 \end{table}
 
-The HybridBlock is the core processing unit of PP-VAE-Hformer. It applies two operations
+The HybridBlock is the core processing unit of PP-VAE-Hformer.\footnote{Architecture implementation: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/models/ppvae_hformer.py}{\texttt{src/models/ppvae\_hformer.py}}.} It applies two operations
 in sequence: a convolutional ResBlock followed by a windowed self-attention block
 (WindowAttnBlock). This pairing combines the complementary strengths of convolutional
 and attention-based processing \cite{zhang_hformer_2023}: the ResBlock extracts precise
@@ -1432,7 +1432,7 @@ The block uses pre-layer normalisation\footnote{Placing the layer normalisation 
 \subsection{Hyperparameter Specification and Justification}
 \label{sec:methods:architecture:hyperparams}
 
-Table~\ref{tab:methods:hyperparams} lists all architectural hyperparameters. The following explains the rationale for each key choice.
+Table~\ref{tab:methods:hyperparams} lists all architectural hyperparameters.\footnote{Full hyperparameter specification and arm registry: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/training/config.py}{\texttt{src/training/config.py}}.} The following explains the rationale for each key choice.
 
 \begin{table}[htbp]
 \centering
@@ -1638,7 +1638,7 @@ Zhao et al.\ \cite{zhao_loss_2017} showed that composite objectives (SSIM+L1) ou
 \subsection{Arm B: Heteroscedastic Negative Log-Likelihood}
 \label{sec:methods:loss:nll}
 
-Arm B replaces MSE with a heteroscedastic negative log-likelihood (NLL) loss, following
+Arm B replaces MSE with a heteroscedastic negative log-likelihood (NLL) loss\footnote{Implementation: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/losses/nll_loss.py}{\texttt{src/losses/nll\_loss.py}}.}, following
 Kendall and Gal \cite{kendall_what_2017} (see Section~\ref{sec:lit:losses:nll} for the
 theoretical motivation). The loss simultaneously trains the network to predict the clean pixel
 mean and a per-pixel noise variance. For predicted mean $\hat{\mu}_y(i)$ and
@@ -1657,7 +1657,7 @@ large should elicit a correspondingly large predicted $\hat{\sigma}^2_a$.
 \subsection{Arm C: Multi-Scale Structural Similarity}
 \label{sec:methods:loss:ssim}
 
-Arm C adds a Multi-Scale Structural Similarity (MS-SSIM) penalty to the NLL loss. At each
+Arm C adds a Multi-Scale Structural Similarity (MS-SSIM) penalty to the NLL loss.\footnote{Implementation: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/losses/ms_ssim_loss.py}{\texttt{src/losses/ms\_ssim\_loss.py}}.} At each
 spatial scale, SSIM \cite{wang_image_2004} compares local patches of the prediction
 $\hat{\mu}_y$ and clean reference $y$ along three perceptual axes -- luminance (mean
 intensity), contrast (local variance), and structure (cross-correlation) -- via:
@@ -1697,7 +1697,7 @@ reconstruction beyond what the pixel-level NLL alone enforces.
 \subsection{Arm D: Focal Frequency Loss}
 \label{sec:methods:loss:ffl}
 
-Arm D adds the Focal Frequency Loss (FFL) \cite{jiang_focal_2021}. As discussed in
+Arm D adds the Focal Frequency Loss (FFL) \cite{jiang_focal_2021}.\footnote{Implementation: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/losses/focal_frequency.py}{\texttt{src/losses/focal\_frequency.py}}.} As discussed in
 Section~\ref{sec:lit:losses:ffl}, spectral bias \cite{rahaman_spectral_2019} causes
 pixel-domain-trained networks to underfit high-frequency components such as fine edges, vessel
 margins, and consolidation boundaries, which are precisely the structures most clinically significant
@@ -1745,7 +1745,7 @@ Several arms include a Sobel edge supervision term that penalises loss of fine a
 \begin{equation}
 \mathcal{L}_{\mathrm{edge}} = \frac{1}{HW}\bigl\|\mathrm{Sobel}(\hat{\mu}_y) - \mathrm{Sobel}(y)\bigr\|_1
 \end{equation}
-where $\mathrm{Sobel}(\cdot)$ denotes the Sobel gradient magnitude computed by convolving the image with the horizontal and vertical $3\times3$ Sobel kernels and taking the root-sum-square of the two response maps. This loss is computed over \emph{all} pixels: the Sobel operator is applied to the full image and the $\ell_1$ difference is summed everywhere, not restricted to detected edge locations. It directly penalises blurring of diagnostic boundaries (consolidation margins, vessel walls, pleural lines) by matching the spatial gradient structure between the prediction and the clean reference. The edge loss is included in Arms~L, M, N, and~P with weight $\lambda_{\mathrm{edge}} = 0.1$.
+where $\mathrm{Sobel}(\cdot)$ denotes the Sobel gradient magnitude computed by convolving the image with the horizontal and vertical $3\times3$ Sobel kernels and taking the root-sum-square of the two response maps. This loss is computed over \emph{all} pixels: the Sobel operator is applied to the full image and the $\ell_1$ difference is summed everywhere, not restricted to detected edge locations. It directly penalises blurring of diagnostic boundaries (consolidation margins, vessel walls, pleural lines) by matching the spatial gradient structure between the prediction and the clean reference. The edge loss is included in Arms~L, M, N, and~P with weight $\lambda_{\mathrm{edge}} = 0.1$.\footnote{Implementation: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/losses/edge_loss.py}{\texttt{src/losses/edge\_loss.py}}.}
 
 Arm E adds the VAE bottleneck (Section~\ref{sec:methods:architecture:bottleneck}) and Kullback-Leibler (KL) divergence regularisation \cite{kullback_information_1951}.\footnote{The Kullback-Leibler (KL) divergence $D_{\mathrm{KL}}(q \| p)$ is an information-theoretic measure of how different one probability distribution $q$ is from a reference distribution $p$. For two Gaussians, it has a closed-form expression (Equation~\ref{eq:methods:kl}). In the VAE framework \cite{kingma_auto-encoding_2014}, minimising the KL term between the learned posterior $q(z|x)$ and the standard normal prior $p(z)$ forces the encoder to produce latent codes that are regularly arranged in latent space, rather than encoding each training image at an arbitrary isolated point. This regularity is what makes Monte Carlo sampling from the posterior meaningful: if the posterior is always close to $\mathcal{N}(0,I)$, drawing different noise samples $\boldsymbol{\varepsilon}$ produces latent codes that span a connected neighbourhood, and the pixel-wise variance across the resulting reconstructions is a genuine measure of epistemic uncertainty rather than noise from a poorly constrained sampler.} The KL term measures how far the learned posterior
 distribution $q(\mathbf{z} \mid x) = \mathcal{N}(\mathbf{z}_\mu,\,\exp(\mathbf{z}_{\log\sigma^2}))$
@@ -1812,7 +1812,7 @@ Arm~H applies both strategies simultaneously, using the cyclical $\beta_t^{\math
 \end{equation}
 The two mechanisms are complementary: cyclical annealing provides \emph{temporal} relief by periodically removing KL pressure at the schedule level, while free bits provides \emph{per-channel} relief by permanently exempting low-KL channels from compression. Together they reduce the risk of posterior collapse from two directions.
 
-Table~\ref{tab:methods:loss_summary} summarises the loss configuration for all 16 ablation arms spanning the full factorial design of this study.
+Table~\ref{tab:methods:loss_summary} summarises the loss configuration for all 16 ablation arms spanning the full factorial design of this study.\footnote{Composite loss orchestration (routing inputs to each term by arm name): \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/losses/composite_loss.py}{\texttt{src/losses/composite\_loss.py}}. VGG-16 perceptual loss (Arms~N, P): \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/losses/perceptual_loss.py}{\texttt{src/losses/perceptual\_loss.py}}. KL divergence with optional free-bits: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/losses/kl_loss.py}{\texttt{src/losses/kl\_loss.py}}.}
 
 \begin{landscape}
 \singlespacing
@@ -1882,7 +1882,7 @@ P & PP-VAE best (PReLU) & & & \checkmark & \checkmark & \checkmark & \checkmark 
 \subsection{Optimiser and Learning Rate Schedule}
 \label{sec:methods:training:optimiser}
 
-All arms were trained using AdamW \cite{loshchilov_decoupled_2019} with learning rate $2\times10^{-4}$ and weight decay $10^{-4}$.\footnote{\emph{Weight decay} is a regularisation technique that penalises large parameter values by adding a term proportional to the squared L2 norm of all weights to the effective optimisation objective: $\mathcal{L}_{\mathrm{reg}} = \lambda_{\mathrm{wd}}\sum_\theta \theta^2$. It discourages the network from overfitting by keeping parameter magnitudes moderate. In the AdamW variant \cite{loshchilov_decoupled_2019}, weight decay is applied directly as a multiplicative shrinkage to parameter values at each update step, decoupled from the adaptive gradient scaling. This produces better regularisation behaviour than the original Adam formulation, which conflates weight decay with L2 regularisation and thereby distorts the adaptive scaling.} The cosine annealing schedule (\texttt{CosineAnnealingLR}, $T_{\max}=200$) decayed the learning rate smoothly from $2\times10^{-4}$ to $10^{-6}$ over 200 epochs, avoiding the abrupt drops of step-decay schedules that can destabilise KL annealing in VAE arms.
+All arms were trained using AdamW \cite{loshchilov_decoupled_2019} with learning rate $2\times10^{-4}$ and weight decay $10^{-4}$.\footnote{Training script: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/scripts/train_proposed.py}{\texttt{scripts/train\_proposed.py}}; experiment configuration registry: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/training/config.py}{\texttt{src/training/config.py}}.}\footnote{\emph{Weight decay} is a regularisation technique that penalises large parameter values by adding a term proportional to the squared L2 norm of all weights to the effective optimisation objective: $\mathcal{L}_{\mathrm{reg}} = \lambda_{\mathrm{wd}}\sum_\theta \theta^2$. It discourages the network from overfitting by keeping parameter magnitudes moderate. In the AdamW variant \cite{loshchilov_decoupled_2019}, weight decay is applied directly as a multiplicative shrinkage to parameter values at each update step, decoupled from the adaptive gradient scaling. This produces better regularisation behaviour than the original Adam formulation, which conflates weight decay with L2 regularisation and thereby distorts the adaptive scaling.} The cosine annealing schedule (\texttt{CosineAnnealingLR}, $T_{\max}=200$) decayed the learning rate smoothly from $2\times10^{-4}$ to $10^{-6}$ over 200 epochs, avoiding the abrupt drops of step-decay schedules that can destabilise KL annealing in VAE arms.
 
 The learning rate was decayed via cosine annealing from $2\times10^{-4}$ to $10^{-6}$ over 200 epochs (\texttt{CosineAnnealingLR}, $T_{\max}=200$). Training used automatic mixed precision\footnote{\emph{Automatic mixed precision} (AMP) \cite{micikevicius_mixed_2018} stores and computes most operations in 16-bit floating-point (\texttt{float16}) while maintaining a 32-bit master copy of parameters for weight updates and numerically sensitive operations. On NVIDIA A100 GPUs with dedicated Tensor Core units, \texttt{float16} matrix operations run approximately twice as fast and use half the memory compared to \texttt{float32}. A \texttt{GradScaler} dynamically adjusts the loss scale at each step to keep gradients within the \texttt{float16} representable range and prevent underflow, which would otherwise corrupt the gradient signal for small learning rates late in training.} (\texttt{autocast} + \texttt{GradScaler}) with gradient norm clipping at 1.0 to prevent spikes during KL annealing.
 
@@ -1898,7 +1898,7 @@ A \emph{batch} is a randomly sampled subset of $B=16$ training images processed 
 \subsection{Chosen Baselines}
 \label{sec:methods:baselines:chosen}
 
-Seven established discriminative denoisers form the comparison set, all retrained from scratch on the same Kermany split under identical conditions (200 epochs, AdamW, $\eta{=}2\times10^{-4}$, cosine annealing, Foi Poisson-Gaussian noise):
+Seven established discriminative denoisers form the comparison set, all retrained from scratch on the same Kermany split under identical conditions (200 epochs, AdamW, $\eta{=}2\times10^{-4}$, cosine annealing, Foi Poisson-Gaussian noise):\footnote{DnCNN training: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/scripts/train_dncnn.py}{\texttt{scripts/train\_dncnn.py}}; all other baselines: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/scripts/train_baseline.py}{\texttt{scripts/train\_baseline.py}}.}
 
 \begin{enumerate}
   \item \textbf{DnCNN} \cite{zhang_beyond_2017}, residual CNN with batch normalisation; the canonical MSE-trained CNN baseline (2017, 0.56M parameters).
@@ -1927,7 +1927,7 @@ Image quality metrics can be divided into two broad categories based on whether 
   \item[No-Reference (NR) metrics] assess image quality from the denoised output alone, without requiring a paired ground-truth image. They evaluate properties such as local contrast, texture fidelity, and signal-to-noise ratio within anatomically defined regions of the image itself. NR metrics are particularly relevant for clinical deployment, where only the noisy input and denoised output are available. The Contrast-to-Noise Ratio (CNR) is the NR metric used in this study: it quantifies the contrast between a clinically relevant signal region and a surrounding background region entirely from the denoised image, without pixel-wise comparison to a clean reference.
 \end{description}
 
-Metrics were computed on the 624-image held-out test set at each noise preset. Reported values are means over the test set with 95\% bootstrap confidence intervals (1,000 resamples).\footnote{\emph{Bootstrap resampling} \cite{efron_bootstrap_1979} estimates the sampling distribution of a statistic -- here, the mean PSNR across the 624 test images -- by repeatedly drawing samples of size $n=624$ with replacement from the observed test set and computing the statistic on each resample. The 2.5th and 97.5th percentiles of the resulting 1,000 bootstrap statistics form the 95\% confidence interval without assuming a parametric form for the underlying distribution. This is preferable to the normal approximation when the test set is small or the metric distribution is skewed.}
+Metrics were computed on the 624-image held-out test set at each noise preset.\footnote{Metric implementations: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/src/evaluation/metrics.py}{\texttt{src/evaluation/metrics.py}}; full evaluation pipeline: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/scripts/evaluate_all.py}{\texttt{scripts/evaluate\_all.py}}.} Reported values are means over the test set with 95\% bootstrap confidence intervals (1,000 resamples).\footnote{\emph{Bootstrap resampling} \cite{efron_bootstrap_1979} estimates the sampling distribution of a statistic -- here, the mean PSNR across the 624 test images -- by repeatedly drawing samples of size $n=624$ with replacement from the observed test set and computing the statistic on each resample. The 2.5th and 97.5th percentiles of the resulting 1,000 bootstrap statistics form the 95\% confidence interval without assuming a parametric form for the underlying distribution. This is preferable to the normal approximation when the test set is small or the metric distribution is skewed.}
 
 \subsection{Reconstruction Metrics}
 \label{sec:methods:evaluation:recon}
@@ -2014,7 +2014,7 @@ seven benchmark datasets. \textit{Training paradigm note:} arms that include MS-
 
 \paragraph{FSIM.}
 Feature Similarity Index Measure (FSIM) \cite{zhang_fsim_2011} is the primary perceptual
-metric in this study. Unlike PSNR, which treats every pixel equally, FSIM weights spatial
+metric in this study.\footnote{FSIM computed using the \texttt{piq} library; implementation: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/scripts/compute_fsim.py}{\texttt{scripts/compute\_fsim.py}}.} Unlike PSNR, which treats every pixel equally, FSIM weights spatial
 positions by their perceptual importance using phase congruency,\footnote{\emph{Phase congruency} \cite{morrone_feature_1987} measures the degree to which Fourier components of a local image region are all in phase (i.e.\ peak at the same spatial location). When multiple frequency harmonics align in phase, a perceptually significant feature -- an edge, ridge, or textured boundary -- is present. Phase congruency is dimensionless and contrast-invariant, unlike gradient magnitude which scales with local intensity difference. FSIM \cite{zhang_fsim_2011} uses phase congruency as a quality weight: regions of high phase congruency (structurally informative edges) contribute more to the overall similarity score than smooth, low-information areas, making FSIM more sensitive than PSNR or SSIM to the preservation of diagnostically relevant boundaries.} so that
 edge-rich anatomical structures, whose fidelity matters most to a radiologist, contribute
 disproportionately to the score. It is defined as:
@@ -2203,7 +2203,7 @@ EPI         & Edge supervision (indirect) & Arms L, M, N (Sobel loss) & Partial 
 
 \subsection{Design and Scope}
 
-All statistical comparisons use per-image metric values across the 624-image held-out test set, evaluated independently at each noise level (low, mid, high). The primary metric is PSNR (dB); SSIM, FSIM, and LPIPS are secondary and analysed separately. The 21-condition comparison (16 PP-VAE arms A--P, plus 5 retrained KAIR baselines: DnCNN, IRCNN, FFDNet, DRUNet, SwinIR) yields $\binom{21}{2} = 210$ pairwise comparisons. Arms Q, R, and S are evaluated separately against their parent arms (A, I, D) using the same procedure. Statistical computations are implemented in Python (SciPy \cite{virtanen_scipy_2020}).
+All statistical comparisons use per-image metric values across the 624-image held-out test set, evaluated independently at each noise level (low, mid, high). The primary metric is PSNR (dB); SSIM, FSIM, and LPIPS are secondary and analysed separately. The 21-condition comparison (16 PP-VAE arms A--P, plus 5 retrained KAIR baselines: DnCNN, IRCNN, FFDNet, DRUNet, SwinIR) yields $\binom{21}{2} = 210$ pairwise comparisons. Arms Q, R, and S are evaluated separately against their parent arms (A, I, D) using the same procedure. Statistical computations are implemented in Python (SciPy \cite{virtanen_scipy_2020}).\footnote{Statistical analysis script: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/scripts/statistical_analysis.py}{\texttt{scripts/statistical\_analysis.py}}.}
 
 \subsection{Omnibus Test}
 
@@ -2234,7 +2234,7 @@ Interpretation thresholds follow Cohen (1988): $|d| < 0.2$ negligible, $0.2 \leq
 
 \subsection{Subgroup Analysis}
 
-A separate subgroup analysis compares Pneumonia (Bacterial + Viral, $n=390$) versus Normal ($n=234$) performance within each arm using independent-samples $t$-tests (Bonferroni-corrected for 21 arms, $\alpha_{\mathrm{adj}} = 0.05/21 = 2.38 \times 10^{-3}$). This tests whether any arm is systematically biased against pathological images, which would be a clinical safety concern.
+A separate subgroup analysis compares Pneumonia (Bacterial + Viral, $n=390$) versus Normal ($n=234$) performance within each arm using independent-samples $t$-tests (Bonferroni-corrected for 21 arms, $\alpha_{\mathrm{adj}} = 0.05/21 = 2.38 \times 10^{-3}$).\footnote{Implementation: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/scripts/compute_subgroup_metrics.py}{\texttt{scripts/compute\_subgroup\_metrics.py}}.} This tests whether any arm is systematically biased against pathological images, which would be a clinical safety concern.
 
 \subsection{Confidence Intervals}
 
@@ -2869,7 +2869,7 @@ Arm~Q substitutes the Charbonnier penalty \cite{charbonnier_two_1994} ($\mathcal
 \subsection{Arms R and S: Two-Stage Loss-Substitution Fine-Tuning}
 \label{sec:results:curriculum:ft}
 
-Arms~R and~S implement a two-stage loss-substitution strategy. In Stage~1, Arm~A trains to convergence on the L2 (MSE) objective, which has a single global minimum and is easy to navigate \cite{zhao_loss_2017}. In Stage~2, the converged weights are loaded and a richer composite loss is substituted: Arm~R switches to $\mathcal{L}_1$+SSIM+FFL (100 epochs, $\eta=5\times10^{-5}$) and Arm~S switches to NLL+SSIM+FFL (100 epochs, $\eta=2\times10^{-5}$). This approach is motivated by Zhao et al.\ \cite{zhao_loss_2017}, who showed that composite objectives produce more complex loss landscapes with harder-to-escape local minima: starting from the MSE minimum provides a pixel-accurate initialisation that constrains Stage~2 optimisation to a well-behaved neighbourhood of parameter space, rather than navigating the full composite landscape from random weights. For Arm~S, the transition is additionally stabilised by a 20-epoch linear loss blend ($\alpha \cdot \mathcal{L}_{\mathrm{NLL+SSIM+FFL}} + (1-\alpha) \cdot \mathcal{L}_2$, with $\alpha$ rising from 0 to 1), which prevents NLL divergence while the variance head adapts from its near-zero initialisation. Table~\ref{tab:results:curriculum:summary} summarises outcomes.
+Arms~R and~S implement a two-stage loss-substitution strategy.\footnote{Implementation: \href{https://github.com/teklesam/ppva_hformer_codebase/blob/main/scripts/finetune_from_l2.py}{\texttt{scripts/finetune\_from\_l2.py}}.} In Stage~1, Arm~A trains to convergence on the L2 (MSE) objective, which has a single global minimum and is easy to navigate \cite{zhao_loss_2017}. In Stage~2, the converged weights are loaded and a richer composite loss is substituted: Arm~R switches to $\mathcal{L}_1$+SSIM+FFL (100 epochs, $\eta=5\times10^{-5}$) and Arm~S switches to NLL+SSIM+FFL (100 epochs, $\eta=2\times10^{-5}$). This approach is motivated by Zhao et al.\ \cite{zhao_loss_2017}, who showed that composite objectives produce more complex loss landscapes with harder-to-escape local minima: starting from the MSE minimum provides a pixel-accurate initialisation that constrains Stage~2 optimisation to a well-behaved neighbourhood of parameter space, rather than navigating the full composite landscape from random weights. For Arm~S, the transition is additionally stabilised by a 20-epoch linear loss blend ($\alpha \cdot \mathcal{L}_{\mathrm{NLL+SSIM+FFL}} + (1-\alpha) \cdot \mathcal{L}_2$, with $\alpha$ rising from 0 to 1), which prevents NLL divergence while the variance head adapts from its near-zero initialisation. Table~\ref{tab:results:curriculum:summary} summarises outcomes.
 
 \begin{table}[htbp]
 \centering
@@ -3579,7 +3579,7 @@ Key limitations are: (i) simulated degradation (no structured detector artefacts
 
 \paragraph{Metric limitations.} PSNR and SSIM optimise for pixel-level fidelity and may not correlate with diagnostic accuracy. Zhang et al.\ \cite{zhang_comprehensive_2012} show that PSNR has the lowest correlation ($\rho=0.69$) with human perceptual judgement of the eleven full-reference metrics they evaluated. A reconstructed image that scores 35\,dB PSNR may be diagnostically inferior to one scoring 33\,dB if the former suppresses consolidation margins while the latter preserves them. No radiologist reader study was performed in this dissertation to establish whether PSNR and SSIM gains translate to improved diagnostic confidence or lesion detection sensitivity. FSIM is adopted as the primary perceptual metric (Section~\ref{sec:lit:iqametrics}) in partial mitigation, but the absence of a clinical ground truth remains the fundamental limitation of any quantitative image quality comparison study.
 
-\paragraph{Hyperparameter sensitivity.} Loss weights $\lambda_{\mathrm{SSIM}} = 0.5$, $\lambda_{\mathrm{FFL}} = 0.1$, and $\lambda_{\mathrm{edge}} = 0.1$ were fixed by pilot experiments on a coarse grid rather than a systematic search. The catastrophic gradient interference observed in Arm~M (NLL+SSIM+Edge+FFL, $-1.747$\,dB vs.\ Arm~D) suggests that the optimal $\lambda_{\mathrm{edge}}$ in the presence of SSIM is substantially lower than $0.1$, and that a finer search over $(\lambda_{\mathrm{SSIM}}, \lambda_{\mathrm{edge}})$ could recover additional PSNR for Arms~M and~N without retraining from scratch. Similarly, the KL weight ceiling $\beta_{\max} = 10^{-3}$ and the free-bits threshold $\lambda_{\mathrm{fb}} = 0.25$ for VAE arms were set by reference to the literature rather than data-driven search; data-adaptive tuning may further improve calibration for clinical deployment.
+\paragraph{Hyperparameter sensitivity.} Loss weights $\lambda_{\mathrm{SSIM}} = 0.5$, $\lambda_{\mathrm{FFL}} = 0.1$, and $\lambda_{\mathrm{edge}} = 0.1$ were fixed by reference to the prior literature --- $\lambda_{\mathrm{SSIM}}$ following Zhao et al.\ \cite{zhao_loss_2017}, $\lambda_{\mathrm{FFL}}$ following Jiang et al.\ \cite{jiang_focal_2021}, and $\lambda_{\mathrm{edge}}$ set at the same order of magnitude as $\lambda_{\mathrm{FFL}}$ to avoid dominating the composite gradient --- without any systematic data-driven search (Appendix~\ref{app:ablations} confirms no loss-weight grid was conducted). The catastrophic gradient interference observed in Arm~M (NLL+SSIM+Edge+FFL, $-1.747$\,dB vs.\ Arm~D) suggests that the optimal $\lambda_{\mathrm{edge}}$ in the presence of SSIM is substantially lower than $0.1$, and that a structured weight-ablation over $(\lambda_{\mathrm{SSIM}}, \lambda_{\mathrm{edge}})$ could recover additional PSNR for Arms~M and~N without retraining from scratch. Similarly, the KL weight ceiling $\beta_{\max} = 10^{-3}$ and the free-bits threshold $\lambda_{\mathrm{fb}} = 0.25$ for VAE arms were set by reference to the literature rather than data-driven search; data-adaptive tuning may further improve calibration for clinical deployment.
 
 \section{Potential Sources of Bias}
 \label{sec:disc:bias}
@@ -3882,7 +3882,33 @@ The complete codebase, training scripts, evaluation pipelines, and figure genera
 \url{https://github.com/teklesam/ppva_hformer_codebase}
 \end{center}
 
-\noindent The repository contains all code required to reproduce the experiments reported in this dissertation, including model architecture definitions, composite loss implementations, training and evaluation pipelines, and figure generation scripts for all 19 ablation arms and retrained baselines.
+\noindent The repository contains all code required to reproduce the experiments reported in this dissertation. The principal scripts and their dissertation correspondences are listed below.
+
+\begin{description}
+  \setlength{\itemsep}{2pt}
+  \item[\texttt{src/models/ppvae\_hformer.py}] PP-VAE-Hformer architecture (HybridBlock, ResBlock, WindowAttnBlock, VAE bottleneck, dual output head) --- §3.3
+  \item[\texttt{src/training/config.py}] Experiment registry: per-arm loss, KL schedule, and architecture overrides for all 19 arms --- §3.3, Appendix~\ref{app:hyperparams}
+  \item[\texttt{src/data/kermany\_dataset.py}] Dataset loading, greyscale conversion, antialiased resize, augmentation, noise injection --- §3.1
+  \item[\texttt{src/data/noise\_simulation.py}] Foi Poisson-Gaussian noise generation (presets: low/mid/high/random) --- §3.2
+  \item[\texttt{src/losses/composite\_loss.py}] Composite loss orchestration (routes gradients to each term by arm name) --- §3.5
+  \item[\texttt{src/losses/nll\_loss.py}] Heteroscedastic NLL (Arm B onwards) --- §3.5.1
+  \item[\texttt{src/losses/ms\_ssim\_loss.py}] MS-SSIM loss (Arm C onwards) --- §3.5.2
+  \item[\texttt{src/losses/focal\_frequency.py}] Focal Frequency Loss (Arm D onwards) --- §3.5.3
+  \item[\texttt{src/losses/edge\_loss.py}] Sobel edge supervision (Arms L, M, N, P) --- §3.5.3
+  \item[\texttt{src/losses/kl\_loss.py}] KL divergence with optional free-bits (VAE arms E--H, P) --- §3.5.4
+  \item[\texttt{src/losses/perceptual\_loss.py}] VGG-16 perceptual loss, frozen relu1\_2/relu2\_2/relu3\_3 (Arm N, P) --- §3.5
+  \item[\texttt{src/evaluation/metrics.py}] PSNR, SSIM, LPIPS, ECE, EPI, CNR implementations --- §3.7
+  \item[\texttt{scripts/train\_proposed.py}] Training loop for all 19 PP-VAE-Hformer arms --- §3.6
+  \item[\texttt{scripts/train\_dncnn.py}] DnCNN baseline training (depth-20, weight decay) --- §3.6
+  \item[\texttt{scripts/train\_baseline.py}] IRCNN, FFDNet, DRUNet, SwinIR, NAFNet, SCUNet training --- §3.6
+  \item[\texttt{scripts/finetune\_from\_l2.py}] Two-stage loss-substitution fine-tuning (Arms R and S) --- §4.4
+  \item[\texttt{scripts/evaluate\_all.py}] Full evaluation pipeline (all metrics, bootstrap CIs, qualitative panels) --- §3.7
+  \item[\texttt{scripts/compute\_fsim.py}] Separate FSIM computation via \texttt{piq} library --- §3.7
+  \item[\texttt{scripts/compute\_subgroup\_metrics.py}] Subgroup analysis (Normal vs.\ Bacterial vs.\ Viral) --- §3.8
+  \item[\texttt{scripts/statistical\_analysis.py}] Bonferroni $t$-tests, Cohen's $d$, ANOVA (210 pairwise comparisons) --- §3.8
+  \item[\texttt{scripts/generate\_figures\_v2.py}] All evaluation figures (training curves, calibration, latent space) --- §4
+  \item[\texttt{scripts/generate\_roi\_panels\_v2.py}] ROI comparison panels (§4.3.3 Figures) --- §4.3
+\end{description}
 
 % ────────────────────────────────────────────────────────────
 \chapter{Ethical Considerations}
@@ -4134,7 +4160,7 @@ This appendix documents how each item of feedback from the research protocol exa
 
 \paragraph{Discussion.}
 \textit{``The discussion could be slightly expanded. I see more limitations that are not mentioned such as the choice of performance metrics and the tuning parameter choices.''}
-\textbf{Fully addressed.} Section~\ref{sec:disc:limitations} (Limitations) now includes: (i) an explicit paragraph on metric limitations (PSNR/SSIM optimise for pixel fidelity and may not correlate with diagnostic accuracy; no reader study was performed); (ii) a paragraph on hyperparameter sensitivity noting that $\lambda_{\mathrm{SSIM}}$, $\lambda_{\mathrm{FFL}}$, and $\lambda_{\mathrm{edge}}$ were set by grid search over a coarse grid and that finer tuning may recover additional PSNR, particularly for Arms~M and~N where interference effects are strongest.
+\textbf{Fully addressed.} Section~\ref{sec:disc:limitations} (Limitations) now includes: (i) an explicit paragraph on metric limitations (PSNR/SSIM optimise for pixel fidelity and may not correlate with diagnostic accuracy; no reader study was performed); (ii) a paragraph on hyperparameter sensitivity noting that $\lambda_{\mathrm{SSIM}}$, $\lambda_{\mathrm{FFL}}$, and $\lambda_{\mathrm{edge}}$ were fixed by reference to the prior literature rather than a data-driven search --- no loss-weight grid was conducted (Appendix~\ref{app:ablations}) --- and that a structured weight ablation may recover additional PSNR for Arms~M and~N, where gradient interference effects are strongest.
 
 \section*{Marker 2 Feedback}
 
