@@ -1958,7 +1958,7 @@ PSNR indicates lower pixel-level error. Despite its widespread use, Zhang et al.
 \cite{zhang_comprehensive_2012} found PSNR to rank last among 11 full-reference quality
 metrics in Spearman correlation with human judgement ($\rho = 0.69$), compared with $0.91$
 for FSIM; it is therefore reported here primarily for comparability with prior work, while
-FSIM serves as the primary perceptual metric.
+FSIM serves as the primary perceptual metric. \textit{Training paradigm note:} because PSNR is mathematically equivalent to minimising the MSE (Equation~\ref{eq:methods:mse_eval}), arms trained with L2 pixel loss (Arm~A) have a \emph{structural advantage} on this metric — their training objective directly optimises the evaluation criterion. Arms trained with NLL, SSIM, or composite losses accept a PSNR deficit in exchange for calibrated uncertainty or structural fidelity; interpreting this deficit as a failure misapplies the metric to a paradigm it was not designed to rank.
 
 \paragraph{SSIM.}
 Structural Similarity Index Measure (SSIM) \cite{wang_image_2004} quantifies perceptual
@@ -2005,7 +2005,7 @@ distortions and fine-detail blurring, making it more sensitive than single-scale
 PSNR to the localised edge blurring that MSE-trained networks produce at rib margins
 and consolidation boundaries \cite{zhao_loss_2017}. Zhang et al.\ \cite{zhang_comprehensive_2012}
 report a Spearman correlation of $\rho = 0.87$ between SSIM and human judgement across
-seven benchmark datasets.
+seven benchmark datasets. \textit{Training paradigm note:} arms that include MS-SSIM as a loss component (Arms~C, D, F--H, J, N, P) directly optimise a proxy of this evaluation criterion. Their SSIM evaluation scores therefore reflect both genuine structural improvement \emph{and} metric--loss alignment; gains relative to L2 or NLL-only arms should be interpreted with that partial circularity in mind \cite{blau_perception_2018}.
 
 \subsection{Perceptual Quality Metrics}
 \label{sec:methods:evaluation:perceptual}
@@ -2046,7 +2046,7 @@ and $T_1$, $T_2$ are small positive constants for numerical stability \cite{zhan
 FSIM ranges from 0 to 1, with higher values indicating greater structural and edge fidelity.
 Zhang et al.\ \cite{zhang_comprehensive_2012} ranked FSIM first among 11 full-reference
 metrics in Spearman correlation with human judgement ($\rho = 0.91$), outperforming SSIM
-($0.87$) and PSNR ($0.69$). Computed via the \texttt{piq} Python library.
+($0.87$) and PSNR ($0.69$). Computed via the \texttt{piq} Python library. \textit{Training paradigm note:} no arm in this study uses FSIM as a training loss; FSIM is therefore the \emph{least biased} metric across the full arm set, and is designated the primary perceptual metric for this reason. Arms trained with FFL (Focal Frequency Loss; Arms~D, F--H, J, L--N, P) indirectly encourage frequency-domain fidelity that correlates with phase congruency, but this is an indirect effect rather than direct optimisation of the FSIM criterion.
 
 \paragraph{LPIPS.}
 Learned Perceptual Image Patch Similarity (LPIPS) \cite{zhang_unreasonable_2018} measures
@@ -2069,7 +2069,7 @@ $\boldsymbol{\phi}_\ell^{hw}$ are the channel-normalised feature activation vect
 $\hat{\mu}_y$ and $y$ at spatial position $(h,w)$ in layer $\ell$; $\mathbf{w}_\ell$ is a
 vector of learned per-channel linear weights calibrated to align deep feature distances with
 human perceptual similarity ratings; and $\odot$ denotes element-wise multiplication.
-LPIPS is lower-better: smaller values indicate greater perceptual similarity. It is reported in its natural orientation (lower is better) throughout this dissertation. Two implementations are used: the \texttt{lpips} library \cite{zhang_unreasonable_2018} (main reconstruction table, Table~\ref{tab:results:recon:mid}) and \texttt{piq} v0.8.0 (perceptual metrics table, Table~\ref{tab:results:fsim}); both use the AlexNet backbone but may differ numerically, so cross-table comparisons of LPIPS values should not be made.
+LPIPS is lower-better: smaller values indicate greater perceptual similarity. It is reported in its natural orientation (lower is better) throughout this dissertation. Two implementations are used: the \texttt{lpips} library \cite{zhang_unreasonable_2018} (main reconstruction table, Table~\ref{tab:results:recon:mid}) and \texttt{piq} v0.8.0 (perceptual metrics table, Table~\ref{tab:results:fsim}); both use the AlexNet backbone but may differ numerically, so cross-table comparisons of LPIPS values should not be made. \textit{Training paradigm note:} LPIPS is not a training objective in any primary ablation arm (A--P). Arm~N includes a VGG-16 perceptual loss that shares the deep-feature motivation but uses a different backbone; its LPIPS score may be mildly inflated relative to unrelated arms. Arms~R and~S, which are fine-tuned with composite perceptual objectives, achieve the best LPIPS in this study, consistent with the perception--distortion tradeoff \cite{blau_perception_2018}: gains in perceptual quality come at a measurable PSNR cost.
 
 \subsection{Uncertainty Calibration}
 \label{sec:methods:evaluation:calibration}
@@ -2096,8 +2096,8 @@ have ECE above zero at low coverage levels.
 ECE is reported for all arms with a heteroscedastic head (Arms B--D, F--N, O, P; i.e.\ all NLL-trained arms) and separately for the combined aleatoric-plus-epistemic estimate (VAE arms E--H, P only). As discussed in
 Section~\ref{sec:lit:uncertainty:workflow}, ECE has direct clinical significance in this framework:
 a miscalibrated uncertainty head cannot reliably identify pixels where the denoised value
-is prior-sampled rather than data-supported, which would make the ultrasound referral
-interpretation of the uncertainty map clinically unsafe.
+is prior-sampled rather than data-supported, which would make the interpretation of the
+uncertainty map clinically unsafe. \textit{Training paradigm note:} ECE and NLL calibration scores are \emph{only meaningful} for arms with a heteroscedastic NLL head; deterministic L2 or L1 arms (A, I, J) produce no per-pixel variance estimate and are excluded from calibration evaluation entirely. Among NLL-trained arms, the NLL training loss and the NLL evaluation score are mathematically identical, so NLL-arm rankings on the NLL metric reflect in-distribution optimisation rather than generalisation; ECE at held-out coverage levels (50\%, 80\%, 90\%, 95\%) provides the more diagnostic calibration assessment.
 
 \subsection{Clinical-Domain Metrics}
 \label{sec:methods:evaluation:clinical}
@@ -2154,6 +2154,43 @@ Clinical & NPS & --- (curve) & All \\
 \footnotesize
 \item Primary metric is FSIM; all others are secondary or supplementary.
 \item Calibration metrics (ECE) apply to all NLL-trained arms (those with a heteroscedastic $\hat{\sigma}_a$ head). Epistemic ECE applies to VAE arms (E, F, G, H, P) only.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\paragraph{Metric--loss alignment and the perception--distortion tradeoff.}
+A central interpretive challenge in multi-metric evaluation is that metrics which share their mathematical basis with a training loss are not independent measures of model quality. Table~\ref{tab:methods:metric_alignment} summarises the directional bias each metric carries across the arm set. The perception--distortion tradeoff \cite{blau_perception_2018} formalises this conflict: for a fixed level of distortion (e.g.\ PSNR), there is a lower bound on perceptual error (e.g.\ LPIPS), and improving perceptual quality necessarily increases distortion beyond some point. Concretely, this means that:
+\begin{itemize}
+  \item An arm ranked first on PSNR (Arm~A, pure L2) will not rank first on LPIPS or FSIM.
+  \item An arm ranked first on LPIPS or FSIM (Arms~R/S, perceptual fine-tuning) will pay a PSNR cost.
+  \item Calibration metrics (ECE) are orthogonal to reconstruction metrics: an arm can be perfectly calibrated and have poor PSNR (Arm~E, posterior collapse), or have excellent PSNR and no calibration output at all (Arm~A).
+\end{itemize}
+No single arm can rank first on all metrics simultaneously; comparisons across arms are only fair when the same metric is used, and conclusions about overall superiority must consider the full profile.
+
+\begin{table}[htbp]
+\centering
+\caption[Metric--loss alignment summary]{Metric--loss alignment across ablation arms. ``Biased towards'' identifies which training paradigm a metric systematically favours; ``Independent of loss'' marks metrics where no arm trains on an equivalent objective, making them unbiased comparators.}
+\label{tab:methods:metric_alignment}
+\begin{threeparttable}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Metric} & \textbf{Biased towards} & \textbf{Arms advantaged} & \textbf{Independent?} \\
+\midrule
+PSNR        & L2 (MSE) training     & Arm A (L2); SCUNet, NAFNet & No \\
+SSIM / MS-SSIM & MS-SSIM loss       & Arms C, D, F--H, J, N, P  & Partial \\
+FSIM        & None (not a training loss) & ---                   & \textbf{Yes} \\
+LPIPS       & VGG perceptual loss   & Arm N (mild); Arms R, S (FT) & \textbf{Largely yes}$^a$ \\
+ECE / NLL   & NLL heteroscedastic training & All NLL arms      & No (NLL) / Yes (ECE) \\
+CNR         & None                  & Arms preserving contrast   & \textbf{Yes} \\
+EPI         & Edge supervision (indirect) & Arms L, M, N (Sobel loss) & Partial \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item[$a$] Arm~N uses VGG-16 perceptual loss (different backbone from LPIPS AlexNet); mild indirect alignment only.
+\item Arms~R and~S achieve lowest LPIPS via two-stage fine-tuning; direct metric--loss alignment with composite perceptual objectives.
+\item FSIM and CNR are the recommended primary metrics for unbiased inter-arm comparison. PSNR is reported for literature comparability only.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
