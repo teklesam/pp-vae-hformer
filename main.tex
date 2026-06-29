@@ -3568,7 +3568,7 @@ BM3D (oracle $\sigma$)$^\dagger$              & \citeyear{dabov_image_2007}  & 3
 \section{Strengths of This Study}
 \label{sec:disc:strengths}
 
-This study's principal strengths are: (i) the first systematic 16-arm composite loss ablation for probabilistic paediatric CXR denoising; (ii) 210 Bonferroni-corrected pairwise comparisons with Cohen's $d$ effect sizes; (iii) all five baselines retrained on the same data split to eliminate domain-transfer confounds; (iv) multi-metric evaluation (PSNR, SSIM, LPIPS, FSIM, NLL) across three noise levels; and (v) a physically grounded Poisson-Gaussian noise model calibrated to clinical paediatric dose conditions.
+Four methodological features distinguish this study from prior work and bound the confidence that can be placed in the conclusions. First, all baselines were retrained on the same Kermany split under the same noise model, eliminating the domain-transfer confound that makes cross-paper PSNR comparisons unreliable; the improvement over DnCNN is a controlled within-study comparison, not a cross-dataset claim. Second, statistical claims are backed by Bonferroni-corrected pairwise $t$-tests with Cohen's $d$ effect sizes across 210 arm pairs, making the effect-size interpretation independent of sample size. Third, evaluation spans three noise presets across a clinically relevant dose range, testing whether superiority at one level is consistent across others. Fourth, the Poisson-Gaussian noise model (Foi et al.) is physically grounded in the quantum noise physics of CXR acquisition, rather than the AWGN assumption used in most denoising benchmarks. The scientific contributions enabled by these design choices are identified in Chapter~\ref{chap:conclusion}, Section~\ref{sec:conc:sci}.
 
 \section{Limitations}
 \label{sec:disc:limitations}
@@ -3646,20 +3646,21 @@ Chapter~\ref{chap:conclusion} restates the principal contributions, answers each
 \section{Summary of Work Undertaken}
 \label{sec:conc:summary}
 
-This dissertation designed, implemented, and evaluated PP-VAE-Hformer, a probabilistic denoising framework for low-dose paediatric CXR. The system combines a hybrid CNN-Transformer (Hformer) encoder-decoder with an optional VAE bottleneck and a four-term composite loss (NLL, MS-SSIM, FFL, KL). A 16-arm ablation study on the 624-image Kermany test set, with 210 Bonferroni-corrected pairwise comparisons against five retrained KAIR baselines (DnCNN, IRCNN, FFDNet, DRUNet, SwinIR), two extended SOTA baselines (NAFNet, SCUNet), BM3D, and DDPM, establishes which loss terms contribute to pixel fidelity, perceptual quality, and calibrated uncertainty quantification.
+PP-VAE-Hformer was designed, implemented, and evaluated as a probabilistic denoising framework for low-dose paediatric CXR, combining a hybrid CNN-Transformer encoder-decoder with an optional VAE bottleneck and a composite loss over four complementary objectives. The experimental design, results, and statistical analysis are presented in Chapters~\ref{chap:methods} and~\ref{chap:results}; the interpretation against prior literature and the clinical mandate is in Chapter~\ref{chap:discussion}. This chapter states what the work demonstrated, what it contributed beyond prior literature, and what must happen next for clinical translation to be credible.
 
 \section{Answering the Research Objectives}
 \label{sec:conc:objectives}
 
+Each objective is addressed as follows; the supporting evidence is in the sections cited.
+
 \begin{enumerate}
-  \item \textbf{Degradation modelling} (Objective~1) was met by the Foi Poisson-Gaussian pipeline (Section~\ref{sec:methods:noise}), which accurately models the signal-dependent quantum and read-out noise of paediatric CXR and provides three calibrated noise levels (low / mid / high) spanning a clinically relevant dose range.
+  \item \textbf{Degradation modelling} (Objective~1) — \emph{met.} The Foi Poisson-Gaussian pipeline (Section~\ref{sec:methods:noise}) models signal-dependent quantum and read-out noise across three clinically calibrated dose levels, providing a physically grounded evaluation substrate for all subsequent arms.
 
-  \item \textbf{Architecture and objective design} (Objective~2) was met by the 16-arm ablation study, which isolates the contribution of every loss term: NLL provides calibrated uncertainty ($-2.556$~nats/px in best arm); MS-SSIM+FFL together recover the NLL baseline's PSNR while adding perceptual benefit; cyclical KL prevents posterior collapse and enables VAE parity with CNN baselines.
+  \item \textbf{Architecture and composite objective design} (Objective~2) — \emph{met.} The 16-arm ablation (Section~\ref{sec:results:recon}) isolates each loss term's causal contribution and resolves their interactions: the principal findings are that NLL + MS-SSIM + FFL is the optimal deterministic configuration and that cyclical KL (Arm~H) is required for the VAE to reach parity with CNN baselines. The interaction effects — gradient interference from simultaneous SSIM and edge supervision, PReLU instability in the variance head — are novel findings not predictable from prior literature (Section~\ref{sec:conc:sci}).
 
-  \item \textbf{Pathology preservation validation} (Objective~3) was met by the full quantitative comparison against five retrained baselines (DnCNN, IRCNN, FFDNet, DRUNet, SwinIR), the 210-pair pairwise statistical analysis, and the subgroup analysis demonstrating that all arms perform $\approx 1$~dB better on Pneumonia (pathological) than Normal images, confirming that the models are not biased against the pathology class.
-  
+  \item \textbf{Pathology preservation validation} (Objective~3) — \emph{met.} The subgroup analysis (Section~\ref{sec:results:subgroup}) confirms that no arm is biased against the pathology class: Pneumonia images are consistently reconstructed $\approx 1$~dB better than Normal images, a data-domain effect attributable to higher signal contrast in consolidated lung. The 210-pair statistical analysis (Section~\ref{sec:methods:stats}) provides Bonferroni-corrected effect sizes for all arm differences.
 
-  \item \textbf{Uncertainty quantification} (Objective~4) was met by evaluating aleatoric calibration via NLL and sharpness metrics across all NLL and VAE arms, and by demonstrating that the cyclical KL schedule produces better-calibrated uncertainty outputs (lower NLL, lower $\hat{\sigma}_a$) than the linear-warmup or free-bits schedules.
+  \item \textbf{Uncertainty quantification} (Objective~4) — \emph{met.} Aleatoric calibration is quantified across all NLL and VAE arms via ECE at four coverage levels (Section~\ref{sec:results:uncertainty}). The cyclical KL schedule (Arm~H) produces the best-calibrated epistemic uncertainty output; the linear-warmup schedule (Arm~E) collapses the epistemic signal entirely, providing a principled empirical contrast that validates the methodological choice.
 \end{enumerate}
 
 \section{Principal Scientific Contributions}
@@ -3680,14 +3681,14 @@ This work makes four contributions that were not established by prior literature
 \section{Clinical Implications}
 \label{sec:conc:clinical}
 
-The immediate implication of this work is that a simple change in training objective (from MSE to NLL) is sufficient to add calibrated per-pixel uncertainty maps to an existing denoising architecture, at a cost of $\approx 1.2$~dB PSNR relative to the MSE baseline and $0.66$~dB better PSNR than a standard DnCNN baseline. For paediatric CXR specifically, where repeat acquisition carries a measurable carcinogenic risk, an uncertainty map that flags problematic reconstructions provides a meaningful clinical safety benefit: it converts an implicit confidence in the reconstruction into an explicit, quantified signal available to the radiologist at the moment of reporting.
+The central clinical implication is methodological: switching the training objective from MSE to heteroscedastic NLL is sufficient to add calibrated per-pixel uncertainty maps to any existing encoder-decoder denoising architecture. This is not a large architectural investment; it requires adding a log-variance output channel and replacing the pixel-wise L2 loss with the NLL expression in Equation~\ref{eq:methods:nll}. For paediatric CXR, where repeat acquisition carries a measurable carcinogenic risk in children with decades of life ahead, this converts an implicit confidence in the reconstruction into an explicit, spatially-resolved signal available to the radiologist at the moment of reporting. The reconstruction cost is a PSNR deficit relative to pure L2, but that deficit is below statistical significance relative to the best available CNN baseline (Section~\ref{sec:results:recon:quant}).
 
-The longer-term translational pathway (reader study, full-resolution DICOM validation, regulatory submission) is outlined in Section~\ref{sec:disc:translation}. This pathway is technically feasible with the framework developed here; the principal remaining barriers are organisational (access to paired low-dose clinical data) rather than methodological.
+The translational pathway from here --- prospective reader study, full-resolution DICOM validation, and regulatory submission under EU MDR Class IIa or FDA 510(k) --- is detailed in Section~\ref{sec:disc:translation}. The principal remaining barriers are organisational access to paired low-dose clinical data, not methodological readiness.
 
 \section{Future Work}
 \label{sec:conc:future}
 
-Three priorities emerge: (i) a blinded radiologist reader study on Arms~D and~H with uncertainty maps; (ii) disentangled VAE variants ($\beta$-TCVAE) to recover the reconstruction/class-separation trade-off exposed by Arm~F (ARI~$0.333$); (iii) validation on full-resolution real DICOM data to bridge the simulated-to-clinical domain gap.
+Five future directions, ranked by clinical impact, are detailed in Section~\ref{sec:disc:future}. The most time-critical is the blinded radiologist reader study: without confirmed diagnostic accuracy outcomes, the PSNR and calibration improvements reported here remain engineering results rather than clinical evidence. The most scientifically interesting is the disentangled VAE direction: Arm~F's ARI of $0.333$ under a purely reconstruction-driven objective suggests that modest architectural additions (a latent classifier head or $\beta$-TCVAE regularisation) could recover class-discriminative structure without sacrificing the reconstruction quality demonstrated by Arm~H --- a direct empirical opportunity opened by this study's latent space analysis.
 
 \section{Closing Statement}
 \label{sec:conc:closing}
