@@ -3781,7 +3781,7 @@ Systematic sub-ablations of individual loss weights (e.g.\ a $5\times5$ grid ove
 \chapter{Supplementary Statistical Tables}
 \label{app:suptables}
 
-All statistically significant pairwise comparisons ($d \geq 0.2$, $p < \alpha_{\mathrm{Bonf}} = 2.4 \times 10^{-4}$) are reported inline within Section~4.3.2. Key comparisons selected for the main table (Table~\ref{tab:results:stats:pairwise}) include all cross-family pairs and the most clinically informative within-family pairs. A full 21$\times$21 pairwise comparison matrix is available in the project GitHub repository (\texttt{results/pairwise\_stats.csv}).
+All statistically significant pairwise comparisons ($d \geq 0.2$, $p < \alpha_{\mathrm{Bonf}} = 2.4 \times 10^{-4}$) are reported inline within Section~4.3.2. Key comparisons selected for the main table (Table~\ref{tab:results:stats:pairwise}) include all cross-family pairs and the most clinically informative within-family pairs. A full 21$\times$21 pairwise comparison matrix is available in the project code repository (\url{https://github.com/teklesam/ppva_hformer_codebase}, \texttt{results/pairwise\_stats.csv}).
 
 % ────────────────────────────────────────────────────────────
 \chapter{Computational Resources}
@@ -3864,7 +3864,7 @@ DnCNN, IRCNN, FFDNet, DRUNet, SwinIR & 200 each & $\approx$50 \\
   \item Training: Is the optimiser and schedule fully specified? \textbf{Yes}, Adam, lr~$=2\times10^{-4}$, weight\_decay~$=10^{-5}$, constant schedule (Table~\ref{tab:app:hyperparams:shared}).
   \item Evaluation: Are metrics computed on held-out test set only? \textbf{Yes}, all reported PSNR/SSIM/LPIPS/NLL/FSIM values are computed on the 624-image held-out test set (Section~3.5).
   \item Evaluation: Are confidence intervals or standard errors reported? \textbf{Yes}, Tables~4.2--4.3 report mean~$\pm$ SD. Pairwise comparisons report Cohen's~$d$, 95\% CI, and Bonferroni-corrected $p$-values (Table~4.5).
-  \item Code: Is the codebase publicly available? \textbf{Yes}, \url{https://github.com/teklesam/pp-vae-hformer}.
+  \item Code: Is the codebase publicly available? \textbf{Yes}, \url{https://github.com/teklesam/ppva_hformer_codebase} (see Appendix~\ref{app:code}).
 \end{enumerate}
 
 % ────────────────────────────────────────────────────────────
@@ -3877,16 +3877,10 @@ DnCNN, IRCNN, FFDNet, DRUNet, SwinIR & 200 each & $\approx$50 \\
 The complete codebase, training scripts, evaluation pipelines, and figure generation scripts are available at:
 
 \begin{center}
-\url{https://github.com/teklesam/pp-vae-hformer}
+\url{https://github.com/teklesam/ppva_hformer_codebase}
 \end{center}
 
-\noindent The repository contains:
-\begin{itemize}
-  \item \texttt{code/}, All model architecture definitions, loss functions, training scripts, and evaluation pipelines
-  \item \texttt{dissertation/}, \LaTeX\ source for this dissertation and all figures
-  \item \texttt{results/}, Per-image evaluation metrics, subgroup statistics, and pairwise comparison tables for all 19 ablation arms and seven retrained baselines
-  \item \texttt{scripts/}, Figure generation and post-processing scripts (including \texttt{generate\_dissertation\_figures.py})
-\end{itemize}
+\noindent The repository contains all code required to reproduce the experiments reported in this dissertation, including model architecture definitions, composite loss implementations, training and evaluation pipelines, and figure generation scripts for all 19 ablation arms and retrained baselines.
 
 % ────────────────────────────────────────────────────────────
 \chapter{Ethical Considerations}
